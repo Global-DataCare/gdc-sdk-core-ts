@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - 2026-05-23
+
+### Added
+- Added the runtime-neutral identity/discovery/bootstrap surface as the first minor release of `gdc-sdk-core-ts`.
+- Added canonical communication bundle/document helpers, outbox draft helpers, and vital-sign helpers backed by `gdc-common-utils-ts`.
+
+### Changed
+- Aligned shared dependency consumption to `gdc-common-utils-ts@^1.5.0`.
+- Switched TypeScript/runtime imports to explicit package export subpaths where needed for stable `NodeNext` resolution.
+
+### Testing
+- `npm test` passes against the packaged `gdc-common-utils-ts` artifact.
+
 ## 0.1.3 - 2026-05-23
 
 ### Added
