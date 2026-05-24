@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.2.1] - 2026-05-24
 
 ### Added
 - Added runtime-neutral consent-access helpers in `src/consent-access.ts`:
