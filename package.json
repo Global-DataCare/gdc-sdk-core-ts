@@ -1,0 +1,25 @@
+{
+  "name": "gdc-sdk-core-ts",
+  "version": "0.1.1",
+  "description": "Runtime-neutral actor and capability contracts for GDC SDK convergence",
+  "license": "Apache-2.0",
+  "author": "Antifraud Services Inc.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "gdc-common-utils-ts": "^1.4.22"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.4"
+  }
+}
