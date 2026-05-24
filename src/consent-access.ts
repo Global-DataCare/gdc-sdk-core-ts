@@ -7,13 +7,13 @@ import type {
   ConsentRuleMatch,
   EffectiveAccessEvaluation,
   MissingPermissionSet,
-} from '../../gdc-common-utils-ts/src/models/consent-access.js';
+} from 'gdc-common-utils-ts/models/consent-access';
 import {
   evaluateConsentCoverage,
   groupActiveConsentsByTarget,
-} from '../../gdc-common-utils-ts/src/utils/consent.js';
-import { ResourceTypesFhirR4 } from '../../gdc-common-utils-ts/src/constants/fhir-resource-types.js';
-import type { ConsentRule } from '../../gdc-common-utils-ts/src/models/consent-rule.js';
+} from 'gdc-common-utils-ts/utils/consent';
+import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
+import type { ConsentRule } from 'gdc-common-utils-ts/models/consent-rule';
 import type { BundleSearchQuery, CommunicationInput } from './communication-bundle-contracts.js';
 
 export type PermissionRequestCommunicationInput = Readonly<{

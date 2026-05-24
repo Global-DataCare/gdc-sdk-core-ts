@@ -99,6 +99,27 @@ Consent precedence implemented by the shared model:
 4. jurisdiction decision
 5. default deny
 
+### Relationship invitation / acceptance
+
+- [`createRelationshipChannelInvitationInput(...)`](src/relationship-access.ts)
+  - Normalizes the shared invitation payload that a controller uses to invite a related person or professional to connect with a subject through `phone`, `email`, or `app`.
+- [`createRelationshipChannelInvitationSummary(...)`](src/relationship-access.ts)
+  - Normalizes the runtime summary returned for an invitation and its state.
+- [`createRelationshipChannelOtpStartInput(...)`](src/relationship-access.ts)
+  - Normalizes OTP challenge start input for portal, app, or IVR flows.
+- [`createRelationshipChannelOtpConfirmInput(...)`](src/relationship-access.ts)
+  - Normalizes OTP confirmation input.
+- [`createRelationshipChannelOtpChallengeSummary(...)`](src/relationship-access.ts)
+  - Normalizes OTP challenge state returned by the backend.
+- [`createRelationshipPinPolicy(...)`](src/relationship-access.ts)
+  - Normalizes relationship PIN policy hints.
+- [`createRelationshipPinSetInput(...)`](src/relationship-access.ts)
+  - Normalizes PIN setup input after OTP verification.
+- [`createRelationshipPinVerifyInput(...)`](src/relationship-access.ts)
+  - Normalizes PIN verification input for an active relationship channel.
+- [`createRelationshipLocalKeyEnvelope(...)`](src/relationship-access.ts)
+  - Normalizes the portable envelope used by offline-first apps to store a relationship-scoped local symmetric key.
+
 ### Communication/document builders and readers
 
 - [`createCommunicationResource(...)`](src/communication-resource-helpers.ts)
