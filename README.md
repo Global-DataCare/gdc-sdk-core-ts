@@ -6,6 +6,7 @@ Key docs:
 
 - [CHANGELOG.md](CHANGELOG.md)
 - [SECURITY.md](SECURITY.md)
+- [../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
 
 Current scope:
 
@@ -76,6 +77,27 @@ The canonical contract should live in JSDoc on exported code. This README is the
   - Validates runtime-neutral `CommMsgExtended` inputs.
 - [`assertBundleSearchQuery(...)`](src/communication-bundle-contracts.ts)
   - Validates canonical clinical bundle search queries.
+
+### Consent access
+
+- [`groupConsentsForControllerView(...)`](src/consent-access.ts)
+  - Loads all active subject consents and groups them by actor-specific, organization, jurisdiction, and phone-extension target.
+- [`evaluateRequestedAccess(...)`](src/consent-access.ts)
+  - Evaluates one SMART-style access request against the full active consent set, with first-tier precedence intended for concrete email matches.
+- [`getMissingPermissions(...)`](src/consent-access.ts)
+  - Extracts deterministic missing coverage from the evaluation result.
+- [`buildPermissionRequestCommunication(...)`](src/consent-access.ts)
+  - Builds the canonical permission-request `Communication`.
+- [`buildPermissionRequestCommunicationLookupQuery(...)`](src/consent-access.ts)
+  - Builds a subject-scoped lookup query by `Communication.identifier`, `thid`, or `DocumentReference.contenthash`.
+
+Consent precedence implemented by the shared model:
+
+1. explicit deny for a concrete email
+2. explicit permit for a concrete email
+3. organization decision
+4. jurisdiction decision
+5. default deny
 
 ### Communication/document builders and readers
 

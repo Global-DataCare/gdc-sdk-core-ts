@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Added runtime-neutral consent-access helpers in `src/consent-access.ts`:
+  - `groupConsentsForControllerView(...)`
+  - `evaluateRequestedAccess(...)`
+  - `getMissingPermissions(...)`
+  - `buildPermissionRequestCommunication(...)`
+  - `buildPermissionRequestCommunicationLookupQuery(...)`
+
+### Changed
+- Updated README documentation to index the new shared consent-access surface and the agreed precedence model.
+
+### Testing
+- `npm run build` passes with the new consent-access surface included in package exports.
+
 ## 0.2.0 - 2026-05-23
 
 ### Added
