@@ -1,97 +1,337 @@
 # gdc-sdk-core-ts
 
-Minimal runtime-neutral core extracted from the current SDK convergence work.
+Runtime-neutral shared contracts and helpers for GDC SDK consumers.
 
-Key docs:
+This package is for code that needs to understand and build GDC business flows
+without caring about gateway routes, `host/...` vs `:tenantId/...`, transport
+adapters, or UNID-specific runtime details.
 
-- [CHANGELOG.md](CHANGELOG.md)
-- [SECURITY.md](SECURITY.md)
+## Actor Split
+
+The shared SDK family starts by separating actor families, because the flows are
+not the same:
+
+- organization side
+  - organization controller
+  - organization employee / professional member
+- individual side
+  - individual controller
+  - individual member / self
+  - related person
+  - professional with consented access
+
+This package is the shared business-contract layer for all of those actors. It
+does not execute runtime calls, but it defines or normalizes the payloads and
+evaluations they all depend on.
+
+## Flow Families
+
+The SDK documentation must cover these families from the start:
+
+### Organization bootstrap and activation
+
+- activate organization from ICA proof
+- confirm organization order / offer
+- prepare legal organization controller bootstrap payloads
+
+Primary reusable examples:
+
+- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
+
+### Employee creation and employee invitation
+
+- create employee payload
+- issue employee activation / invitation path
+- employee device activation
+- employee SMART access
+
+Primary reusable examples:
+
+- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
+
+### Individual organization bootstrap
+
+- start individual organization
+- confirm individual order / offer
+- prepare controller-owned individual bootstrap payloads
+
+Primary reusable examples:
+
+- [../gdc-common-utils-ts/src/examples/individual-controller.ts](../gdc-common-utils-ts/src/examples/individual-controller.ts)
+
+### Related person and professional access to individual
+
+- create `RelatedPerson`
+- grant access / create consent
+- evaluate requested access
+- detect missing permissions
+- build permission-request `Communication`
+- invite actor and accept invitation
+
+Primary reusable examples:
+
+- [../gdc-common-utils-ts/src/examples/related-person.ts](../gdc-common-utils-ts/src/examples/related-person.ts)
+- [../gdc-common-utils-ts/src/examples/professional.ts](../gdc-common-utils-ts/src/examples/professional.ts)
 - [../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
 
-Current scope:
+### Permission lifecycle
 
-- actor kinds
-- capability labels
-- session descriptor
-- facade descriptor
-- actor capability filtering
-- expansion from composite session descriptor to role-scoped facades
-- runtime-neutral identity/discovery/bootstrap contracts
-- provider DID to endpoint resolution helpers
+- create/grant permissions
+- edit or replace permissions
+- deactivate/revoke permissions
+- grouped permission views for controller UX
+- permission-request notifications and lookup
 
-Explicitly out of scope in this first slice:
+### Clinical data contribution and retrieval
 
-- Node adapters
-- Expo adapters
-- fetch / crypto initialization
-- gateway clients
-- ICA / GW orchestration flows
+- ingest `Communication`
+- import documents/resources into the subject index
+- search clinical bundles
+- search latest IPS
+- request SMART token for subject-scoped access
 
-Purpose:
+These flows may be executed by:
 
-- become the future shared source of truth for actor/capability contracts
-- avoid re-encoding Family/Organization role semantics separately in frontend and backend SDKs
+- professional
+- individual controller
+- related person with write permission
+- caregiver or other actor with explicit allowed sections/actions
+
+## Main Flows
+
+### 1. Consent access evaluation
+
+Use this when an app or backend needs to answer:
+
+- can this professional or related person access this subject now?
+- what permissions are missing?
+- how do I build the canonical permission-request `Communication`?
+
+Main helpers:
+
+- `groupConsentsForControllerView(...)`
+- `evaluateRequestedAccess(...)`
+- `getMissingPermissions(...)`
+- `buildPermissionRequestCommunication(...)`
+- `buildPermissionRequestCommunicationLookupQuery(...)`
+
+Reference:
+
+- [../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
+
+### 2. Relationship invitation and acceptance
+
+Use this when a controller invites a `related person` or `professional` to
+connect with an individual or other subject.
+
+The shared flow is:
+
+1. controller creates invitation payload
+2. invitee starts OTP challenge
+3. invitee confirms OTP
+4. invitee sets relationship PIN if required
+5. relationship channel becomes active
+
+Main helpers:
+
+- `createRelationshipChannelInvitationInput(...)`
+- `createRelationshipChannelInvitationSummary(...)`
+- `createRelationshipChannelOtpStartInput(...)`
+- `createRelationshipChannelOtpConfirmInput(...)`
+- `createRelationshipChannelOtpChallengeSummary(...)`
+- `createRelationshipPinPolicy(...)`
+- `createRelationshipPinSetInput(...)`
+- `createRelationshipPinVerifyInput(...)`
+- `createRelationshipLocalKeyEnvelope(...)`
+
+What this package does:
+
+- validates and normalizes the shared payloads
+- keeps the contract stable across portal, app, and phone-channel consumers
+
+What this package does not do:
+
+- call GW endpoints
+- manage OTP providers
+- store PIN hashes
+- know anything about UNID reminder `Task` runtime
+
+### 3. Communication and document handling
+
+Use this when an app needs to build or read canonical `Communication` payloads
+and attached clinical documents.
+
+Main helpers:
+
+- `createCommunicationResource(...)`
+- `buildCommunicationBatchMessage(...)`
+- `addFhirResourceToCommunication(...)`
+- `addClaimsResourceToCommunication(...)`
+- `createCommunicationDraft(...)`
+- `createOutboxJobFromDraft(...)`
+- `createCommunicationFacade()`
+
+## Who Should Use This Package
+
+- `gdc-sdk-node-ts`
+- `gdc-sdk-front-ts`
+- portal/backend orchestration layers
+- frontend/mobile code that needs stable contracts before runtime wiring
+
+If you need HTTP/GW runtime behavior, use `gdc-sdk-node-ts` or a future runtime
+adapter, not this package directly.
+
+## Minimal Examples
+
+### Consent check
+
+```ts
+import {
+  evaluateRequestedAccess,
+  getMissingPermissions,
+  type ConsentCoverageRequest,
+} from 'gdc-sdk-core-ts';
+import {
+  EXAMPLE_CONSENT_ACCESS_PROVIDER_EMAIL,
+  EXAMPLE_CONSENT_ACCESS_SUBJECT,
+} from 'gdc-common-utils-ts/examples/consent-access';
+import {
+  HealthcareActorRoles,
+  HealthcareBasicSections,
+  HealthcareConsentPurposes,
+} from 'gdc-common-utils-ts/constants/healthcare';
+
+const request: ConsentCoverageRequest = {
+  subject: EXAMPLE_CONSENT_ACCESS_SUBJECT,
+  actor: { actorKind: 'professional', email: EXAMPLE_CONSENT_ACCESS_PROVIDER_EMAIL },
+  actorRole: HealthcareActorRoles.Physician,
+  purpose: HealthcareConsentPurposes.Treatment,
+  sections: [HealthcareBasicSections.HistoryOfMedicationUse.claim],
+};
+
+const evaluation = await evaluateRequestedAccess(provider, request);
+
+const missing = getMissingPermissions(evaluation);
+```
+
+### Relationship invitation
+
+```ts
+import {
+  createRelationshipChannelInvitationInput,
+  createRelationshipChannelOtpStartInput,
+  createRelationshipPinSetInput,
+} from 'gdc-sdk-core-ts';
+import {
+  EXAMPLE_RELATIONSHIP_CHANNEL_INVITATION_INPUT,
+  EXAMPLE_RELATIONSHIP_CHANNEL_OTP_START_INPUT,
+  EXAMPLE_RELATIONSHIP_PIN_SET_INPUT,
+} from 'gdc-common-utils-ts/examples/relationship-access';
+
+const invitation = createRelationshipChannelInvitationInput(
+  EXAMPLE_RELATIONSHIP_CHANNEL_INVITATION_INPUT,
+);
+
+const otpStart = createRelationshipChannelOtpStartInput(
+  EXAMPLE_RELATIONSHIP_CHANNEL_OTP_START_INPUT,
+);
+
+const pinSet = createRelationshipPinSetInput(EXAMPLE_RELATIONSHIP_PIN_SET_INPUT);
+```
 
 ## API Index
 
-The canonical contract should live in JSDoc on exported code. This README is the linked index.
+The canonical contract should live in JSDoc on exported code. This README is the
+entrypoint, not the exhaustive reference.
+
+## Full Public Surface
+
+The following modules define the complete public SDK surface exported by this
+package:
+
+- [`src/actor-model.ts`](src/actor-model.ts)
+  - types: `ActorKind`, `Capability`, `ActorSessionDescriptor`, `ActorFacadeDescriptor`, `ActorFlags`, `ActorSessionDescriptorInput`
+  - functions: `filterCapabilitiesForActor(...)`, `expandActorSessionDescriptorToFacades(...)`, `buildActorSessionDescriptorFromActorFlags(...)`
+- [`src/bootstrap-facade.ts`](src/bootstrap-facade.ts)
+  - types: `BootstrapValidationIssue`, `OrganizationActivationPayload`, `BootstrapFacade`
+  - function: `createBootstrapFacade()`
+- [`src/communication-bundle-contracts.ts`](src/communication-bundle-contracts.ts)
+  - types: `AttachmentObj`, `CommunicationInput`, `CommMsgExtendedInput`, `DateRange`, `SectionFilter`, `IncludedResourceType`, `BundleSearchQuery`, `CompositionSearchQuery`, `ProjectedResourceSummary`, `BundleSearchResult`, `CommunicationAuditRecord`
+  - functions: `assertCommunicationInput(...)`, `assertCommMsgExtendedInput(...)`, `assertBundleSearchQuery(...)`
+- [`src/consent-access.ts`](src/consent-access.ts)
+  - types: `PermissionRequestCommunicationInput`, `PermissionRequestCommunicationLookup`, `ActiveConsentProvider`
+  - functions: `groupConsentsForControllerView(...)`, `evaluateRequestedAccess(...)`, `getMissingPermissions(...)`, `buildPermissionRequestCommunication(...)`, `buildPermissionRequestCommunicationLookupQuery(...)`
+- [`src/communication-draft.ts`](src/communication-draft.ts)
+  - constant: `CommunicationOutboxStatuses`
+  - types: `CommunicationOutboxStatus`, `CommunicationDraft`, `CommunicationDraftCreationOptions`, `OutboxJob`, `CommunicationOutboxJob`, `CommunicationOutboxJobOptions`
+  - functions: `createCommunicationDraft(...)`, `getCommunicationFromDraft(...)`, `isCommunicationDraftReady(...)`, `addFhirResourceToDraft(...)`, `addClaimsResourceToDraft(...)`, `createOutboxJobFromDraft(...)`, `updateOutboxJobStatus(...)`
+- [`src/communication-document-facade.ts`](src/communication-document-facade.ts)
+  - types: `ResolvedCommunicationDocument`, `FhirDocumentSection`, `FhirDocumentFacade`
+  - functions: `getDocumentFromCommunication(...)`, `createFhirDocumentFacade(...)`, `createCommunicationFacade()`
+- [`src/communication-outbox.ts`](src/communication-outbox.ts)
+  - types/interfaces: `OutboxQuery`, `IOutboxRepository`
+  - class: `OutboxRepositoryMemory`
+- [`src/communication-resource-helpers.ts`](src/communication-resource-helpers.ts)
+  - types: `FhirResourceLike`, `CommunicationResourceLike`, `AttachmentEncodingInput`, `CommunicationCreationOptions`, `ResourceAttachmentOptions`, `CommunicationPayloadResolution`, `ObservationCodeFilter`, `CommunicationBatchMessageOptions`
+  - functions: `createCommunicationResource(...)`, `buildCommunicationBatchMessage(...)`, `addFhirResourceToCommunication(...)`, `addClaimsResourceToCommunication(...)`, `resolveCommunicationPayloads(...)`, `getFirstBundleDocumentFromCommunication(...)`, `getBundleDocumentEntries(...)`, `getBundleDocumentResourcesByType(...)`, `getMedicationClaimsFromCommunicationDocument(...)`, `sortFhirResourcesByDateDescending(...)`, `getObservationsByCodeFromCommunicationDocument(...)`
+- [`src/did-resolution-session.ts`](src/did-resolution-session.ts)
+  - functions: `getProviderDidFromSubjectDid(...)`, `resolveDidDocumentServices(...)`, `resolveProviderIdentityForSubject(...)`
+- [`src/discovery-facade.ts`](src/discovery-facade.ts)
+  - types/interfaces: `DiscoveryResolutionResult`, `DiscoveryFacade`
+  - function: `createStaticDiscoveryFacade(...)`
+- [`src/identity-model.ts`](src/identity-model.ts)
+  - types: `DidServiceLike`, `DidDocumentLike`, `ResolvedServiceEndpointLike`, `TransportIdentityState`, `ActorIdentityState`, `ProviderIdentityState`
+- [`src/identity-store.ts`](src/identity-store.ts)
+  - interfaces: `DidDocumentStore`, `IdentityStore`
+  - class: `MemoryIdentityStore`
+- [`src/polling-model.ts`](src/polling-model.ts)
+  - types: `SubmitPayload`, `AsyncPollRequest`, `SubmitResponse`, `PollOptions`, `PollResult`, `SubmitAndPollResult`
+  - function: `resolvePollOptionsFromSeconds(...)`
+- [`src/relationship-access.ts`](src/relationship-access.ts)
+  - types: `RelationshipEnrollmentChannel`, `RelationshipSubjectKind`, `RelationshipAccessActorKind`, `RelationshipInvitationStatus`, `RelationshipOtpDeliveryChannel`, `RelationshipPinKdf`, `RelationshipChannelInvitationInput`, `RelationshipChannelInvitationSummary`, `RelationshipChannelOtpStartInput`, `RelationshipChannelOtpConfirmInput`, `RelationshipChannelOtpChallengeSummary`, `RelationshipPinPolicy`, `RelationshipPinSetInput`, `RelationshipPinVerifyInput`, `RelationshipLocalKeyEnvelope`
+  - functions: `createRelationshipChannelInvitationInput(...)`, `createRelationshipChannelInvitationSummary(...)`, `createRelationshipChannelOtpStartInput(...)`, `createRelationshipChannelOtpConfirmInput(...)`, `createRelationshipChannelOtpChallengeSummary(...)`, `createRelationshipPinPolicy(...)`, `createRelationshipPinSetInput(...)`, `createRelationshipPinVerifyInput(...)`, `createRelationshipLocalKeyEnvelope(...)`
+- [`src/session-model.ts`](src/session-model.ts)
+  - types/interfaces: `AppType`, `AppInfo`, `DeviceTrustLevel`, `PersistenceMode`, `DataPersistencePolicy`, `InitializeSessionParams`, `Profile`, `ProfileRegistryEntry`, `VaultQueryCondition`, `VaultQuery`, `IVaultRepository`, `IApiConfig`, `INetwork`, `IVerifier`
+- [`src/smart-endpoint-resolver.ts`](src/smart-endpoint-resolver.ts)
+  - function: `resolveSmartTokenEndpointForSubject(...)`
+- [`src/vital-signs.ts`](src/vital-signs.ts)
+  - types: `VitalSignQuantityInput`, `BloodPressureInput`, `VitalSignsDocumentBase`
+  - functions: `createHeartRateObservation(...)`, `createBodyTemperatureObservation(...)`, `createBloodPressureObservation(...)`, `createVitalSignsFacade(...)`
 
 ### Actor/session contracts
 
 - [`filterCapabilitiesForActor(...)`](src/actor-model.ts)
-  - Keeps only capabilities valid for a given actor kind.
-  - Params: `actorKind`, `capabilities`.
 - [`expandActorSessionDescriptorToFacades(...)`](src/actor-model.ts)
-  - Splits a composite actor session into one facade per actor kind.
-  - Params: `descriptor`.
 - [`buildActorSessionDescriptorFromActorFlags(...)`](src/actor-model.ts)
-  - Derives actor kinds and capabilities from boolean actor flags.
-  - Params: `input.appType`, `input.profileId`, `input.profileDid?`, `input.role?`, `input.actorFlags`.
 - [`DeviceTrustLevel`, `PersistenceMode`, `DataPersistencePolicy`](src/session-model.ts)
-  - Shared trust and persistence policy contracts for wallet, drafts, and outbox handling.
 - [`MemoryIdentityStore`](src/identity-store.ts)
-  - In-memory separation of transport identity, actor identity, provider identity, and DID document cache.
 
 ### Identity/discovery/bootstrap
 
 - [`createBootstrapFacade(...)`](src/bootstrap-facade.ts)
-  - Builds canonical `_activate` payloads and validates canonical-vs-legacy priority.
 - [`createStaticDiscoveryFacade(...)`](src/discovery-facade.ts)
-  - In-memory discovery facade for tests, demos, and pre-resolved metadata injection.
 - [`resolveProviderIdentityForSubject(...)`](src/did-resolution-session.ts)
-  - Resolves provider DID and cached provider identity from a subject DID.
 - [`resolveSmartTokenEndpointForSubject(...)`](src/smart-endpoint-resolver.ts)
-  - Resolves the published SMART token endpoint from provider DID metadata.
 
 ### Polling helpers
 
 - [`resolvePollOptionsFromSeconds(...)`](src/polling-model.ts)
-  - Converts poll timeout/interval seconds into SDK poll options.
-  - Params: `timeoutSeconds?`, `intervalSeconds?`, `defaults?`.
 
 ### Communication/document contracts
 
 - [`assertCommunicationInput(...)`](src/communication-bundle-contracts.ts)
-  - Validates runtime-neutral communication input payloads.
 - [`assertCommMsgExtendedInput(...)`](src/communication-bundle-contracts.ts)
-  - Validates runtime-neutral `CommMsgExtended` inputs.
 - [`assertBundleSearchQuery(...)`](src/communication-bundle-contracts.ts)
-  - Validates canonical clinical bundle search queries.
 
 ### Consent access
 
 - [`groupConsentsForControllerView(...)`](src/consent-access.ts)
-  - Loads all active subject consents and groups them by actor-specific, organization, jurisdiction, and phone-extension target.
 - [`evaluateRequestedAccess(...)`](src/consent-access.ts)
-  - Evaluates one SMART-style access request against the full active consent set, with first-tier precedence intended for concrete email matches.
 - [`getMissingPermissions(...)`](src/consent-access.ts)
-  - Extracts deterministic missing coverage from the evaluation result.
 - [`buildPermissionRequestCommunication(...)`](src/consent-access.ts)
-  - Builds the canonical permission-request `Communication`.
 - [`buildPermissionRequestCommunicationLookupQuery(...)`](src/consent-access.ts)
-  - Builds a subject-scoped lookup query by `Communication.identifier`, `thid`, or `DocumentReference.contenthash`.
 
-Consent precedence implemented by the shared model:
+Consent precedence in the shared model:
 
 1. explicit deny for a concrete email
 2. explicit permit for a concrete email
@@ -99,26 +339,17 @@ Consent precedence implemented by the shared model:
 4. jurisdiction decision
 5. default deny
 
-### Relationship invitation / acceptance
+### Relationship access
 
 - [`createRelationshipChannelInvitationInput(...)`](src/relationship-access.ts)
-  - Normalizes the shared invitation payload that a controller uses to invite a related person or professional to connect with a subject through `phone`, `email`, or `app`.
 - [`createRelationshipChannelInvitationSummary(...)`](src/relationship-access.ts)
-  - Normalizes the runtime summary returned for an invitation and its state.
 - [`createRelationshipChannelOtpStartInput(...)`](src/relationship-access.ts)
-  - Normalizes OTP challenge start input for portal, app, or IVR flows.
 - [`createRelationshipChannelOtpConfirmInput(...)`](src/relationship-access.ts)
-  - Normalizes OTP confirmation input.
 - [`createRelationshipChannelOtpChallengeSummary(...)`](src/relationship-access.ts)
-  - Normalizes OTP challenge state returned by the backend.
 - [`createRelationshipPinPolicy(...)`](src/relationship-access.ts)
-  - Normalizes relationship PIN policy hints.
 - [`createRelationshipPinSetInput(...)`](src/relationship-access.ts)
-  - Normalizes PIN setup input after OTP verification.
 - [`createRelationshipPinVerifyInput(...)`](src/relationship-access.ts)
-  - Normalizes PIN verification input for an active relationship channel.
 - [`createRelationshipLocalKeyEnvelope(...)`](src/relationship-access.ts)
-  - Normalizes the portable envelope used by offline-first apps to store a relationship-scoped local symmetric key.
 
 ### Communication/document builders and readers
 
@@ -137,37 +368,22 @@ Consent precedence implemented by the shared model:
 ### Drafts and outbox
 
 - [`createCommunicationDraft(...)`](src/communication-draft.ts)
-  - Creates an in-memory draft around a FHIR `Communication`.
-  - Main params: `subject`, `sender?`, `recipient?`, `noteText?`, `draftId?`, `createdAt?`.
 - [`getCommunicationFromDraft(...)`](src/communication-draft.ts)
-  - Returns the current FHIR `Communication` being edited.
 - [`isCommunicationDraftReady(...)`](src/communication-draft.ts)
-  - Checks whether the draft already has at least one payload.
 - [`addFhirResourceToDraft(...)`](src/communication-draft.ts)
-  - Appends a concrete FHIR resource/document to the draft.
 - [`addClaimsResourceToDraft(...)`](src/communication-draft.ts)
-  - Appends a claims-only pseudo-resource to the draft.
 - [`createOutboxJobFromDraft(...)`](src/communication-draft.ts)
-  - Freezes the draft into a transport-oriented outbox job with prebuilt batch envelope.
 - [`updateOutboxJobStatus(...)`](src/communication-draft.ts)
-  - Moves an outbox job through `draft`, `ready`, `submitting`, `sent`, `completed`, `failed`, or `error-retryable`.
 - [`OutboxJob`](src/communication-draft.ts)
-  - Generic outbox job shape with `payload` and `envelope`.
 - [`CommunicationOutboxJob`](src/communication-draft.ts)
-  - First concrete specialization where the payload is a FHIR `Communication`.
 - [`IOutboxRepository`](src/communication-outbox.ts)
-  - Runtime-neutral repository contract for drafts and outbox jobs.
 - [`OutboxRepositoryMemory`](src/communication-outbox.ts)
-  - Memory-backed baseline implementation for tests, demos, and local runtimes.
 
 ### High-level document facade
 
 - [`getDocumentFromCommunication(...)`](src/communication-document-facade.ts)
-  - Resolves direct attachment vs embedded `DocumentReference`.
 - [`createFhirDocumentFacade(...)`](src/communication-document-facade.ts)
-  - Exposes `getBundle()`, `getSections()`, `getResources(resourceType?)`, `getByDates(...)`, `getContainingTextOrDisplay(...)`.
 - [`createCommunicationFacade()`](src/communication-document-facade.ts)
-  - Exposes `getDocument(...)` and `getFhirDocument(...)`.
 
 ### Vital signs
 
@@ -176,8 +392,8 @@ Consent precedence implemented by the shared model:
 - [`createBloodPressureObservation(...)`](src/vital-signs.ts)
 - [`createVitalSignsFacade(...)`](src/vital-signs.ts)
 
-### Documentation rule
+## Documentation Rule
 
 - JSDoc on exported code is canonical.
-- README entries should link to source and summarize the main parameters.
-- New public exports should be documented in code first and then added here.
+- README should explain the business flows first.
+- Runtime routing details belong in node/front runtime docs, not in this package.
