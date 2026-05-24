@@ -3,6 +3,7 @@
 export * from './actor-model.js';
 export * from './bootstrap-facade.js';
 export * from './communication-bundle-contracts.js';
+export * from './consent-access.js';
 export * from './communication-draft.js';
 export * from './communication-document-facade.js';
 export * from './communication-outbox.js';
