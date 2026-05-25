@@ -43,6 +43,131 @@ The most important real initialization steps are:
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
 
+## Documentation And SDK Usage Rules
+
+These rules are mandatory for new docs, examples, tests, and AI-generated code.
+
+### 1. Start from semantic variables, not wire payloads
+
+Teach integrations from variables the caller already understands, for example:
+
+- `individualDidWeb`
+- `emailProfessional`
+- `emailControllerOrg`
+- `emailControllerIndividual`
+- `emailRelatedPerson`
+- `vpToken`
+- `controllerDid`
+- `controllerSameAs`
+- `publicSignKey`
+- `publicKeys`
+
+Only after that should docs show:
+
+- builder/helper
+- SDK method
+- runtime request
+
+Never start a `101` by teaching raw GW request bodies.
+
+### 2. Prefer builders/helpers over hand-shaped nested objects
+
+If a value can be built by a helper, show the helper:
+
+- `buildControllerBindingInput(...)`
+- `buildOrganizationActivationRequest(...)`
+- `buildIndividualDidWeb(...)`
+- `createRelationshipChannelInvitationInput(...)`
+
+Do not teach callers to hand-shape:
+
+- `controller.publicKeyJwk`
+- `controller.jwks`
+- nested `body.data[0].resource.meta.claims`
+
+unless the document is explicitly a low-level wire-format reference.
+
+### 3. Use canonical names
+
+Canonical subject and actor naming in docs/examples:
+
+- subject DID: `individualDidWeb`
+- professional email: `emailProfessional`
+- organization controller email: `emailControllerOrg`
+- individual controller email: `emailControllerIndividual`
+- related person email: `emailRelatedPerson`
+
+Legacy aliases may remain in code only for compatibility. They should not be
+the names used to teach new integrations.
+
+### 4. Do not hardcode semantic enums inline when shared constants exist
+
+Prefer shared constants/types such as:
+
+- `HealthcareActorRoles`
+- `HealthcareConsentPurposes`
+- `RelationshipAccessActorKinds`
+- `RelationshipEnrollmentChannels`
+- `RelationshipSubjectKinds`
+- `RelationshipOtpDeliveryChannels`
+
+Avoid new examples that start from raw literals such as:
+
+- `'professional'`
+- `'related-person'`
+- `'phone'`
+- `'email'`
+- `'TREAT'`
+- `'CARE'`
+
+unless the snippet is documenting the literal contract itself.
+
+### 5. Do not hand-invent a subject DID
+
+Use `buildIndividualDidWeb(...)` when the caller has:
+
+- provider organization DID
+- local subject identifier
+
+Do not document arbitrary manually concatenated `did:web` strings as the
+recommended path.
+
+### 6. Separate business flow from runtime shape
+
+The `101` should explain:
+
+1. what the user is trying to do
+2. which variables they already have
+3. which helper normalizes them
+4. which SDK method executes the flow
+5. what identifier/result comes back for the next step
+
+The raw request/response body shape is secondary reference material.
+
+### 7. Explain where each variable comes from
+
+Every major step should state the origin of its inputs:
+
+- form field
+- directory entry
+- previous SDK call result
+- GW route context
+- identity bootstrap output
+- ICA proof / token exchange output
+
+If the reader cannot tell where a value comes from, the example is incomplete.
+
+### 8. Tests and examples are reference sources, not the first teaching layer
+
+Shared examples and tests are important, but the primary `101` narrative must
+still explain:
+
+- why a variable exists
+- how it is obtained
+- why a helper is used
+
+Do not replace explanation with fixture imports alone.
+
 ## Reading Rule
 
 For every step below, read in this order:
@@ -144,6 +269,12 @@ Where the data comes from:
 - `offerId`
   comes from the previous accepted response of the start/activation phase
 
+Common mistakes to avoid:
+
+- teaching `controller.publicKeyJwk` as if it were the caller's starting point
+- inlining a full `_activate` body in app code
+- mixing controller-person keys with technical DCR/device keys
+
 ## 2. Employee Creation And Employee Activation
 
 Goal:
@@ -208,6 +339,12 @@ Where the data comes from:
 - `offerId`
   comes from the result of the start/bootstrap step
 
+Common mistakes to avoid:
+
+- describing this flow as `individual _activate`
+- documenting host-scoped activation semantics for individual bootstrap
+- inventing the subject DID by hand instead of treating it as an output of the hosted provider lineage
+
 ## 4. Permission Creation, Edit, Deactivation, And Views
 
 Goal:
@@ -236,7 +373,7 @@ Node runtime helper:
 
 Where the data comes from:
 
-- `subject`
+- `individualDidWeb`
   comes from the individual subject DID
 - actor identity
   comes from the professional or related-person identity
@@ -246,6 +383,11 @@ Where the data comes from:
   must use shared purpose constants
 - `sections`
   must use shared section descriptors from healthcare constants
+
+Common mistakes to avoid:
+
+- using legacy aliases like `EXAMPLE_CONSENT_ACCESS_SUBJECT` as the teaching name
+- hardcoding raw purpose/role/channel literals when shared constants already exist
 
 ## 5. Related Person / Professional Invitation And Acceptance
 
