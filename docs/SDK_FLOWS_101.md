@@ -170,6 +170,15 @@ Goal:
 - create an individual/family subject organization
 - confirm the order/offer
 
+Important semantic and runtime split:
+
+- this is not legal-organization activation
+- it does not use `_activate`
+- today the runtime shape is:
+  1. start individual/family registration through tenant `_batch`
+  2. poll until accepted response includes `offerId`
+  3. confirm the returned order through tenant `_batch`
+
 Open these files first:
 
 - [individual-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/individual-controller.ts:1)
