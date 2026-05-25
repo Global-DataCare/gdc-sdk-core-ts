@@ -213,3 +213,10 @@ export type {
   RelationshipPinVerifyInput,
   RelationshipLocalKeyEnvelope,
 } from 'gdc-common-utils-ts/models/relationship-access';
+
+export {
+  RelationshipEnrollmentChannels,
+  RelationshipSubjectKinds,
+  RelationshipAccessActorKinds,
+  RelationshipOtpDeliveryChannels,
+} from 'gdc-common-utils-ts/models/relationship-access';

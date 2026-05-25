@@ -250,21 +250,36 @@ import {
   createRelationshipChannelInvitationInput,
   createRelationshipChannelOtpStartInput,
   createRelationshipPinSetInput,
+  RelationshipAccessActorKinds,
+  RelationshipEnrollmentChannels,
+  RelationshipOtpDeliveryChannels,
+  RelationshipSubjectKinds,
   type RelationshipChannelInvitationInput,
   type RelationshipChannelOtpStartInput,
   type RelationshipPinSetInput,
 } from 'gdc-sdk-core-ts';
+import {
+  buildIndividualDidWeb,
+  HealthcareActorRoles,
+  HealthcareConsentPurposes,
+} from 'gdc-common-utils-ts';
 
 const tenantId = 'acme-id';
 const jurisdiction = 'ES';
 const sector = 'health-care';
-const subjectId = 'did:web:provider.example.org:individual:subject-001';
-const actorKind = 'professional';
-const actorIdentifier = 'doctor@example.org';
-const actorRole = 'ISCO-08|2211';
-const deliveryChannel = 'phone';
-const deliveryTarget = '+34600111222';
-const purpose = 'TREAT';
+const providerOrganizationDid = subjectProfile.organizationDid;
+const subjectLocalId = subjectProfile.subjectId;
+const subjectId = buildIndividualDidWeb({
+  organizationDidWeb: providerOrganizationDid,
+  subjectId: subjectLocalId,
+});
+const professionalEmail = professionalDirectoryEntry.email;
+const actorKind = RelationshipAccessActorKinds.Professional;
+const actorIdentifier = professionalEmail;
+const actorRole = HealthcareActorRoles.Physician;
+const deliveryChannel = RelationshipEnrollmentChannels.Phone;
+const deliveryTarget = professionalDirectoryEntry.phone;
+const purpose = HealthcareConsentPurposes.Treatment;
 const phonePinOptional = false;
 
 const invitationInput: RelationshipChannelInvitationInput = {
@@ -272,7 +287,7 @@ const invitationInput: RelationshipChannelInvitationInput = {
   jurisdiction,
   sector,
   subjectId,
-  subjectKind: 'person',
+  subjectKind: RelationshipSubjectKinds.Person,
   actorKind,
   actorIdentifier,
   actorRole,
@@ -289,7 +304,7 @@ const invitationId = 'rel-invite-001';
 
 const otpStartInput: RelationshipChannelOtpStartInput = {
   invitationId,
-  deliveryChannel: 'sms',
+  deliveryChannel: RelationshipOtpDeliveryChannels.Sms,
   locale: 'es-ES',
 };
 
@@ -318,7 +333,7 @@ Where those variables come from:
 - `tenantId`, `jurisdiction`, `sector`
   come from the selected GW tenant route context
 - `subjectId`
-  comes from the target individual/subject DID
+  should be built with `buildIndividualDidWeb(...)` from the provider/subject identifiers you already have
 - `actorKind`, `actorIdentifier`, `actorRole`
   come from the invited professional or related person
 - `deliveryChannel`, `deliveryTarget`
