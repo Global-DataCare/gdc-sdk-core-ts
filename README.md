@@ -250,23 +250,83 @@ import {
   createRelationshipChannelInvitationInput,
   createRelationshipChannelOtpStartInput,
   createRelationshipPinSetInput,
+  type RelationshipChannelInvitationInput,
+  type RelationshipChannelOtpStartInput,
+  type RelationshipPinSetInput,
 } from 'gdc-sdk-core-ts';
-import {
-  EXAMPLE_RELATIONSHIP_CHANNEL_INVITATION_INPUT,
-  EXAMPLE_RELATIONSHIP_CHANNEL_OTP_START_INPUT,
-  EXAMPLE_RELATIONSHIP_PIN_SET_INPUT,
-} from 'gdc-common-utils-ts/examples/relationship-access';
 
-const invitation = createRelationshipChannelInvitationInput(
-  EXAMPLE_RELATIONSHIP_CHANNEL_INVITATION_INPUT,
-);
+const tenantId = 'acme-id';
+const jurisdiction = 'ES';
+const sector = 'health-care';
+const subjectId = 'did:web:provider.example.org:individual:subject-001';
+const actorKind = 'professional';
+const actorIdentifier = 'doctor@example.org';
+const actorRole = 'ISCO-08|2211';
+const deliveryChannel = 'phone';
+const deliveryTarget = '+34600111222';
+const purpose = 'TREAT';
+const phonePinOptional = false;
 
-const otpStart = createRelationshipChannelOtpStartInput(
-  EXAMPLE_RELATIONSHIP_CHANNEL_OTP_START_INPUT,
-);
+const invitationInput: RelationshipChannelInvitationInput = {
+  tenantId,
+  jurisdiction,
+  sector,
+  subjectId,
+  subjectKind: 'person',
+  actorKind,
+  actorIdentifier,
+  actorRole,
+  deliveryChannel,
+  deliveryTarget,
+  purpose,
+  relationshipLabel: 'primary-physician',
+  phonePinOptional,
+};
 
-const pinSet = createRelationshipPinSetInput(EXAMPLE_RELATIONSHIP_PIN_SET_INPUT);
+const invitation = createRelationshipChannelInvitationInput(invitationInput);
+
+const invitationId = 'rel-invite-001';
+
+const otpStartInput: RelationshipChannelOtpStartInput = {
+  invitationId,
+  deliveryChannel: 'sms',
+  locale: 'es-ES',
+};
+
+const otpStart = createRelationshipChannelOtpStartInput(otpStartInput);
+
+const challengeId = 'otp-challenge-001';
+const pin = '482915';
+
+const pinSetInput: RelationshipPinSetInput = {
+  invitationId,
+  challengeId,
+  channel: deliveryChannel,
+  pin,
+  pinConfirmation: pin,
+  policy: {
+    minLength: 6,
+    numericOnly: true,
+  },
+};
+
+const pinSet = createRelationshipPinSetInput(pinSetInput);
 ```
+
+Where those variables come from:
+
+- `tenantId`, `jurisdiction`, `sector`
+  come from the selected GW tenant route context
+- `subjectId`
+  comes from the target individual/subject DID
+- `actorKind`, `actorIdentifier`, `actorRole`
+  come from the invited professional or related person
+- `deliveryChannel`, `deliveryTarget`
+  come from the chosen channel for enrollment
+- `invitationId`, `challengeId`
+  come from the backend after creating the invitation and starting OTP
+- `pin`
+  comes from the invitee during channel enrollment
 
 ## API Index
 
