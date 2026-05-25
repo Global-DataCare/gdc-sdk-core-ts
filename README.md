@@ -24,6 +24,35 @@ This package is the shared business-contract layer for all of those actors. It
 does not execute runtime calls, but it defines or normalizes the payloads and
 evaluations they all depend on.
 
+## Start Here
+
+If you are new and need to see real SDK initialization and real method usage,
+open these documents in this order:
+
+- [docs/SDK_FLOWS_101.md](./docs/SDK_FLOWS_101.md)
+  Business-flow map from actor split to consent, invitation, import, and SMART.
+- [../gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
+  Real backend initialization with `initializeCommunicationIdentityFromSeed(...)`,
+  `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
+- [../gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+  Real frontend/native initialization with `new ClientSDK(...)`,
+  `initializeSession(...)`, provider discovery, and profile/session bootstrap.
+
+Important:
+
+- `gdc-sdk-core-ts` does not initialize a runtime client by itself.
+- Runtime initialization lives in `gdc-sdk-node-ts` and `gdc-sdk-front-ts`.
+- Shared payload shapes and examples live in `gdc-common-utils-ts`.
+
+Shared example files to open while reading those guides:
+
+- [../gdc-common-utils-ts/src/examples/shared.ts](../gdc-common-utils-ts/src/examples/shared.ts)
+- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
+- [../gdc-common-utils-ts/src/examples/individual-controller.ts](../gdc-common-utils-ts/src/examples/individual-controller.ts)
+- [../gdc-common-utils-ts/src/examples/professional.ts](../gdc-common-utils-ts/src/examples/professional.ts)
+- [../gdc-common-utils-ts/src/examples/frontend-session.ts](../gdc-common-utils-ts/src/examples/frontend-session.ts)
+- [../gdc-common-utils-ts/src/examples/relationship-access.ts](../gdc-common-utils-ts/src/examples/relationship-access.ts)
+
 ## Flow Families
 
 The SDK documentation must cover these families from the start:
