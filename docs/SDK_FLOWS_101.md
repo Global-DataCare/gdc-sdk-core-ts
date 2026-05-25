@@ -114,6 +114,7 @@ Open these files first:
 
 - [organization-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/organization-controller.ts:1)
 - [shared.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/shared.ts:1)
+- [activation-request.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/utils/activation-request.ts:1)
 
 Main SDK entry:
 
@@ -127,8 +128,17 @@ Where the data comes from:
 
 - `vpToken`
   comes from the ICA or trust/bootstrap proof flow
-- `controller`
-  comes from the controller identity binding material; see `EXAMPLE_CONTROLLER_BINDING`
+- `controllerDid`
+  comes from the public controller/person DID
+- `controllerSameAs`
+  comes from the public alias, commonly a `mailto:`
+- `publicSignKey`
+  comes from the controller signing key you want GW to publish or bind
+- `publicKeys`
+  comes from the auxiliary public keys, typically DidComm encryption keys
+- `controllerBinding`
+  should be built with `buildControllerBindingInput(...)`, not hand-shaped as
+  `controller.publicKeyJwk` / `controller.jwks`
 - additional organization claims
   come from organization registration inputs such as alternate name, legal name, tax id, and provider URL
 - `offerId`
