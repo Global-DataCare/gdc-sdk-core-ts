@@ -221,8 +221,8 @@ import {
   type ConsentCoverageRequest,
 } from 'gdc-sdk-core-ts';
 import {
-  EXAMPLE_CONSENT_ACCESS_PROVIDER_EMAIL,
-  EXAMPLE_CONSENT_ACCESS_SUBJECT,
+  EXAMPLE_EMAIL_PROFESSIONAL,
+  EXAMPLE_INDIVIDUAL_DID_WEB,
 } from 'gdc-common-utils-ts/examples/consent-access';
 import {
   HealthcareActorRoles,
@@ -231,8 +231,8 @@ import {
 } from 'gdc-common-utils-ts/constants/healthcare';
 
 const request: ConsentCoverageRequest = {
-  subject: EXAMPLE_CONSENT_ACCESS_SUBJECT,
-  actor: { actorKind: 'professional', email: EXAMPLE_CONSENT_ACCESS_PROVIDER_EMAIL },
+  subject: EXAMPLE_INDIVIDUAL_DID_WEB,
+  actor: { actorKind: 'professional', email: EXAMPLE_EMAIL_PROFESSIONAL },
   actorRole: HealthcareActorRoles.Physician,
   purpose: HealthcareConsentPurposes.Treatment,
   sections: [HealthcareBasicSections.HistoryOfMedicationUse.claim],
@@ -269,13 +269,13 @@ const jurisdiction = 'ES';
 const sector = 'health-care';
 const providerOrganizationDid = subjectProfile.organizationDid;
 const subjectLocalId = subjectProfile.subjectId;
-const subjectId = buildIndividualDidWeb({
+const individualDidWeb = buildIndividualDidWeb({
   organizationDidWeb: providerOrganizationDid,
   subjectId: subjectLocalId,
 });
-const professionalEmail = professionalDirectoryEntry.email;
+const emailProfessional = professionalDirectoryEntry.email;
 const actorKind = RelationshipAccessActorKinds.Professional;
-const actorIdentifier = professionalEmail;
+const actorIdentifier = emailProfessional;
 const actorRole = HealthcareActorRoles.Physician;
 const deliveryChannel = RelationshipEnrollmentChannels.Phone;
 const deliveryTarget = professionalDirectoryEntry.phone;
@@ -286,7 +286,7 @@ const invitationInput: RelationshipChannelInvitationInput = {
   tenantId,
   jurisdiction,
   sector,
-  subjectId,
+  subjectId: individualDidWeb,
   subjectKind: RelationshipSubjectKinds.Person,
   actorKind,
   actorIdentifier,
@@ -332,7 +332,7 @@ Where those variables come from:
 
 - `tenantId`, `jurisdiction`, `sector`
   come from the selected GW tenant route context
-- `subjectId`
+- `individualDidWeb`
   should be built with `buildIndividualDidWeb(...)` from the provider/subject identifiers you already have
 - `actorKind`, `actorIdentifier`, `actorRole`
   come from the invited professional or related person
