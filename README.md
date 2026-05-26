@@ -64,6 +64,9 @@ The SDK documentation must cover these families from the start:
 - activate organization from ICA proof
 - confirm organization order / offer
 - prepare legal organization controller bootstrap payloads
+- always declare service capabilities during legal-organization activation
+- use `orgControllerDid` as the teaching name for the controller DID
+- prefer `organizationActivation` as the local activation builder/result name in examples
 
 Primary reusable examples:
 
