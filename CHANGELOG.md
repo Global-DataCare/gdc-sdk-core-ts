@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-05-25
+
+### Changed
+- Switched cross-repository README links to GitHub URLs so the published npm package documentation works outside the local workspace checkout.
+
+### Testing
+- README/doc-only release; runtime surface unchanged from `0.3.0`.
+
 ## [0.3.0] - 2026-05-25
 
 ### Added
