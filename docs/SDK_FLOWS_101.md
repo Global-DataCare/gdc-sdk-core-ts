@@ -46,6 +46,15 @@ The most important real initialization steps are:
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
 
+Initialization split to keep explicit:
+
+- `appId` / `appVersion`
+  identify the integrating app towards GW CORE
+- technical communication profile id
+  identifies the local device/channel/runtime that owns transport keys
+- actor DIDs
+  identify human/domain actors
+
 ## Documentation And SDK Usage Rules
 
 These rules are mandatory for new docs, examples, tests, and AI-generated code.
