@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-05-26
+
+### Added
+- Added the clearer public alias `createOrganizationActivation(...)` alongside the existing compatibility builder `createOrganizationActivationDraft(...)`.
+- Added the shared `OrganizationActivationInput` export for SDK consumers that want one canonical activation contract.
+
+### Changed
+- Updated onboarding docs and examples to teach:
+  - `organizationActivation` as the local activation builder/result name
+  - mandatory legal-organization service capabilities during `_activate`
+  - `orgControllerDid` as the default controller DID teaching name
+- Updated dependency target to `gdc-common-utils-ts@^1.7.0`.
+
+### Testing
+- `npm run build`
+- `npm test`
+
 ## [0.3.1] - 2026-05-25
 
 ### Changed

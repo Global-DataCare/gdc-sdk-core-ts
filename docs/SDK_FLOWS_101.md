@@ -92,6 +92,27 @@ Do not teach callers to hand-shape:
 
 unless the document is explicitly a low-level wire-format reference.
 
+### 2.1 Activation capability naming
+
+Use these names consistently:
+
+- SDK builder API: `serviceCapabilities`
+- persisted activation claim: `org.schema.Service.serviceType`
+- frontend UX/profile layer: `facets`
+
+Do not mix them.
+
+`serviceCapabilities` is the typed SDK input used while preparing `_activate`.
+It is serialized into the persisted claim `org.schema.Service.serviceType`.
+Frontend facets are a separate UI/runtime interpretation layer and must not be
+taught as if they were the persisted activation contract.
+
+Legal-organization onboarding rule:
+
+- every onboarding example must include service capabilities
+- those capabilities are mandatory business input for `_activate`
+- do not teach legal-organization activation as if capabilities were optional
+
 ### 3. Use canonical names
 
 Canonical subject and actor naming in docs/examples:
@@ -245,9 +266,9 @@ Goal:
 
 Open these files first:
 
-- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
-- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
-- [activation-request.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/utils/activation-request.ts)
+- [organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
+- [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
+- [activation-request.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/utils/activation-request.ts)
 
 Main SDK entry:
 
@@ -261,7 +282,7 @@ Where the data comes from:
 
 - `vpToken`
   comes from the ICA or trust/bootstrap proof flow
-- `controllerDid`
+- `orgControllerDid`
   comes from the public controller/person DID
 - `controllerSameAs`
   comes from the public alias, commonly a `mailto:`
@@ -272,6 +293,8 @@ Where the data comes from:
 - `controllerBinding`
   should be built with `buildControllerBindingInput(...)`, not hand-shaped as
   `controller.publicKeyJwk` / `controller.jwks`
+- `organizationActivation`
+  is the recommended local builder/result variable name in examples
 - additional organization claims
   come from organization registration inputs such as alternate name, legal name, tax id, and provider URL
 - `offerId`
