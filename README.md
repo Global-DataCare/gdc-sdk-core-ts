@@ -31,10 +31,10 @@ open these documents in this order:
 
 - [docs/SDK_FLOWS_101.md](./docs/SDK_FLOWS_101.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
-- [../gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
-  Real backend initialization with `initializeCommunicationIdentityFromSeed(...)`,
+- [../gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](../gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md)
+  Real backend initialization with `initializeCommunicationIdentity(...)`,
   `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
-- [../gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+- [../gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](../gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md)
   Real frontend/native initialization with `new ClientSDK(...)`,
   `initializeSession(...)`, provider discovery, and profile/session bootstrap.
 
@@ -52,6 +52,8 @@ Shared example files to open while reading those guides:
 - [../gdc-common-utils-ts/src/examples/professional.ts](../gdc-common-utils-ts/src/examples/professional.ts)
 - [../gdc-common-utils-ts/src/examples/frontend-session.ts](../gdc-common-utils-ts/src/examples/frontend-session.ts)
 - [../gdc-common-utils-ts/src/examples/relationship-access.ts](../gdc-common-utils-ts/src/examples/relationship-access.ts)
+- [../gdc-common-utils-ts/src/examples/lifecycle.ts](../gdc-common-utils-ts/src/examples/lifecycle.ts)
+- [../gdc-common-utils-ts/docs/LIFECYCLE_101.md](../gdc-common-utils-ts/docs/LIFECYCLE_101.md)
 
 ## Flow Families
 
@@ -107,9 +109,18 @@ Primary reusable examples:
 
 - create/grant permissions
 - edit or replace permissions
-- deactivate/revoke permissions
+- enable / disable / delete permissions
 - grouped permission views for controller UX
 - permission-request notifications and lookup
+
+Canonical lifecycle naming for all SDK-facing docs and examples:
+
+- `enable`
+- `disable`
+- `delete`
+
+Do not teach new integrations with mixed public naming such as `revoke`,
+`suspend`, or `purge` when the intended API concept is the common lifecycle.
 
 ### Clinical data contribution and retrieval
 
@@ -269,7 +280,7 @@ const jurisdiction = 'ES';
 const sector = 'health-care';
 const providerOrganizationDid = subjectProfile.organizationDid;
 const subjectLocalId = subjectProfile.subjectId;
-const individualDidWeb = buildIndividualDidWeb({
+const subjectDid = buildIndividualDidWeb({
   organizationDidWeb: providerOrganizationDid,
   subjectId: subjectLocalId,
 });
@@ -286,7 +297,7 @@ const invitationInput: RelationshipChannelInvitationInput = {
   tenantId,
   jurisdiction,
   sector,
-  subjectId: individualDidWeb,
+  subjectId: subjectDid,
   subjectKind: RelationshipSubjectKinds.Person,
   actorKind,
   actorIdentifier,
@@ -332,7 +343,7 @@ Where those variables come from:
 
 - `tenantId`, `jurisdiction`, `sector`
   come from the selected GW tenant route context
-- `individualDidWeb`
+- `subjectDid`
   should be built with `buildIndividualDidWeb(...)` from the provider/subject identifiers you already have
 - `actorKind`, `actorIdentifier`, `actorRole`
   come from the invited professional or related person

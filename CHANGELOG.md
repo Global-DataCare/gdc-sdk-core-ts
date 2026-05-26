@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-05-25
+
+### Added
+- Added shared host application identity helpers in `src/app-identity.ts`:
+  - `DEFAULT_APP_VERSION`
+  - `resolveAppInfo(...)`
+  - `normalizeAppId(...)`
+  - `normalizeAppVersion(...)`
+  - `buildAppHeaders(...)`
+- Added tests for the new app identity normalization behavior in:
+  - `tests/app-identity.test.mjs`
+
+### Changed
+- Updated `AppInfo` so GW CORE host app identity is explicit and canonical:
+  - `appId` is mandatory
+  - `appVersion` replaces the old ambiguous `version` field
+- Aligned documentation with the current shared naming and initialization rules:
+  - `initializeCommunicationIdentity(...)` as the canonical bootstrap helper name
+  - `subjectDid` as the default semantic subject variable name
+  - canonical lifecycle naming `enable / disable / delete`
+- Updated shared dependency consumption target to `gdc-common-utils-ts@^1.6.0`.
+
+### Testing
+- `npm run build` passes with the new app identity surface exported.
+
 ## [0.2.1] - 2026-05-24
 
 ### Added

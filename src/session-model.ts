@@ -2,10 +2,32 @@
 
 export type AppType = 'Organization' | 'Family';
 
+/**
+ * Host application identity required by GW CORE.
+ *
+ * `appId` is mandatory and should be stable for the app/runtime integrating the
+ * SDK. It may be provided either as a reverse-DNS identifier
+ * (`es.globaldatacare.portal`) or as a URL/domain
+ * (`https://portal.globaldatacare.es/app`), in which case the SDK normalizes it
+ * to reverse-DNS using the hostname.
+ *
+ * `appVersion` is optional on input. SDK runtimes resolve it to `v1.0` when it
+ * is omitted.
+ *
+ * @example
+ * ```ts
+ * const appInfo: AppInfo = {
+ *   appId: 'https://portal.globaldatacare.es/app',
+ *   appType: 'Family',
+ *   sector: 'health-care',
+ * };
+ * ```
+ */
 export type AppInfo = {
+  appId: string;
+  appVersion?: string;
   appType: AppType;
   sector: string;
-  version?: string;
 };
 
 /**
