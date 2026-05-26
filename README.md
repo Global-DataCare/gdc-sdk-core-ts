@@ -31,10 +31,10 @@ open these documents in this order:
 
 - [docs/SDK_FLOWS_101.md](./docs/SDK_FLOWS_101.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
-- [../gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](../gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
   Real backend initialization with `initializeCommunicationIdentity(...)`,
   `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
-- [../gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](../gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
   Real frontend/native initialization with `new ClientSDK(...)`,
   `initializeSession(...)`, provider discovery, and profile/session bootstrap.
 
@@ -46,14 +46,14 @@ Important:
 
 Shared example files to open while reading those guides:
 
-- [../gdc-common-utils-ts/src/examples/shared.ts](../gdc-common-utils-ts/src/examples/shared.ts)
-- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
-- [../gdc-common-utils-ts/src/examples/individual-controller.ts](../gdc-common-utils-ts/src/examples/individual-controller.ts)
-- [../gdc-common-utils-ts/src/examples/professional.ts](../gdc-common-utils-ts/src/examples/professional.ts)
-- [../gdc-common-utils-ts/src/examples/frontend-session.ts](../gdc-common-utils-ts/src/examples/frontend-session.ts)
-- [../gdc-common-utils-ts/src/examples/relationship-access.ts](../gdc-common-utils-ts/src/examples/relationship-access.ts)
-- [../gdc-common-utils-ts/src/examples/lifecycle.ts](../gdc-common-utils-ts/src/examples/lifecycle.ts)
-- [../gdc-common-utils-ts/docs/LIFECYCLE_101.md](../gdc-common-utils-ts/docs/LIFECYCLE_101.md)
+- [gdc-common-utils-ts/src/examples/shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
+- [gdc-common-utils-ts/src/examples/organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
+- [gdc-common-utils-ts/src/examples/individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
+- [gdc-common-utils-ts/src/examples/professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
+- [gdc-common-utils-ts/src/examples/frontend-session.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/frontend-session.ts)
+- [gdc-common-utils-ts/src/examples/relationship-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/relationship-access.ts)
+- [gdc-common-utils-ts/src/examples/lifecycle.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/lifecycle.ts)
+- [gdc-common-utils-ts/docs/LIFECYCLE_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/LIFECYCLE_101.md)
 
 ## Flow Families
 
@@ -67,7 +67,7 @@ The SDK documentation must cover these families from the start:
 
 Primary reusable examples:
 
-- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
+- [gdc-common-utils-ts/src/examples/organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
 
 ### Employee creation and employee invitation
 
@@ -78,7 +78,7 @@ Primary reusable examples:
 
 Primary reusable examples:
 
-- [../gdc-common-utils-ts/src/examples/organization-controller.ts](../gdc-common-utils-ts/src/examples/organization-controller.ts)
+- [gdc-common-utils-ts/src/examples/organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
 
 ### Individual organization bootstrap
 
@@ -88,7 +88,7 @@ Primary reusable examples:
 
 Primary reusable examples:
 
-- [../gdc-common-utils-ts/src/examples/individual-controller.ts](../gdc-common-utils-ts/src/examples/individual-controller.ts)
+- [gdc-common-utils-ts/src/examples/individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
 
 ### Related person and professional access to individual
 
@@ -101,9 +101,9 @@ Primary reusable examples:
 
 Primary reusable examples:
 
-- [../gdc-common-utils-ts/src/examples/related-person.ts](../gdc-common-utils-ts/src/examples/related-person.ts)
-- [../gdc-common-utils-ts/src/examples/professional.ts](../gdc-common-utils-ts/src/examples/professional.ts)
-- [../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
+- [gdc-common-utils-ts/src/examples/related-person.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/related-person.ts)
+- [gdc-common-utils-ts/src/examples/professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
+- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
 
 ### Permission lifecycle
 
@@ -157,7 +157,7 @@ Main helpers:
 
 Reference:
 
-- [../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
+- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
 
 ### 2. Relationship invitation and acceptance
 
