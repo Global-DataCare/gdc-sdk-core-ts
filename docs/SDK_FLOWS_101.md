@@ -22,23 +22,26 @@ If what you need first is:
 
 open these files before reading the rest of this document:
 
-1. [../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
+1. [gdc-sdk-node-ts/docs/SDK_END_TO_END_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_END_TO_END_101.md)
+   Ordered Node backend onboarding with end-to-end flows and copy/paste
+   examples.
+2. [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
    Backend runtime initialization and real GW usage.
-2. [../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+3. [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
    Frontend/native runtime initialization and real app-session usage.
 
 The most important real initialization steps are:
 
 - backend technical identity bootstrap:
-  [initializeCommunicationIdentityFromSeed(...) in gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
+  [initializeCommunicationIdentity(...) in gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - backend runtime client creation:
-  [`new NodeHttpClient(...)` in gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
+  [`new NodeHttpClient(...)` in gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - frontend technical identity bootstrap:
-  [initializeCommunicationIdentityFromSeed(...) in gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+  [initializeCommunicationIdentity(...) in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - frontend SDK creation:
-  [`new ClientSDK(...)` in gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+  [`new ClientSDK(...)` in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - frontend session bootstrap:
-  [`initializeSession(...)` in gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+  [`initializeSession(...)` in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
@@ -51,13 +54,15 @@ These rules are mandatory for new docs, examples, tests, and AI-generated code.
 
 Teach integrations from variables the caller already understands, for example:
 
-- `individualDidWeb`
+- `subjectDid`
+- `professionalDid`
+- `orgControllerDid`
+- `individualControllerDid`
 - `emailProfessional`
 - `emailControllerOrg`
 - `emailControllerIndividual`
 - `emailRelatedPerson`
 - `vpToken`
-- `controllerDid`
 - `controllerSameAs`
 - `publicSignKey`
 - `publicKeys`
@@ -91,7 +96,10 @@ unless the document is explicitly a low-level wire-format reference.
 
 Canonical subject and actor naming in docs/examples:
 
-- subject DID: `individualDidWeb`
+- subject DID: `subjectDid`
+- professional DID: `professionalDid`
+- organization controller DID: `orgControllerDid`
+- individual controller DID: `individualControllerDid`
 - professional email: `emailProfessional`
 - organization controller email: `emailControllerOrg`
 - individual controller email: `emailControllerIndividual`
@@ -179,20 +187,20 @@ For every step below, read in this order:
 
 ## Shared Example Sources
 
-- [shared.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/shared.ts:1)
+- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
   Shared route context, tenant, jurisdiction, sector, controller binding, and
   helper payload builders.
-- [organization-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/organization-controller.ts:1)
+- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
   Organization activation, order/offer, employee creation, employee activation.
-- [individual-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/individual-controller.ts:1)
+- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
   Individual bootstrap, order/offer, consent grant, ingestion, search.
-- [professional.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/professional.ts:1)
+- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
   SMART access, professional roles, section access, scope examples.
-- [related-person.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/related-person.ts:1)
+- [related-person.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/related-person.ts)
   RelatedPerson payload baseline.
-- [consent-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/consent-access.ts:1)
+- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
   Subject, actor, role, jurisdiction, and consent-rule examples.
-- [relationship-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/relationship-access.ts:1)
+- [relationship-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/relationship-access.ts)
   Invitation, OTP, relationship PIN, and local-key-envelope examples.
 
 ## Actor Families
@@ -210,22 +218,22 @@ The flows are different depending on the actor family:
 
 If you are integrating from a backend:
 
-- start with [../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-node-ts/SDK_INTEGRATION_101.md)
+- start with [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - first runtime class to instantiate:
-  [NodeHttpClient](../../gdc-sdk-node-ts/src/node-runtime-client.ts:383)
+  [NodeHttpClient](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/node-runtime-client.ts)
 - role-oriented facades after that:
-  [OrganizationControllerSdk](../../gdc-sdk-node-ts/src/orchestration/organization-controller-sdk.ts:1),
-  [IndividualControllerSdk](../../gdc-sdk-node-ts/src/orchestration/individual-controller-sdk.ts:1),
-  [ProfessionalSdk](../../gdc-sdk-node-ts/src/orchestration/professional-sdk.ts:1)
+  [OrganizationControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/organization-controller-sdk.ts),
+  [IndividualControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-controller-sdk.ts),
+  [ProfessionalSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/professional-sdk.ts)
 
 If you are integrating from a web/native app:
 
-- start with [../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md](../../gdc-sdk-front-ts/SDK_INTEGRATION_101.md)
+- start with [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 - first runtime class to instantiate:
-  [ClientSDK](../../gdc-sdk-front-ts/src/ClientSDK.ts:52)
+  [ClientSDK](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ClientSDK.ts)
 - session/profile runtime after that:
-  [ProfileManager](../../gdc-sdk-front-ts/src/ProfileManager.ts:53),
-  [ProfileRegistry](../../gdc-sdk-front-ts/src/ProfileRegistry.ts:8)
+  [ProfileManager](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ProfileManager.ts),
+  [ProfileRegistry](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ProfileRegistry.ts)
 
 ## 1. Organization Activation
 
@@ -237,17 +245,17 @@ Goal:
 
 Open these files first:
 
-- [organization-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/organization-controller.ts:1)
-- [shared.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/shared.ts:1)
-- [activation-request.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/utils/activation-request.ts:1)
+- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
+- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
+- [activation-request.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/utils/activation-request.ts)
 
 Main SDK entry:
 
-- [createBootstrapFacade(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/bootstrap-facade.ts:97)
+- [createBootstrapFacade(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/bootstrap-facade.ts)
 
 Node runtime entry:
 
-- [confirmLegalOrganizationOrderWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/host-onboarding.ts:47)
+- [confirmLegalOrganizationOrderWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/host-onboarding.ts)
 
 Where the data comes from:
 
@@ -285,13 +293,13 @@ Goal:
 
 Open these files first:
 
-- [organization-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/organization-controller.ts:1)
+- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
 
 Node runtime entries:
 
-- [createOrganizationEmployeeWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/resource-operations.ts:134)
-- [activateEmployeeDeviceWithActivationCodeWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/device-activation.ts:58)
-- [activateEmployeeDeviceWithActivationRequestWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/device-activation.ts:103)
+- [createOrganizationEmployeeWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
+- [activateEmployeeDeviceWithActivationCodeWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/device-activation.ts)
+- [activateEmployeeDeviceWithActivationRequestWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/device-activation.ts)
 
 Where the data comes from:
 
@@ -322,13 +330,13 @@ Important semantic and runtime split:
 
 Open these files first:
 
-- [individual-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/individual-controller.ts:1)
-- [shared.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/shared.ts:1)
+- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
+- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
 
 Node runtime entries:
 
-- [startIndividualOrganizationWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/individual-start.ts:105)
-- [confirmIndividualOrganizationOrderWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/individual-onboarding.ts:44)
+- [startIndividualOrganizationWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/individual-start.ts)
+- [confirmIndividualOrganizationOrderWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/individual-onboarding.ts)
 
 Where the data comes from:
 
@@ -355,25 +363,25 @@ Goal:
 
 Open these files first:
 
-- [consent-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/consent-access.ts:1)
-- [professional.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/professional.ts:1)
-- [individual-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/individual-controller.ts:1)
-- [CONSENT_ACCESS_101.md](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md:1)
+- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
+- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
+- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
+- [CONSENT_ACCESS_101.md](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/docs/CONSENT_ACCESS_101.md)
 
 Shared helpers:
 
-- [groupConsentsForControllerView(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/consent-access.ts:55)
-- [evaluateRequestedAccess(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/consent-access.ts:70)
-- [getMissingPermissions(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/consent-access.ts:83)
-- [buildPermissionRequestCommunication(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/consent-access.ts:102)
+- [groupConsentsForControllerView(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
+- [evaluateRequestedAccess(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
+- [getMissingPermissions(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
+- [buildPermissionRequestCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
 
 Node runtime helper:
 
-- [grantProfessionalAccessWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/resource-operations.ts:310)
+- [grantProfessionalAccessWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
 
 Where the data comes from:
 
-- `individualDidWeb`
+- `subjectDid`
   comes from the individual subject DID
 - actor identity
   comes from the professional or related-person identity
@@ -399,20 +407,20 @@ Goal:
 
 Open these files first:
 
-- [relationship-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/relationship-access.ts:1)
-- [consent-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/consent-access.ts:1)
+- [relationship-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/relationship-access.ts)
+- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
 
 Shared helpers:
 
-- [createRelationshipChannelInvitationInput(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:32)
-- [createRelationshipChannelInvitationSummary(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:56)
-- [createRelationshipChannelOtpStartInput(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:80)
-- [createRelationshipChannelOtpConfirmInput(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:93)
-- [createRelationshipChannelOtpChallengeSummary(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:106)
-- [createRelationshipPinPolicy(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:125)
-- [createRelationshipPinSetInput(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:153)
-- [createRelationshipPinVerifyInput(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:169)
-- [createRelationshipLocalKeyEnvelope(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/relationship-access.ts:183)
+- [createRelationshipChannelInvitationInput(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipChannelInvitationSummary(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipChannelOtpStartInput(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipChannelOtpConfirmInput(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipChannelOtpChallengeSummary(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipPinPolicy(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipPinSetInput(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipPinVerifyInput(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
+- [createRelationshipLocalKeyEnvelope(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/relationship-access.ts)
 
 Where the data comes from:
 
@@ -438,18 +446,18 @@ Goal:
 
 Open these files first:
 
-- [individual-controller.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/individual-controller.ts:1)
-- [shared.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/shared.ts:1)
+- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
+- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
 
 Shared helpers:
 
-- [createCommunicationResource(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/communication-resource-helpers.ts:276)
-- [buildCommunicationBatchMessage(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/communication-resource-helpers.ts:316)
-- [addFhirResourceToCommunication(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-core-ts/src/communication-resource-helpers.ts:365)
+- [createCommunicationResource(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
+- [buildCommunicationBatchMessage(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
+- [addFhirResourceToCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
 
 Node runtime entry:
 
-- [ingestCommunicationAndUpdateIndexWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/resource-operations.ts:225)
+- [ingestCommunicationAndUpdateIndexWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
 
 Where the data comes from:
 
@@ -468,14 +476,14 @@ Goal:
 
 Open these files first:
 
-- [professional.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/professional.ts:1)
-- [consent-access.ts](/Users/fernando/GITS/gdc-workspace/gdc-common-utils-ts/src/examples/consent-access.ts:1)
+- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
+- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
 
 Node runtime entries:
 
-- [requestSmartTokenWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/smart-token.ts:146)
-- [searchClinicalBundleWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/resource-operations.ts:262)
-- [searchLatestIpsWithDeps(...) ](/Users/fernando/GITS/gdc-workspace/gdc-sdk-node-ts/src/resource-operations.ts:293)
+- [requestSmartTokenWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/smart-token.ts)
+- [searchClinicalBundleWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
+- [searchLatestIpsWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
 
 Where the data comes from:
 
