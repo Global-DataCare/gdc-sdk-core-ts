@@ -4,6 +4,7 @@
 import {
   ClaimsServiceSchemaorg,
 } from 'gdc-common-utils-ts/constants/schemaorg';
+import { ActorKinds } from 'gdc-common-utils-ts/constants/actor-session';
 import {
   serializeServiceCapabilityTokens,
   ServiceCapability,
@@ -361,7 +362,7 @@ export function createBootstrapFacade(): BootstrapFacade {
           : undefined;
       return {
         did: input.did,
-        kind: 'organization_controller',
+        kind: ActorKinds.OrganizationController,
         ...(input.sameAs ? { sameAs: input.sameAs } : {}),
         ...(normalizedPublicKeyJwk ? { publicKeyJwk: normalizedPublicKeyJwk } : {}),
         ...(normalizedJwks ? { jwks: normalizedJwks } : {}),

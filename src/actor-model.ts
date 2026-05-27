@@ -1,24 +1,16 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
-export type ActorKind =
-  | 'host_onboarding'
-  | 'organization_controller'
-  | 'organization_employee'
-  | 'individual_controller'
-  | 'individual_member'
-  | 'professional';
+import {
+  ActorCapabilities,
+  ActorKinds,
+} from 'gdc-common-utils-ts/constants/actor-session';
+import type {
+  ActorKind,
+  Capability,
+} from 'gdc-common-utils-ts/models/actor-session';
 
-export type Capability =
-  | 'organization.create_employee'
-  | 'organization.issue_activation_code'
-  | 'organization.request_smart_token'
-  | 'individual.bootstrap'
-  | 'individual.import_ips'
-  | 'individual.generate_digital_twin'
-  | 'consent.grant_professional_access'
-  | 'professional.medication'
-  | 'professional.appointment'
-  | 'professional.request_smart_token';
+export { ActorCapabilities, ActorKinds };
+export type { ActorKind, Capability };
 
 export type ActorSessionDescriptor = {
   actorKinds: ActorKind[];
@@ -56,27 +48,33 @@ export type ActorSessionDescriptorInput = {
 };
 
 const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
-  host_onboarding: [],
-  organization_controller: [
-    'organization.create_employee',
-    'organization.request_smart_token',
+  [ActorKinds.HostOnboarding]: [],
+  [ActorKinds.OrganizationController]: [
+    ActorCapabilities.OrganizationCreateEmployee,
+    ActorCapabilities.OrganizationDisableEmployee,
+    ActorCapabilities.OrganizationPurgeEmployee,
+    ActorCapabilities.OrganizationRequestSmartToken,
   ],
-  organization_employee: [
-    'organization.issue_activation_code',
-    'organization.request_smart_token',
+  [ActorKinds.OrganizationEmployee]: [
+    ActorCapabilities.OrganizationIssueActivationCode,
+    ActorCapabilities.OrganizationRequestSmartToken,
   ],
-  individual_controller: [
-    'individual.bootstrap',
-    'consent.grant_professional_access',
+  [ActorKinds.IndividualController]: [
+    ActorCapabilities.IndividualBootstrap,
+    ActorCapabilities.IndividualDisable,
+    ActorCapabilities.IndividualPurge,
+    ActorCapabilities.IndividualMemberDisable,
+    ActorCapabilities.IndividualMemberPurge,
+    ActorCapabilities.ConsentGrantProfessionalAccess,
   ],
-  individual_member: [
-    'individual.import_ips',
-    'individual.generate_digital_twin',
+  [ActorKinds.IndividualMember]: [
+    ActorCapabilities.IndividualImportIps,
+    ActorCapabilities.IndividualGenerateDigitalTwin,
   ],
-  professional: [
-    'professional.medication',
-    'professional.appointment',
-    'professional.request_smart_token',
+  [ActorKinds.Professional]: [
+    ActorCapabilities.ProfessionalMedication,
+    ActorCapabilities.ProfessionalAppointment,
+    ActorCapabilities.ProfessionalRequestSmartToken,
   ],
 };
 
@@ -126,33 +124,39 @@ export function buildActorSessionDescriptorFromActorFlags(
   const capabilities = new Set<Capability>();
 
   if (input.actorFlags.organizationController) {
-    actorKinds.add('organization_controller');
-    capabilities.add('organization.create_employee');
+    actorKinds.add(ActorKinds.OrganizationController);
+    capabilities.add(ActorCapabilities.OrganizationCreateEmployee);
+    capabilities.add(ActorCapabilities.OrganizationDisableEmployee);
+    capabilities.add(ActorCapabilities.OrganizationPurgeEmployee);
   }
   if (input.actorFlags.organizationEmployee) {
-    actorKinds.add('organization_employee');
-    capabilities.add('organization.issue_activation_code');
+    actorKinds.add(ActorKinds.OrganizationEmployee);
+    capabilities.add(ActorCapabilities.OrganizationIssueActivationCode);
   }
   if (input.actorFlags.individualController) {
-    actorKinds.add('individual_controller');
-    capabilities.add('individual.bootstrap');
-    capabilities.add('consent.grant_professional_access');
+    actorKinds.add(ActorKinds.IndividualController);
+    capabilities.add(ActorCapabilities.IndividualBootstrap);
+    capabilities.add(ActorCapabilities.IndividualDisable);
+    capabilities.add(ActorCapabilities.IndividualPurge);
+    capabilities.add(ActorCapabilities.IndividualMemberDisable);
+    capabilities.add(ActorCapabilities.IndividualMemberPurge);
+    capabilities.add(ActorCapabilities.ConsentGrantProfessionalAccess);
   }
   if (input.actorFlags.individualMember) {
-    actorKinds.add('individual_member');
-    capabilities.add('individual.import_ips');
-    capabilities.add('individual.generate_digital_twin');
+    actorKinds.add(ActorKinds.IndividualMember);
+    capabilities.add(ActorCapabilities.IndividualImportIps);
+    capabilities.add(ActorCapabilities.IndividualGenerateDigitalTwin);
   }
   if (input.actorFlags.professionalPhysician) {
-    actorKinds.add('professional');
-    capabilities.add('professional.appointment');
-    capabilities.add('professional.medication');
-    capabilities.add('professional.request_smart_token');
+    actorKinds.add(ActorKinds.Professional);
+    capabilities.add(ActorCapabilities.ProfessionalAppointment);
+    capabilities.add(ActorCapabilities.ProfessionalMedication);
+    capabilities.add(ActorCapabilities.ProfessionalRequestSmartToken);
   }
   if (input.actorFlags.professionalParamedic) {
-    actorKinds.add('professional');
-    capabilities.add('professional.medication');
-    capabilities.add('professional.request_smart_token');
+    actorKinds.add(ActorKinds.Professional);
+    capabilities.add(ActorCapabilities.ProfessionalMedication);
+    capabilities.add(ActorCapabilities.ProfessionalRequestSmartToken);
   }
 
   return {
