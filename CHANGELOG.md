@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2026-05-27
+
+### Changed
+- Updated shared dependency target to `gdc-common-utils-ts@^1.10.0`.
+- Aligned bootstrap capability tests with the clearer `IndexReader` /
+  `IndexProvider` naming while keeping backward compatibility in the shared
+  package.
+
+### Testing
+- `npm test`
+- `npm run build`
+
 ## [0.3.2] - 2026-05-26
 
 ### Added

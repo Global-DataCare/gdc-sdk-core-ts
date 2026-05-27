@@ -33,10 +33,10 @@ test('bootstrap facade organization activation accumulates service capabilities 
 
   organizationActivation
     .setServiceUrl('https://connector.example.net/acme/cds-es/v1/health-care')
-    .addServiceCapability(ServiceCapability.IndexingProvider)
-    .addServiceCapability(ServiceCapability.IndexingReader)
+    .addServiceCapability(ServiceCapability.IndexProvider)
+    .addServiceCapability(ServiceCapability.IndexReader)
     .addServiceCapability(ServiceCapability.DigitalTwinReader)
-    .addServiceCapability(ServiceCapability.IndexingProvider);
+    .addServiceCapability(ServiceCapability.IndexProvider);
 
   const serviceClaims = organizationActivation.buildServiceClaims();
 
