@@ -217,20 +217,20 @@ For every step below, read in this order:
 
 ## Shared Example Sources
 
-- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
+- [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
   Shared route context, tenant, jurisdiction, sector, controller binding, and
   helper payload builders.
-- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
+- [organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
   Organization activation, order/offer, employee creation, employee activation.
-- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
+- [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
   Individual bootstrap, order/offer, consent grant, ingestion, search.
-- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
+- [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
   SMART access, professional roles, section access, scope examples.
-- [related-person.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/related-person.ts)
+- [related-person.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/related-person.ts)
   RelatedPerson payload baseline.
-- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
+- [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
   Subject, actor, role, jurisdiction, and consent-rule examples.
-- [relationship-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/relationship-access.ts)
+- [relationship-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/relationship-access.ts)
   Invitation, OTP, relationship PIN, and local-key-envelope examples.
 
 ## Actor Families
@@ -325,7 +325,7 @@ Goal:
 
 Open these files first:
 
-- [organization-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/organization-controller.ts)
+- [organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
 
 Node runtime entries:
 
@@ -362,8 +362,8 @@ Important semantic and runtime split:
 
 Open these files first:
 
-- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
-- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
+- [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
+- [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
 
 Node runtime entries:
 
@@ -395,10 +395,10 @@ Goal:
 
 Open these files first:
 
-- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
-- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
-- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
-- [CONSENT_ACCESS_101.md](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/docs/CONSENT_ACCESS_101.md)
+- [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
+- [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
+- [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
+- [CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
 
 Shared helpers:
 
@@ -439,8 +439,8 @@ Goal:
 
 Open these files first:
 
-- [relationship-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/relationship-access.ts)
-- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
+- [relationship-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/relationship-access.ts)
+- [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
 
 Shared helpers:
 
@@ -478,8 +478,8 @@ Goal:
 
 Open these files first:
 
-- [individual-controller.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/individual-controller.ts)
-- [shared.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/shared.ts)
+- [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
+- [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
 
 Shared helpers:
 
@@ -508,8 +508,8 @@ Goal:
 
 Open these files first:
 
-- [professional.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/professional.ts)
-- [consent-access.ts](https://gitlab.dev.accuro.es/idi/espacio-de-datos/global-datacare/gdc-common-utils-ts/-/blob/main/src/examples/consent-access.ts)
+- [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
+- [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
 
 Node runtime entries:
 
