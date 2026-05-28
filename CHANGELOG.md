@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2] - 2026-05-28
+
+### Changed
+- Updated shared dependency target to `gdc-common-utils-ts@^1.11.0`.
+- Kept the core actor/bootstrap surface aligned with the new shared key-binding and JOSE algorithm documentation.
+
+### Testing
+- `npm test`
+- `npm run build`
+
 ## [0.5.1] - 2026-05-27
 
 ### Changed
