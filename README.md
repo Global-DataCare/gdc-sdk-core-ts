@@ -430,6 +430,9 @@ package:
 - [`createStaticDiscoveryFacade(...)`](src/discovery-facade.ts)
 - [`resolveProviderIdentityForSubject(...)`](src/did-resolution-session.ts)
 - [`resolveSmartTokenEndpointForSubject(...)`](src/smart-endpoint-resolver.ts)
+- [`gdc-common-utils-ts/docs/DATASPACE_DISCOVERY_DEFAULTS_101.md`](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/DATASPACE_DISCOVERY_DEFAULTS_101.md)
+  - shared portal/backend bootstrap guide for `defaults-only`,
+    `default-first`, and `internet-first` discovery seeding
 
 Discovery boundary rule:
 

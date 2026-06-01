@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2026-06-01
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.14.0`.
+- Linked the new shared discovery defaults/bootstrap guide so portal/backend
+  implementations can use `default-first` seeding without inventing their own
+  contracts.
+
+### Testing
+- `npm test`
+- `npm run build`
+
 ## [0.6.0] - 2026-06-01
 
 ### Changed
