@@ -34,6 +34,40 @@ export type UniformMutationContract<
   removeX: (container: TContainer, filter: TFilter) => TContainer;
 }>;
 
+export type ConsentOperationMutationSurface = Readonly<{
+  getConsentOperations: (input: CommunicationInput, filter?: ConsentCommunicationOperationFilter) => ConsentCommunicationOperationInput[];
+  setConsentOperations: (
+    input: CommunicationInput,
+    filter: ConsentCommunicationOperationFilter,
+    operations: ConsentCommunicationOperationInput[],
+  ) => CommunicationInput;
+  addConsentOperations: (
+    input: CommunicationInput,
+    operations: ConsentCommunicationOperationInput[],
+  ) => CommunicationInput;
+  enableConsentOperations: (input: CommunicationInput, filter: ConsentCommunicationOperationFilter) => CommunicationInput;
+  disableConsentOperations: (input: CommunicationInput, filter: ConsentCommunicationOperationFilter) => CommunicationInput;
+  removeConsentOperations: (input: CommunicationInput, filter: ConsentCommunicationOperationFilter) => CommunicationInput;
+}>;
+
+export type CommunicationResourceMutationSurface = Readonly<{
+  getCommunicationResources: (communicationOrBundle: FhirResourceLike, filter?: BundleResourceFilter) => FhirResourceLike[];
+  setCommunicationResources: (
+    communicationOrBundle: FhirResourceLike,
+    filter: BundleResourceFilter,
+    resources: FhirResourceLike[],
+    options?: BundleResourceMutationOptions,
+  ) => FhirResourceLike;
+  addCommunicationResources: (
+    communicationOrBundle: FhirResourceLike,
+    resources: FhirResourceLike[],
+    options?: BundleResourceMutationOptions,
+  ) => FhirResourceLike;
+  enableCommunicationResources: (communicationOrBundle: FhirResourceLike, filter: BundleResourceFilter) => FhirResourceLike;
+  disableCommunicationResources: (communicationOrBundle: FhirResourceLike, filter: BundleResourceFilter) => FhirResourceLike;
+  removeCommunicationResources: (communicationOrBundle: FhirResourceLike, filter: BundleResourceFilter) => FhirResourceLike;
+}>;
+
 export type ConsentCommunicationOperationFilter = Readonly<{
   operationIds?: string | string[];
   operationKinds?: ConsentCommunicationOperationKind | ConsentCommunicationOperationKind[];
@@ -255,11 +289,18 @@ export function disableCommunicationResources(
   return setResources(communicationOrBundle, filter, disabled);
 }
 
-export const ConsentOperationMutationContract: UniformMutationContract<
+export const ConsentOperationMutationContract: ConsentOperationMutationSurface & UniformMutationContract<
   CommunicationInput,
   ConsentCommunicationOperationInput,
   ConsentCommunicationOperationFilter
 > = Object.freeze({
+  getConsentOperations,
+  setConsentOperations,
+  addConsentOperations,
+  enableConsentOperations,
+  disableConsentOperations,
+  removeConsentOperations,
+  // Backward-compatible aliases.
   getX: getConsentOperations,
   setX: setConsentOperations,
   addX: addConsentOperations,
@@ -268,13 +309,20 @@ export const ConsentOperationMutationContract: UniformMutationContract<
   removeX: removeConsentOperations,
 });
 
-export const CommunicationResourceMutationContract: UniformMutationContract<
+export const CommunicationResourceMutationContract: CommunicationResourceMutationSurface & UniformMutationContract<
   FhirResourceLike,
   FhirResourceLike,
   BundleResourceFilter,
   BundleResourceMutationOptions,
   BundleResourceMutationOptions
 > = Object.freeze({
+  getCommunicationResources: getResources,
+  setCommunicationResources: setResources,
+  addCommunicationResources: addResources,
+  enableCommunicationResources,
+  disableCommunicationResources,
+  removeCommunicationResources: removeResources,
+  // Backward-compatible aliases.
   getX: getResources,
   setX: setResources,
   addX: addResources,

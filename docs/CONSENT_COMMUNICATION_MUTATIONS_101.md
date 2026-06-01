@@ -5,14 +5,14 @@ clinical resources carried by Communication payloads.
 
 ## Goal
 
-New SDK consumers should always find the same method family:
+New SDK consumers should always find the same semantic method family:
 
-- getX
-- setX
-- addX
-- enableX
-- disableX
-- removeX
+- getConsentOperations / getCommunicationResources
+- setConsentOperations / setCommunicationResources
+- addConsentOperations / addCommunicationResources
+- enableConsentOperations / enableCommunicationResources
+- disableConsentOperations / disableCommunicationResources
+- removeConsentOperations / removeCommunicationResources
 
 This is available for:
 
@@ -40,6 +40,11 @@ Supporting helpers:
 - resources: `getResources`, `setResources`, `addResources`, `removeResources`,
   `enableCommunicationResources`, `disableCommunicationResources`
 
+Compatibility aliases:
+
+- `getX`, `setX`, `addX`, `enableX`, `disableX`, `removeX`
+- kept only for backward compatibility with existing callers
+
 ## Consent operation filters
 
 `ConsentCommunicationOperationFilter` supports optional selectors:
@@ -62,7 +67,7 @@ Resource mutation methods use `BundleResourceFilter`:
 
 ## Lifecycle tagging for resources
 
-`enableX` and `disableX` for resources do not delete data.
+`enableCommunicationResources` and `disableCommunicationResources` do not delete data.
 
 They update resource `meta.tag` with:
 
@@ -81,11 +86,11 @@ const selected = ConsentOperationMutationContract.getX(commInput, {
   sections: ['LOINC|48765-2'],
 });
 
-const next = ConsentOperationMutationContract.disableX(commInput, {
+const next = ConsentOperationMutationContract.disableConsentOperations(commInput, {
   operationKinds: [ConsentCommunicationOperationKinds.Add],
 });
 
-const cleaned = ConsentOperationMutationContract.removeX(next, {
+const cleaned = ConsentOperationMutationContract.removeConsentOperations(next, {
   targetKinds: ['organization'],
 });
 ```
@@ -97,15 +102,15 @@ import {
   CommunicationResourceMutationContract,
 } from 'gdc-sdk-core-ts';
 
-const current = CommunicationResourceMutationContract.getX(bundleOrCommunication, {
+const current = CommunicationResourceMutationContract.getCommunicationResources(bundleOrCommunication, {
   sections: ['LOINC|8716-3'],
 });
 
-const disabled = CommunicationResourceMutationContract.disableX(bundleOrCommunication, {
+const disabled = CommunicationResourceMutationContract.disableCommunicationResources(bundleOrCommunication, {
   types: ['Observation'],
 });
 
-const replaced = CommunicationResourceMutationContract.setX(
+const replaced = CommunicationResourceMutationContract.setCommunicationResources(
   disabled,
   { types: ['Observation'] },
   [newObservation],

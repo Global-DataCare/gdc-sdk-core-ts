@@ -96,60 +96,63 @@ function buildBundleFixture() {
 test('ConsentOperationMutationContract supports get/add/set/enable/disable/remove with filters', () => {
   const base = buildCommunicationInputFixture();
 
-  const bySection = ConsentOperationMutationContract.getX(base, {
+  const bySection = ConsentOperationMutationContract.getConsentOperations(base, {
     sections: [HealthcareBasicSections.Results.claim],
   });
   assert.equal(bySection.length, 1);
   assert.equal(bySection[0].operationId, 'op-2');
 
-  const withAdded = ConsentOperationMutationContract.addX(base, [
+  const withAdded = ConsentOperationMutationContract.addConsentOperations(base, [
     buildOperation(3, {
       sections: { core: [HealthcareBasicSections.ProblemList.claim] },
     }),
   ]);
-  assert.equal(ConsentOperationMutationContract.getX(withAdded).length, 3);
+  assert.equal(ConsentOperationMutationContract.getConsentOperations(withAdded).length, 3);
 
-  const withSet = ConsentOperationMutationContract.setX(
+  const withSet = ConsentOperationMutationContract.setConsentOperations(
     withAdded,
     { operationIds: ['op-1'] },
     [buildOperation(10, { operationId: 'op-10' })],
   );
-  assert.equal(ConsentOperationMutationContract.getX(withSet, { operationIds: 'op-1' }).length, 0);
-  assert.equal(ConsentOperationMutationContract.getX(withSet, { operationIds: 'op-10' }).length, 1);
+  assert.equal(ConsentOperationMutationContract.getConsentOperations(withSet, { operationIds: 'op-1' }).length, 0);
+  assert.equal(ConsentOperationMutationContract.getConsentOperations(withSet, { operationIds: 'op-10' }).length, 1);
 
-  const withEnabled = ConsentOperationMutationContract.enableX(withSet, { operationIds: ['op-2'] });
+  const withEnabled = ConsentOperationMutationContract.enableConsentOperations(withSet, { operationIds: ['op-2'] });
   assert.equal(
-    ConsentOperationMutationContract.getX(withEnabled, { operationIds: ['op-2'] })[0].operationKind,
+    ConsentOperationMutationContract.getConsentOperations(withEnabled, { operationIds: ['op-2'] })[0].operationKind,
     ConsentCommunicationOperationKinds.Enable,
   );
 
-  const withDisabled = ConsentOperationMutationContract.disableX(withEnabled, { operationIds: ['op-10'] });
+  const withDisabled = ConsentOperationMutationContract.disableConsentOperations(withEnabled, { operationIds: ['op-10'] });
   assert.equal(
-    ConsentOperationMutationContract.getX(withDisabled, { operationIds: ['op-10'] })[0].operationKind,
+    ConsentOperationMutationContract.getConsentOperations(withDisabled, { operationIds: ['op-10'] })[0].operationKind,
     ConsentCommunicationOperationKinds.Disable,
   );
 
-  const removed = ConsentOperationMutationContract.removeX(withDisabled, {
+  const removed = ConsentOperationMutationContract.removeConsentOperations(withDisabled, {
     types: [ResourceTypesFhirR4.Consent],
     targetKinds: [ConsentCommunicationTargetKinds.Organization],
   });
-  assert.equal(ConsentOperationMutationContract.getX(removed).length, 2);
+  assert.equal(ConsentOperationMutationContract.getConsentOperations(removed).length, 2);
   assert.equal(
-    ConsentOperationMutationContract.getX(removed, { targetKinds: [ConsentCommunicationTargetKinds.Organization] }).length,
+    ConsentOperationMutationContract.getConsentOperations(removed, { targetKinds: [ConsentCommunicationTargetKinds.Organization] }).length,
     0,
   );
+
+  // Legacy alias remains available for backward compatibility.
+  assert.equal(ConsentOperationMutationContract.getX(removed).length, 2);
 });
 
 test('CommunicationResourceMutationContract supports get/add/set/enable/disable/remove with filters', () => {
   const bundle = buildBundleFixture();
 
-  const allergies = CommunicationResourceMutationContract.getX(bundle, {
+  const allergies = CommunicationResourceMutationContract.getCommunicationResources(bundle, {
     sections: [HealthcareBasicSections.AllergiesAndIntolerances.claim],
   });
   assert.equal(allergies.length, 1);
   assert.equal(allergies[0].id, 'allergy-1');
 
-  const withAdd = CommunicationResourceMutationContract.addX(
+  const withAdd = CommunicationResourceMutationContract.addCommunicationResources(
     bundle,
     [
       {
@@ -161,11 +164,11 @@ test('CommunicationResourceMutationContract supports get/add/set/enable/disable/
     { sections: [HealthcareBasicSections.VitalSigns.claim] },
   );
   assert.equal(
-    CommunicationResourceMutationContract.getX(withAdd, { types: [ResourceTypesFhirR4.Observation] }).length,
+    CommunicationResourceMutationContract.getCommunicationResources(withAdd, { types: [ResourceTypesFhirR4.Observation] }).length,
     2,
   );
 
-  const withSet = CommunicationResourceMutationContract.setX(
+  const withSet = CommunicationResourceMutationContract.setCommunicationResources(
     withAdd,
     { types: [ResourceTypesFhirR4.Observation] },
     [
@@ -178,14 +181,14 @@ test('CommunicationResourceMutationContract supports get/add/set/enable/disable/
     { sections: [HealthcareBasicSections.VitalSigns.claim] },
   );
   assert.equal(
-    CommunicationResourceMutationContract.getX(withSet, { types: [ResourceTypesFhirR4.Observation] }).length,
+    CommunicationResourceMutationContract.getCommunicationResources(withSet, { types: [ResourceTypesFhirR4.Observation] }).length,
     1,
   );
 
-  const withDisabled = CommunicationResourceMutationContract.disableX(withSet, {
+  const withDisabled = CommunicationResourceMutationContract.disableCommunicationResources(withSet, {
     types: [ResourceTypesFhirR4.Observation],
   });
-  const disabledObservation = CommunicationResourceMutationContract.getX(withDisabled, {
+  const disabledObservation = CommunicationResourceMutationContract.getCommunicationResources(withDisabled, {
     types: [ResourceTypesFhirR4.Observation],
   })[0];
   assert.equal(
@@ -193,10 +196,10 @@ test('CommunicationResourceMutationContract supports get/add/set/enable/disable/
     CommunicationResourceLifecycleTagCode.Disabled,
   );
 
-  const withEnabled = CommunicationResourceMutationContract.enableX(withDisabled, {
+  const withEnabled = CommunicationResourceMutationContract.enableCommunicationResources(withDisabled, {
     types: [ResourceTypesFhirR4.Observation],
   });
-  const enabledObservation = CommunicationResourceMutationContract.getX(withEnabled, {
+  const enabledObservation = CommunicationResourceMutationContract.getCommunicationResources(withEnabled, {
     types: [ResourceTypesFhirR4.Observation],
   })[0];
   assert.equal(
@@ -204,9 +207,15 @@ test('CommunicationResourceMutationContract supports get/add/set/enable/disable/
     CommunicationResourceLifecycleTagCode.Enabled,
   );
 
-  const removed = CommunicationResourceMutationContract.removeX(withEnabled, {
+  const removed = CommunicationResourceMutationContract.removeCommunicationResources(withEnabled, {
     types: [ResourceTypesFhirR4.Observation],
   });
+  assert.equal(
+    CommunicationResourceMutationContract.getCommunicationResources(removed, { types: [ResourceTypesFhirR4.Observation] }).length,
+    0,
+  );
+
+  // Legacy alias remains available for backward compatibility.
   assert.equal(
     CommunicationResourceMutationContract.getX(removed, { types: [ResourceTypesFhirR4.Observation] }).length,
     0,

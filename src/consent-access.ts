@@ -14,6 +14,7 @@ import {
 } from 'gdc-common-utils-ts/utils/consent';
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import type { ConsentRule } from 'gdc-common-utils-ts/models/consent-rule';
+import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
 import type { BundleSearchQuery, CommunicationInput } from './communication-bundle-contracts.js';
 
 export type PermissionRequestCommunicationInput = Readonly<{
@@ -117,10 +118,10 @@ export function buildPermissionRequestCommunication(
 
   const claims: Record<string, unknown> = {
     '@context': 'org.hl7.fhir.r4',
-    'Communication.identifier': input.communicationIdentifier,
-    'Communication.subject': input.subject,
-    'Communication.recipient': input.recipient,
-    'Communication.sender': input.sender,
+    [CommunicationClaim.Identifier]: input.communicationIdentifier,
+    [CommunicationClaim.Subject]: input.subject,
+    [CommunicationClaim.Recipient]: input.recipient,
+    [CommunicationClaim.Sender]: input.sender,
     'AccessRequest.requester-target': requesterTargets.join(','),
     'AccessRequest.requester-role': input.requesterRole,
     'AccessRequest.purpose': input.purpose,
@@ -155,7 +156,7 @@ export function buildPermissionRequestCommunicationLookupQuery(
   input: PermissionRequestCommunicationLookup,
 ): BundleSearchQuery {
   const searchParams: Record<string, string> = {};
-  if (input.communicationIdentifier) searchParams['Communication.identifier'] = input.communicationIdentifier;
+  if (input.communicationIdentifier) searchParams[CommunicationClaim.Identifier] = input.communicationIdentifier;
   if (input.contentCid) searchParams['DocumentReference.contenthash'] = input.contentCid;
 
   return {
