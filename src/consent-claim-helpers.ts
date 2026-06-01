@@ -1,0 +1,47 @@
+// Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
+
+/**
+ * Re-export consent claim helpers from common-utils so SDK CORE consumers can
+ * discover and use the canonical get/set/add consent claim APIs from one place.
+ */
+export {
+  addActorIdentifierList,
+  addActorRoleList,
+  addActors,
+  addCategories,
+  addCategoryList,
+  addClaimValues,
+  addPurposeList,
+  addPurposes,
+  addRoles,
+  addSections,
+  getActorIdentifierList,
+  getActorRoleList,
+  getActors,
+  getCategories,
+  getCategoryList,
+  getClaimValues,
+  getConsentDate,
+  getConsentIdentifier,
+  getConsentPeriodEnd,
+  getConsentPeriodStart,
+  getPurposeList,
+  getPurposes,
+  getRoles,
+  getSections,
+  setActorIdentifierList,
+  setActorRoleList,
+  setActors,
+  setCategories,
+  setCategoryList,
+  setClaimValues,
+  setConsentDate,
+  setConsentIdentifier,
+  setConsentPeriodEnd,
+  setConsentPeriodStart,
+  setPurposeList,
+  setPurposes,
+  setRoles,
+  setSections,
+  type InteroperableClaims as ConsentInteroperableClaims,
+} from 'gdc-common-utils-ts/utils/consent-claim-helpers';

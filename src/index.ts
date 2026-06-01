@@ -6,6 +6,7 @@ export * from './bootstrap-facade.js';
 export * from './communication-bundle-contracts.js';
 export * from './communication-bundle-resources.js';
 export * from './communication-consent-mutation-contract.js';
+export * from './consent-claim-helpers.js';
 export * from './consent-access.js';
 export * from './consent-communication-operations.js';
 export * from './communication-draft.js';

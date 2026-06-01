@@ -19,6 +19,44 @@ This is available for:
 - consent operations inside `CommunicationInput.payload.operations`
 - clinical resources inside document bundles (raw `Bundle` or embedded in `Communication`)
 
+## What Lives Where (Important)
+
+Use this quick map to avoid mixing layers:
+
+- Claim-level mutation (Consent claims CSV fields):
+  `getPurposes`, `setPurposes`, `addPurposes` and related `get/set/add` helpers.
+  These operate on `resource.meta.claims`.
+- Consent operation lifecycle (operation objects in payload):
+  `enableConsentOperations`, `disableConsentOperations`.
+  These change `operationKind` (`add`/`enable`/`disable`...) inside
+  `CommunicationInput.payload.operations`.
+- Bundle resource lifecycle (actual FHIR resources):
+  `enableCommunicationResources`, `disableCommunicationResources`.
+  These update audit/lifecycle tags in `resource.meta.tag[]`.
+
+`request.url` is transport routing metadata. It is not the lifecycle state and
+is not used as the enable/disable flag.
+
+Short visual map:
+
+```mermaid
+flowchart TD
+  A[Communication Input] --> B[payload.operations]
+  A --> C[bundle entries resource]
+
+  B --> B1[enable/disable consent operations]
+  B1 --> B2[operationKind changes]
+
+  C --> C1[resource.meta.claims]
+  C1 --> C2[get/set/add claims]
+
+  C --> D[resource.meta.tag[]]
+  D --> D1[enable/disable resource lifecycle]
+  D1 --> D2[org.gdc.resource.lifecycle: enabled/disabled]
+
+  E[request.url] -. transport routing only .-> A
+```
+
 ## Why this matters
 
 - stable FE/BE contracts
@@ -74,6 +112,11 @@ They update resource `meta.tag` with:
 - system: `org.gdc.resource.lifecycle`
 - code: `enabled` or `disabled`
 
+This is intentionally separate from `resource.meta.claims`:
+
+- `meta.claims`: business/interoperable claim data
+- `meta.tag[]`: lifecycle/audit classification for the resource
+
 ## Example: consent operations
 
 ```ts
@@ -128,6 +171,10 @@ Recommended references:
 - `HealthcareRolesBySector` and role i18n maps
 - `HealthcareSectionsByFamily` and section i18n maps
 - consent claim helpers (`set/get/add`) for canonical claim keys
+
+From `gdc-sdk-core-ts`, these helpers are re-exported via:
+
+- `src/consent-claim-helpers.ts`
 
 ## Source of truth
 
