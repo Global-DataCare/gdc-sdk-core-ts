@@ -24,8 +24,8 @@ export type DiscoveryResolutionResult = {
  *
  * Still pending in node/frontend runtimes:
  * - real did:web HTTP resolution
- * - `.well-known` fetch
- * - DCAT3 crawling
+ * - DSP `/.well-known/dspace-version` fetch
+ * - DSP catalog artifact consumption
  * - cache freshness/retry policy
  */
 export interface DiscoveryFacade {

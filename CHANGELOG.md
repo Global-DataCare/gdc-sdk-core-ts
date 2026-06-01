@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-06-01
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.13.0`.
+- Aligned the discovery boundary documentation with the DSP `dspace-version`
+  and `/dsp/catalog/...` contract used by the node/frontend SDKs.
+
+### Testing
+- `npm test`
+- `npm run build`
+
 ## [0.5.2] - 2026-05-28
 
 ### Changed

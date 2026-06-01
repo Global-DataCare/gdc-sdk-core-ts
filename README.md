@@ -431,6 +431,13 @@ package:
 - [`resolveProviderIdentityForSubject(...)`](src/did-resolution-session.ts)
 - [`resolveSmartTokenEndpointForSubject(...)`](src/smart-endpoint-resolver.ts)
 
+Discovery boundary rule:
+
+- `gdc-sdk-core-ts` defines runtime-neutral contracts only
+- host DSP resolution from `/.well-known/dspace-version` and `/dsp/catalog/dcat.json`
+  belongs to `gdc-sdk-node-ts` or a backend/BFF adapter
+- frontend DTO/card mapping belongs to `gdc-sdk-front-ts`
+
 ### Polling helpers
 
 - [`resolvePollOptionsFromSeconds(...)`](src/polling-model.ts)
