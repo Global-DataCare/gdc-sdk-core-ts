@@ -31,6 +31,8 @@ open these documents in this order:
 
 - [docs/SDK_FLOWS_101.md](./docs/SDK_FLOWS_101.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
+- [docs/CONSENT_COMMUNICATION_MUTATIONS_101.md](./docs/CONSENT_COMMUNICATION_MUTATIONS_101.md)
+  Uniform get/set/add/enable/disable/remove contract for consent operations and communication resources.
 - [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
   Real backend initialization with `initializeCommunicationIdentity(...)`,
   `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
