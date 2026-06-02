@@ -25,9 +25,7 @@ import {
   addClaimsResourceToDraft,
   createCommunicationDraft,
   createOutboxJobFromDraft,
-  getCommunicationFromDraft,
   isCommunicationDraftReady,
-  resolveCommunicationPayloads,
 } from '../dist/index.js';
 
 test('101: consent bundle Communication goes into draft and outbox step by step', () => {
@@ -78,21 +76,14 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
   );
 
   // Step 3.
-  // The draft can then be frozen into an outbox job for submission by runtime layers.
-  const draftCommunication = getCommunicationFromDraft(draft);
-  const resolvedPayloads = resolveCommunicationPayloads(draftCommunication);
-  const embeddedCommunication = resolvedPayloads[0]?.resource;
+  // Freeze the draft into the outbox job that runtime layers will actually use.
   const job = createOutboxJobFromDraft(draft);
 
   // Step 4.
   // Assertions: sdk-core does not reinterpret the consent model. It just carries
-  // the already-built Communication through draft/outbox.
+  // the already-built Communication into the outbox job.
   assert.equal(isCommunicationDraftReady(draft), true);
-  assert.equal(embeddedCommunication?.resourceType, ResourceTypesFhirR4.Communication);
-  assert.equal(
-    embeddedCommunication?.meta?.claims?.[CommunicationClaim.ContentAttachmentData] !== undefined,
-    true,
-  );
   assert.equal(job.status, CommunicationOutboxStatuses.Ready);
   assert.equal(job.payload.resourceType, ResourceTypesFhirR4.Communication);
+  assert.equal(job.payload.meta?.claims?.[CommunicationClaim.ContentAttachmentData] !== undefined, true);
 });
