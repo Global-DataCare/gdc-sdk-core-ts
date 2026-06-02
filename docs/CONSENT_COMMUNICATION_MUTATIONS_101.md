@@ -1,22 +1,25 @@
 # Consent And Communication Mutations 101
 
-This guide defines the uniform mutation surface for consent operations and
-clinical resources carried by Communication payloads.
+This guide defines the `sdk-core` layer around consent-carrying
+`Communication` resources.
 
-Use this together with the executable reference test:
+Use this together with:
 
-- [tests/101-consent-communication-mutations.test.mjs](../tests/101-consent-communication-mutations.test.mjs)
+- the canonical consent editing 101 in `common-utils`:
+  [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
+- its executable test:
+  [gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts](../../gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts)
+- the `sdk-core` draft/outbox test:
+  [tests/101-consent-bundle-outbox.test.mjs](../tests/101-consent-bundle-outbox.test.mjs)
 
 ## Goal
 
-New SDK consumers should always find the same semantic method family:
+Keep responsibilities separate:
 
-- getConsentOperations / getCommunicationResources
-- setConsentOperations / setCommunicationResources
-- addConsentOperations / addCommunicationResources
-- enableConsentOperations / enableCommunicationResources
-- disableConsentOperations / disableCommunicationResources
-- removeConsentOperations / removeCommunicationResources
+- `common-utils`
+  edits real `Consent` claims inside a bundle with `bundleEditor + get/set/add/remove`
+- `sdk-core`
+  takes the resulting `Communication` and moves it through draft/outbox/runtime
 
 This is available for:
 
@@ -27,123 +30,59 @@ This is available for:
 
 Use this quick map to avoid mixing layers:
 
-- Claim-level mutation (Consent claims CSV fields):
-  `getPurposes`, `setPurposes`, `addPurposes` and related `get/set/add` helpers.
-  These operate on `resource.meta.claims`.
-- Consent operation lifecycle (operation objects in payload):
-  `enableConsentOperations`, `disableConsentOperations`.
-  These change `operationKind` (`add`/`enable`/`disable`...) inside
-  `CommunicationInput.payload.operations`.
-- Bundle resource lifecycle (actual FHIR resources):
-  `enableCommunicationResources`, `disableCommunicationResources`.
-  These update audit/lifecycle tags in `resource.meta.tag[]`.
+- Claim-level consent editing:
+  lives in `gdc-common-utils-ts`
+- Bundle-in-Communication editing:
+  lives in `gdc-common-utils-ts` through `CommunicationBundleSession`
+- Draft/outbox transport orchestration:
+  lives in `gdc-sdk-core-ts`
 
 `request.url` is transport routing metadata. It is not the lifecycle state and
 is not used as the enable/disable flag.
 
-## Start Here: Simple Consent Claim Helpers
+## Start Here: Consent Bundle + Outbox
 
-Executable step-by-step reference:
+Executable references:
 
-- [tests/101-consent-communication-mutations.test.mjs](../tests/101-consent-communication-mutations.test.mjs)
+- [gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts](../../gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts)
+- [tests/101-consent-bundle-outbox.test.mjs](../tests/101-consent-bundle-outbox.test.mjs)
 
-If you only want to build or edit one consent from frontend code, start with
-the claim helpers first.
+If you only want to build or edit one consent, start in `common-utils` with:
 
-Use:
-
+- `CommunicationBundleSession`
 - `getPurposes` / `setPurposes` / `addPurposes`
 - `getRoles` / `setRoles` / `addRoles`
 - `getSections` / `setSections` / `addSections`
-- `getContainedDocumentIdentifierList`
-- `setContainedDocumentIdentifierList`
-- `addContainedDocumentIdentifierList`
 
-Step by step:
+Then `sdk-core` takes that `Communication` into draft/outbox:
 
 ```ts
 import {
-  buildConsentOperationClaims,
-  buildConsentOperationsCommunicationInput,
-  getPurposes,
-  setPurposes,
-  setRoles,
-  setSections,
-  type ConsentCommunicationOperationInput,
+  addClaimsResourceToDraft,
+  createCommunicationDraft,
+  createOutboxJobFromDraft,
 } from 'gdc-sdk-core-ts';
 import {
-  HealthcareActorRoles,
-  HealthcareBasicSections,
-  HealthcareConsentPurposes,
-} from 'gdc-common-utils-ts/constants/healthcare';
-import {
-  EXAMPLE_COMMUNICATION_IDENTIFIER,
-  EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
-  EXAMPLE_CONSENT_OPERATION_THREAD_ID,
-  EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 
-// Step 1. Frontend/runtime already knows who the subject is and
-// which actor is being granted access.
-const subjectDid = EXAMPLE_SUBJECT_DID;
-const professionalDid = EXAMPLE_PROFESSIONAL_DID;
-const requestedSections = [
-  HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
-  HealthcareBasicSections.Results.attributeValue,
-];
+// communicationClaims comes from common-utils bundleEditor.
+const draft = addClaimsResourceToDraft(
+  createCommunicationDraft({
+    subject: EXAMPLE_SUBJECT_DID,
+    sender: EXAMPLE_PROFESSIONAL_DID,
+    claims: communicationClaims,
+  }),
+  'Communication',
+  communicationClaims,
+);
 
-// Step 2. Build/edit one consent with claim helpers.
-let consentClaims = {
-  '@context': 'org.hl7.fhir.api',
-  'Consent.identifier': EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
-  'Consent.subject': subjectDid,
-};
-
-consentClaims = setPurposes(consentClaims, [HealthcareConsentPurposes.Treatment]);
-consentClaims = setRoles(consentClaims, [HealthcareActorRoles.Physician]);
-consentClaims = setSections(consentClaims, requestedSections);
-
-const purposes = getPurposes(consentClaims);
-
-// Step 3. When this must travel through Communication, build the abstract operation.
-const operation: ConsentCommunicationOperationInput = {
-  operationKind: 'add',
-  operationId: EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
-  subject: subjectDid,
-  purpose: HealthcareConsentPurposes.Treatment,
-  target: {
-    kind: 'professional',
-    identifier: professionalDid,
-    roles: [HealthcareActorRoles.Physician],
-  },
-  sections: {
-    core: requestedSections,
-  },
-};
-
-// Step 4. Convert the operation to canonical consent claims.
-const operationClaims = buildConsentOperationClaims(operation);
-
-// Step 5. Wrap one or more operations into the canonical CommunicationInput.
-const commInput = buildConsentOperationsCommunicationInput({
-  thid: EXAMPLE_CONSENT_OPERATION_THREAD_ID,
-  subject: subjectDid,
-  sender: professionalDid,
-  recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
-  communicationIdentifier: EXAMPLE_COMMUNICATION_IDENTIFIER,
-  operations: [operation],
-});
+const outboxJob = createOutboxJobFromDraft(draft);
 ```
 
-This layer is only about claims.
-
-- it does not create a `Communication`
-- it does not create payload operations
-- it does not enable/disable anything
-
-That comes later, in the `Communication` mutation layer below.
+`sdk-core` does not redefine the consent model here. It only persists and
+queues the already-built `Communication`.
 
 Short visual map:
 
@@ -190,6 +129,12 @@ Compatibility aliases:
 
 - `getX`, `setX`, `addX`, `enableX`, `disableX`, `removeX`
 - kept only for backward compatibility with existing callers
+
+## Advanced/Legacy Mutation Contracts
+
+The operation-style mutation contracts remain in `sdk-core`, but they are not
+the preferred 101 path for developers who just need to edit one consent inside
+one bundle.
 
 ## Consent operation filters
 
@@ -286,8 +231,7 @@ From `gdc-sdk-core-ts`, these helpers are re-exported via:
 
 ## Source of truth
 
-- `src/communication-consent-mutation-contract.ts`
-- `src/communication-bundle-resources.ts`
-- `src/consent-communication-operations.ts`
-- `tests/101-consent-communication-mutations.test.mjs`
+- `../../gdc-common-utils-ts/src/utils/consent-claim-helpers.ts`
+- `../../gdc-common-utils-ts/src/utils/communication-bundle-session.ts`
+- `tests/101-consent-bundle-outbox.test.mjs`
 - `tests/communication-consent-mutation-contract.test.mjs`
