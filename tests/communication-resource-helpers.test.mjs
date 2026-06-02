@@ -7,6 +7,10 @@ import {
   ResourceTypesFhirR4,
 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import {
+  EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER,
+  EXAMPLE_DOCUMENT_REFERENCE_URL,
+} from '../../gdc-common-utils-ts/dist/examples/shared.js';
+import {
   VitalSignsCodes,
 } from 'gdc-common-utils-ts/constants/vital-signs';
 
@@ -18,6 +22,8 @@ import {
   createBodyTemperatureObservation,
   createCommunicationResource,
   createHeartRateObservation,
+  getDocumentReferenceClaimsByIdentifiersFromCommunicationDocument,
+  getDocumentReferenceClaimsFromCommunicationDocument,
   getFirstBundleDocumentFromCommunication,
   getMedicationClaimsFromCommunicationDocument,
   getObservationsByCodeFromCommunicationDocument,
@@ -132,6 +138,61 @@ test('extracts medication claims and filters observations by code from a communi
   });
   assert.equal(matchingObservations.length, 1);
   assert.equal(matchingObservations[0].id, 'obs-001');
+});
+
+test('extracts linked DocumentReference claims from a communication bundle', () => {
+  const communication = createCommunicationResource({
+    subject: 'did:web:api.acme.org:individual:123',
+  });
+
+  const bundle = {
+    resourceType: ResourceTypesFhirR4.Bundle,
+    type: 'document',
+    entry: [
+      {
+        resource: {
+          resourceType: ResourceTypesFhirR4.MedicationStatement,
+          id: 'med-001',
+          meta: {
+            claims: {
+              'MedicationStatement.identifier': 'med-001',
+              'MedicationStatement.subject': 'did:web:api.acme.org:individual:123',
+              'MedicationStatement.contained-documents': EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER,
+            },
+          },
+        },
+      },
+      {
+        resource: {
+          resourceType: ResourceTypesFhirR4.DocumentReference,
+          id: 'docref-1',
+          meta: {
+            claims: {
+              'DocumentReference.identifier': EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER,
+              'DocumentReference.subject': 'did:web:api.acme.org:individual:123',
+              'DocumentReference.contenttype': 'application/pdf',
+              'DocumentReference.location': EXAMPLE_DOCUMENT_REFERENCE_URL,
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  const next = addFhirResourceToCommunication(communication, bundle, {
+    asDocumentReference: true,
+  });
+
+  const allDocumentReferenceClaims = getDocumentReferenceClaimsFromCommunicationDocument(next);
+  assert.equal(allDocumentReferenceClaims.length, 1);
+  assert.equal(allDocumentReferenceClaims[0]['DocumentReference.identifier'], EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER);
+
+  const linkedDocumentReferenceClaims = getDocumentReferenceClaimsByIdentifiersFromCommunicationDocument(
+    next,
+    [EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER],
+  );
+  assert.equal(linkedDocumentReferenceClaims.length, 1);
+  assert.equal(linkedDocumentReferenceClaims[0]['DocumentReference.location'], EXAMPLE_DOCUMENT_REFERENCE_URL);
 });
 
 test('creates vital-sign observations with canonical shared codes and units', () => {

@@ -161,6 +161,70 @@ const replaced = CommunicationResourceMutationContract.setCommunicationResources
 );
 ```
 
+## Quickstart: create one consent operation (copy/paste)
+
+Use this when a developer asks: "how do I build one consent in a Communication
+using setPurposes, actorRoles, and sections?"
+
+```ts
+import {
+  buildConsentOperationClaims,
+  buildConsentOperationsCommunicationInput,
+  setPurposes,
+  setRoles,
+  setSections,
+  type ConsentCommunicationOperationInput,
+} from 'gdc-sdk-core-ts';
+import {
+  HealthcareActorRoles,
+  HealthcareBasicSections,
+  HealthcareConsentPurposes,
+} from 'gdc-common-utils-ts/constants/healthcare';
+
+const subjectDid = 'did:web:patient.example.com:individual:123';
+const professionalDid = 'did:web:clinic.example.com:professional:abc';
+
+const operation: ConsentCommunicationOperationInput = {
+  operationKind: 'add',
+  operationId: 'consent-op-001',
+  subject: subjectDid,
+  purpose: HealthcareConsentPurposes.Treatment,
+  target: {
+    kind: 'professional',
+    identifier: professionalDid,
+    roles: [HealthcareActorRoles.Physician],
+  },
+  sections: {
+    core: [
+      HealthcareBasicSections.HistoryOfMedicationUse.claim,
+      HealthcareBasicSections.Results.claim,
+    ],
+  },
+};
+
+// Optional: patch/normalize claims explicitly with set* helpers.
+let claims = buildConsentOperationClaims(operation);
+claims = setPurposes(claims, [HealthcareConsentPurposes.Treatment]);
+claims = setRoles(claims, [HealthcareActorRoles.Physician]);
+claims = setSections(claims, [
+  HealthcareBasicSections.HistoryOfMedicationUse.claim,
+  HealthcareBasicSections.Results.claim,
+]);
+
+// Build canonical CommunicationInput for transport.
+const commInput = buildConsentOperationsCommunicationInput({
+  thid: 'thread-001',
+  subject: subjectDid,
+  sender: 'did:web:controller.example.com:org:main',
+  recipient: 'did:web:gateway.example.com:core',
+  operations: [operation],
+  summaryText: 'Grant treatment access for physician to medication/results sections',
+});
+
+// commInput.payload.operations[0] carries operationKind/target/sections
+// claims carries canonical CSV claims fields (purpose, actorRole, action, ...)
+```
+
 ## Cross-package alignment
 
 Role and section catalogs should come from `gdc-common-utils-ts` constants,

@@ -4,6 +4,9 @@ import {
   FhirCodeSystems,
 } from 'gdc-common-utils-ts/constants/fhir-code-systems';
 import {
+  DocumentReferenceClaim,
+} from 'gdc-common-utils-ts/models/interoperable-claims/document-reference-claims';
+import {
   ResourceTypesFhirR4,
 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import {
@@ -551,6 +554,61 @@ export function getMedicationClaimsFromCommunicationDocument(
 }
 
 /**
+ * Extracts `DocumentReference.meta.claims` rows from the first document
+ * bundle found inside a `Communication`.
+ *
+ * Falls back to a minimal structural projection when `meta.claims` is absent.
+ *
+ * @param communication FHIR `Communication` resource to inspect.
+ */
+export function getDocumentReferenceClaimsFromCommunicationDocument(
+  communication: FhirResourceLike,
+): Record<string, unknown>[] {
+  const bundle = getFirstBundleDocumentFromCommunication(communication);
+  return getBundleDocumentResourcesByType(bundle, ResourceTypesFhirR4.DocumentReference)
+    .map((resource) => {
+      if (isPlainObject(resource.meta) && isPlainObject(resource.meta.claims)) {
+        return cloneRecord(resource.meta.claims);
+      }
+      return extractDocumentReferenceClaims(resource);
+    })
+    .filter((claims) => Object.keys(claims).length > 0);
+}
+
+/**
+ * Returns `DocumentReference` claims rows filtered by logical identifier.
+ *
+ * @param communication FHIR `Communication` resource to inspect.
+ * @param identifiers One or more `DocumentReference.identifier` values.
+ */
+export function getDocumentReferenceClaimsByIdentifiersFromCommunicationDocument(
+  communication: FhirResourceLike,
+  identifiers: string | string[],
+): Record<string, unknown>[] {
+  const accepted = new Set(
+    toArray(identifiers)
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  );
+  if (!accepted.size) {
+    return [];
+  }
+  return getDocumentReferenceClaimsFromCommunicationDocument(communication)
+    .filter((claims) => accepted.has(String(claims[DocumentReferenceClaim.Identifier] || '').trim()));
+}
+
+/**
+ * TODO(ips-next):
+ * Add `getDiagnosticReportClaimsFromCommunicationDocument(...)` after
+ * `common-utils` exposes the finalized DiagnosticReport claim helpers and
+ * bundle-editor upsert contract.
+ *
+ * Keep this aligned with shared claim keys from `gdc-common-utils-ts` and do
+ * not invent repo-local literals for `presented-form-*` or
+ * `contained-documents`.
+ */
+
+/**
  * Sorts FHIR resources by their first canonical clinical date descending.
  *
  * The helper inspects common date fields such as `effectiveDateTime`,
@@ -597,4 +655,29 @@ export function getObservationsByCodeFromCommunicationDocument(
       || (categoryToken && accepted.has(categoryToken)),
     );
   });
+}
+
+function extractDocumentReferenceClaims(resource: FhirResourceLike): Record<string, unknown> {
+  const attachment = Array.isArray(resource.content)
+    ? resource.content
+      .map((item) => (isPlainObject(item) && isPlainObject(item.attachment) ? item.attachment : undefined))
+      .find(isPlainObject)
+    : undefined;
+
+  const identifier = Array.isArray(resource.identifier) && isPlainObject(resource.identifier[0])
+    ? resource.identifier[0].value
+    : undefined;
+  const subject = isPlainObject(resource.subject) ? resource.subject.reference : undefined;
+
+  return {
+    [DocumentReferenceClaim.Identifier]: typeof identifier === 'string' ? identifier : undefined,
+    [DocumentReferenceClaim.Subject]: typeof subject === 'string' ? subject : undefined,
+    [DocumentReferenceClaim.Description]: typeof resource.description === 'string' ? resource.description : undefined,
+    [DocumentReferenceClaim.Date]: typeof resource.date === 'string' ? resource.date : undefined,
+    [DocumentReferenceClaim.ContentType]: typeof attachment?.contentType === 'string' ? attachment.contentType : undefined,
+    [DocumentReferenceClaim.ContentData]: typeof attachment?.data === 'string' ? attachment.data : undefined,
+    [DocumentReferenceClaim.Location]: typeof attachment?.url === 'string' ? attachment.url : undefined,
+    [DocumentReferenceClaim.ContentHash]: typeof attachment?.hash === 'string' ? attachment.hash : undefined,
+    [DocumentReferenceClaim.Language]: typeof attachment?.language === 'string' ? attachment.language : undefined,
+  };
 }
