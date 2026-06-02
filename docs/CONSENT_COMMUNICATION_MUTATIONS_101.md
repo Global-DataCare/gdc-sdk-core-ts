@@ -3,6 +3,10 @@
 This guide defines the uniform mutation surface for consent operations and
 clinical resources carried by Communication payloads.
 
+Use this together with the executable reference test:
+
+- [tests/101-consent-communication-mutations.test.mjs](../tests/101-consent-communication-mutations.test.mjs)
+
 ## Goal
 
 New SDK consumers should always find the same semantic method family:
@@ -36,6 +40,110 @@ Use this quick map to avoid mixing layers:
 
 `request.url` is transport routing metadata. It is not the lifecycle state and
 is not used as the enable/disable flag.
+
+## Start Here: Simple Consent Claim Helpers
+
+Executable step-by-step reference:
+
+- [tests/101-consent-communication-mutations.test.mjs](../tests/101-consent-communication-mutations.test.mjs)
+
+If you only want to build or edit one consent from frontend code, start with
+the claim helpers first.
+
+Use:
+
+- `getPurposes` / `setPurposes` / `addPurposes`
+- `getRoles` / `setRoles` / `addRoles`
+- `getSections` / `setSections` / `addSections`
+- `getContainedDocumentIdentifierList`
+- `setContainedDocumentIdentifierList`
+- `addContainedDocumentIdentifierList`
+
+Step by step:
+
+```ts
+import {
+  buildConsentOperationClaims,
+  buildConsentOperationsCommunicationInput,
+  getPurposes,
+  setPurposes,
+  setRoles,
+  setSections,
+  type ConsentCommunicationOperationInput,
+} from 'gdc-sdk-core-ts';
+import {
+  HealthcareActorRoles,
+  HealthcareBasicSections,
+  HealthcareConsentPurposes,
+} from 'gdc-common-utils-ts/constants/healthcare';
+import {
+  EXAMPLE_COMMUNICATION_IDENTIFIER,
+  EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
+  EXAMPLE_CONSENT_OPERATION_THREAD_ID,
+  EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
+  EXAMPLE_PROFESSIONAL_DID,
+  EXAMPLE_SUBJECT_DID,
+} from 'gdc-common-utils-ts/examples/shared';
+
+// Step 1. Frontend/runtime already knows who the subject is and
+// which actor is being granted access.
+const subjectDid = EXAMPLE_SUBJECT_DID;
+const professionalDid = EXAMPLE_PROFESSIONAL_DID;
+const requestedSections = [
+  HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+  HealthcareBasicSections.Results.attributeValue,
+];
+
+// Step 2. Build/edit one consent with claim helpers.
+let consentClaims = {
+  '@context': 'org.hl7.fhir.api',
+  'Consent.identifier': EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
+  'Consent.subject': subjectDid,
+};
+
+consentClaims = setPurposes(consentClaims, [HealthcareConsentPurposes.Treatment]);
+consentClaims = setRoles(consentClaims, [HealthcareActorRoles.Physician]);
+consentClaims = setSections(consentClaims, requestedSections);
+
+const purposes = getPurposes(consentClaims);
+
+// Step 3. When this must travel through Communication, build the abstract operation.
+const operation: ConsentCommunicationOperationInput = {
+  operationKind: 'add',
+  operationId: EXAMPLE_CONSENT_OPERATION_IDENTIFIER,
+  subject: subjectDid,
+  purpose: HealthcareConsentPurposes.Treatment,
+  target: {
+    kind: 'professional',
+    identifier: professionalDid,
+    roles: [HealthcareActorRoles.Physician],
+  },
+  sections: {
+    core: requestedSections,
+  },
+};
+
+// Step 4. Convert the operation to canonical consent claims.
+const operationClaims = buildConsentOperationClaims(operation);
+
+// Step 5. Wrap one or more operations into the canonical CommunicationInput.
+const commInput = buildConsentOperationsCommunicationInput({
+  thid: EXAMPLE_CONSENT_OPERATION_THREAD_ID,
+  subject: subjectDid,
+  sender: professionalDid,
+  recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
+  communicationIdentifier: EXAMPLE_COMMUNICATION_IDENTIFIER,
+  operations: [operation],
+});
+```
+
+This layer is only about claims.
+
+- it does not create a `Communication`
+- it does not create payload operations
+- it does not enable/disable anything
+
+That comes later, in the `Communication` mutation layer below.
 
 Short visual map:
 
@@ -161,70 +269,6 @@ const replaced = CommunicationResourceMutationContract.setCommunicationResources
 );
 ```
 
-## Quickstart: create one consent operation (copy/paste)
-
-Use this when a developer asks: "how do I build one consent in a Communication
-using setPurposes, actorRoles, and sections?"
-
-```ts
-import {
-  buildConsentOperationClaims,
-  buildConsentOperationsCommunicationInput,
-  setPurposes,
-  setRoles,
-  setSections,
-  type ConsentCommunicationOperationInput,
-} from 'gdc-sdk-core-ts';
-import {
-  HealthcareActorRoles,
-  HealthcareBasicSections,
-  HealthcareConsentPurposes,
-} from 'gdc-common-utils-ts/constants/healthcare';
-
-const subjectDid = 'did:web:patient.example.com:individual:123';
-const professionalDid = 'did:web:clinic.example.com:professional:abc';
-
-const operation: ConsentCommunicationOperationInput = {
-  operationKind: 'add',
-  operationId: 'consent-op-001',
-  subject: subjectDid,
-  purpose: HealthcareConsentPurposes.Treatment,
-  target: {
-    kind: 'professional',
-    identifier: professionalDid,
-    roles: [HealthcareActorRoles.Physician],
-  },
-  sections: {
-    core: [
-      HealthcareBasicSections.HistoryOfMedicationUse.claim,
-      HealthcareBasicSections.Results.claim,
-    ],
-  },
-};
-
-// Optional: patch/normalize claims explicitly with set* helpers.
-let claims = buildConsentOperationClaims(operation);
-claims = setPurposes(claims, [HealthcareConsentPurposes.Treatment]);
-claims = setRoles(claims, [HealthcareActorRoles.Physician]);
-claims = setSections(claims, [
-  HealthcareBasicSections.HistoryOfMedicationUse.claim,
-  HealthcareBasicSections.Results.claim,
-]);
-
-// Build canonical CommunicationInput for transport.
-const commInput = buildConsentOperationsCommunicationInput({
-  thid: 'thread-001',
-  subject: subjectDid,
-  sender: 'did:web:controller.example.com:org:main',
-  recipient: 'did:web:gateway.example.com:core',
-  operations: [operation],
-  summaryText: 'Grant treatment access for physician to medication/results sections',
-});
-
-// commInput.payload.operations[0] carries operationKind/target/sections
-// claims carries canonical CSV claims fields (purpose, actorRole, action, ...)
-```
-
 ## Cross-package alignment
 
 Role and section catalogs should come from `gdc-common-utils-ts` constants,
@@ -245,4 +289,5 @@ From `gdc-sdk-core-ts`, these helpers are re-exported via:
 - `src/communication-consent-mutation-contract.ts`
 - `src/communication-bundle-resources.ts`
 - `src/consent-communication-operations.ts`
+- `tests/101-consent-communication-mutations.test.mjs`
 - `tests/communication-consent-mutation-contract.test.mjs`

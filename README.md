@@ -509,6 +509,33 @@ Consent precedence in the shared model:
 - [`IOutboxRepository`](src/communication-outbox.ts)
 - [`OutboxRepositoryMemory`](src/communication-outbox.ts)
 
+### IPS search through Communication
+
+For IPS document requests, the frontend/web app should create a FHIR
+`Communication` whose `Communication.content-reference` contains the relative
+FHIR search path for the index service.
+
+- `Communication.content-reference`
+  stores what must be searched, for example the relative `Bundle` query path
+- `Communication.recipient`
+  is the logical/clinical conversation recipient, not the HTTP endpoint
+- DIDComm `to` / `aud`
+  belong to the transport envelope or runtime submitter, not to
+  `Communication.content-reference`
+
+Typical flow:
+
+1. build `summaryOperationRequestParameters`
+2. flatten them to `summaryOperationRequestReferencePath`
+3. create `Communication` claims with `communication.newIpsSummarySearchCommunication(...)`
+4. place the `Communication` in a draft
+5. freeze the draft into an outbox job
+6. let the runtime/backend resolve the provider and send the envelope
+
+See the executable example:
+
+- [`tests/communication-ips-search-outbox-101.test.mjs`](tests/communication-ips-search-outbox-101.test.mjs)
+
 ### High-level document facade
 
 - [`getDocumentFromCommunication(...)`](src/communication-document-facade.ts)
