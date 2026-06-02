@@ -7,6 +7,8 @@ Use this together with:
 
 - the canonical consent editing 101 in `common-utils`:
   [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](../../gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md)
+- the `sdk-core` flat-claim facade 101:
+  [RESOURCE_CLAIMS_101.md](./RESOURCE_CLAIMS_101.md)
 - its executable test:
   [gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts](../../gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts)
 - the `sdk-core` draft/outbox test:

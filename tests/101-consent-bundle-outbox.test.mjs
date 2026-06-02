@@ -5,22 +5,22 @@ import { CommunicationCategoryCodes } from '../../gdc-common-utils-ts/dist/const
 import { ResourceTypesFhirR4 } from '../../gdc-common-utils-ts/dist/constants/fhir-resource-types.js';
 import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
 import {
-  EXAMPLE_COMMUNICATION_IDENTIFIER,
-  EXAMPLE_CONSENT_IDENTIFIER,
+  EXAMPLE_COMMUNICATION_UUID,
+  EXAMPLE_CONSENT_DECISION_PERMIT,
+  EXAMPLE_CONSENT_DATE,
+  EXAMPLE_CONSENT_UUID,
+  EXAMPLE_CONSENT_PERIOD_END,
+  EXAMPLE_CONSENT_PERIOD_START,
+  EXAMPLE_EMAIL_PROFESSIONAL,
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
-import { ClaimConsent } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
 import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
-import {
-  addSections,
-  setPurposes,
-  setRoles,
-  setSections,
-} from '../../gdc-common-utils-ts/dist/utils/consent-claim-helpers.js';
 import { CommunicationBundleSession } from '../../gdc-common-utils-ts/dist/utils/communication-bundle-session.js';
 
 import {
+  CommunicationClaims,
+  ConsentClaims,
   CommunicationOutboxStatuses,
   addClaimsResourceToDraft,
   createCommunicationDraft,
@@ -32,38 +32,36 @@ import {
 
 test('101: consent bundle Communication goes into draft and outbox step by step', () => {
   // Step 1.
-  // Build or edit the real Consent resource inside a Communication-attached bundle.
+  // Build the Communication wrapper and the Consent claims through the sdk-core
+  // fluent facade classes.
+  const communicationClaimsBase = CommunicationClaims.create()
+    .setIdentifier(EXAMPLE_COMMUNICATION_UUID)
+    .setSubject(EXAMPLE_SUBJECT_DID)
+    .setCategoryList([CommunicationCategoryCodes.Notification.attributeValue])
+    .toClaims();
+
   const bundleEditor = new CommunicationBundleSession({
-    communicationClaims: {
-      '@context': 'org.hl7.fhir.r4',
-      [CommunicationClaim.Identifier]: EXAMPLE_COMMUNICATION_IDENTIFIER,
-      [CommunicationClaim.Subject]: EXAMPLE_SUBJECT_DID,
-      [CommunicationClaim.Category]: CommunicationCategoryCodes.Notification.claim,
-    },
+    communicationClaims: communicationClaimsBase,
   });
+
+  const consentClaims = ConsentClaims.create()
+    .setIdentifier(EXAMPLE_CONSENT_UUID)
+    .setSubject(EXAMPLE_SUBJECT_DID)
+    .setDecision(EXAMPLE_CONSENT_DECISION_PERMIT)
+    .setDate(EXAMPLE_CONSENT_DATE)
+    .setPeriodStart(EXAMPLE_CONSENT_PERIOD_START)
+    .setPeriodEnd(EXAMPLE_CONSENT_PERIOD_END)
+    .setPurposeList([HealthcareConsentPurposes.Treatment])
+    .setActorIdentifierList([EXAMPLE_EMAIL_PROFESSIONAL])
+    .setActorRoleList([HealthcareActorRoles.GeneralistMedicalPractitioner])
+    .setSectionList([HealthcareBasicSections.HistoryOfMedicationUse.attributeValue])
+    .addSectionList([HealthcareBasicSections.Results.attributeValue])
+    .toClaims();
 
   bundleEditor.upsertActiveConsentEntry({
-    claims: {
-      '@context': 'org.hl7.fhir.api',
-      [ClaimConsent.identifier]: EXAMPLE_CONSENT_IDENTIFIER,
-      [ClaimConsent.subject]: EXAMPLE_SUBJECT_DID,
-      [ClaimConsent.decision]: 'permit',
-    },
-    fullUrl: `urn:uuid:${EXAMPLE_CONSENT_IDENTIFIER}`,
+    claims: consentClaims,
+    fullUrl: `urn:uuid:${EXAMPLE_CONSENT_UUID}`,
   });
-
-  const activeConsentClaims = {
-    ...(bundleEditor.getActiveEntry()?.resource?.meta?.claims || {}),
-  };
-  let nextConsentClaims = setPurposes(activeConsentClaims, [HealthcareConsentPurposes.Treatment]);
-  nextConsentClaims = setRoles(nextConsentClaims, [HealthcareActorRoles.Physician]);
-  nextConsentClaims = setSections(nextConsentClaims, [
-    HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
-  ]);
-  nextConsentClaims = addSections(nextConsentClaims, [
-    HealthcareBasicSections.Results.attributeValue,
-  ]);
-  bundleEditor.patchActiveEntryClaims(nextConsentClaims);
   bundleEditor.saveAndReleaseActiveEntry();
 
   // Step 2.
