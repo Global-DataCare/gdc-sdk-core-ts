@@ -22,6 +22,10 @@ where these pieces already live:
 - `createSummaryOperationRequestReferencePath(...)`
 - `communication.newIpsSummarySearchCommunication(...)`
 
+That `content-reference` currently points to:
+
+- `individual/org.hl7.fhir.r4/Bundle/_search?...`
+
 ## Step By Step
 
 Executable reference:
