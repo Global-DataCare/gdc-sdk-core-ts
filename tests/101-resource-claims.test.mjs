@@ -5,7 +5,6 @@ import { CommunicationCategoryCodes } from '../../gdc-common-utils-ts/dist/const
 import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
 import {
   EXAMPLE_COMMUNICATION_UUID,
-  EXAMPLE_CONSENT_DECISION_PERMIT,
   EXAMPLE_CONSENT_UUID,
   EXAMPLE_CONSENT_DATE,
   EXAMPLE_CONSENT_PERIOD_START,
@@ -22,7 +21,7 @@ import {
   EXAMPLE_MEDICATION_TIMING_PERIOD_UNIT_HOURS,
   EXAMPLE_SUBJECT_DID,
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
-import { ClaimConsent } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
+import { ClaimConsent, ConsentDecisions } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
 import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
 import {
   MedicationStatementClaim,
@@ -52,7 +51,7 @@ test('101: sdk-core resource claim classes stay thin and discoverable', () => {
     // - sections: medication history + results
     .setIdentifier(EXAMPLE_CONSENT_UUID)
     .setSubject(EXAMPLE_SUBJECT_DID)
-    .setDecision(EXAMPLE_CONSENT_DECISION_PERMIT)
+    .setDecision(ConsentDecisions.Permit)
     .setDate(EXAMPLE_CONSENT_DATE)
     .setPeriodStart(EXAMPLE_CONSENT_PERIOD_START)
     .setPeriodEnd(EXAMPLE_CONSENT_PERIOD_END)

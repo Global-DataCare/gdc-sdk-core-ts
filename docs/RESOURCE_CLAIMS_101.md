@@ -14,6 +14,11 @@ The classes below are thin wrappers over the canonical helpers in
 Executable reference:
 
 - [tests/101-resource-claims.test.mjs](../tests/101-resource-claims.test.mjs)
+- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
+- [gdc-common-utils-ts/docs/MEDICATION_STATEMENT_CLAIMS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/MEDICATION_STATEMENT_CLAIMS_101.md)
+- [gdc-common-utils-ts/docs/HEALTHCARE_ROLES_I18N_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/HEALTHCARE_ROLES_I18N_101.md)
+- [gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
+- [gdc-common-utils-ts/__tests__/101-medication-claim-helpers.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-medication-claim-helpers.test.ts)
 
 ## Communication
 
@@ -32,11 +37,12 @@ const communicationClaims = CommunicationClaims.create()
 
 ```ts
 import { ConsentClaims } from 'gdc-sdk-core-ts';
+import { ConsentDecisions } from 'gdc-common-utils-ts/models/consent-rule';
 
 const consentClaims = ConsentClaims.create()
   .setIdentifier(EXAMPLE_CONSENT_UUID)
   .setSubject(EXAMPLE_SUBJECT_DID)
-  .setDecision(EXAMPLE_CONSENT_DECISION_PERMIT)
+  .setDecision(ConsentDecisions.Permit)
   // There is no separate ActorReference helper in this flat-claims API.
   // The target actor goes in actorIdentifierList.
   .setActorIdentifierList([EXAMPLE_EMAIL_PROFESSIONAL])

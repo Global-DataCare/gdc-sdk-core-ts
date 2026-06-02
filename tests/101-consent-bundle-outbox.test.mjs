@@ -6,7 +6,6 @@ import { ResourceTypesFhirR4 } from '../../gdc-common-utils-ts/dist/constants/fh
 import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
 import {
   EXAMPLE_COMMUNICATION_UUID,
-  EXAMPLE_CONSENT_DECISION_PERMIT,
   EXAMPLE_CONSENT_DATE,
   EXAMPLE_CONSENT_UUID,
   EXAMPLE_CONSENT_PERIOD_END,
@@ -15,6 +14,7 @@ import {
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
+import { ConsentDecisions } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
 import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
 import { CommunicationBundleSession } from '../../gdc-common-utils-ts/dist/utils/communication-bundle-session.js';
 
@@ -47,7 +47,7 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
   const consentClaims = ConsentClaims.create()
     .setIdentifier(EXAMPLE_CONSENT_UUID)
     .setSubject(EXAMPLE_SUBJECT_DID)
-    .setDecision(EXAMPLE_CONSENT_DECISION_PERMIT)
+    .setDecision(ConsentDecisions.Permit)
     .setDate(EXAMPLE_CONSENT_DATE)
     .setPeriodStart(EXAMPLE_CONSENT_PERIOD_START)
     .setPeriodEnd(EXAMPLE_CONSENT_PERIOD_END)
