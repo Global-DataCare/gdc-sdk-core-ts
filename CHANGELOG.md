@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.9] - 2026-06-02
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.14.10`.
+- Renamed the consent outbox guide to the clearer:
+  - `docs/CONSENT_COMMUNICATION_101.md`
+- Added a dedicated IPS outbox guide:
+  - `docs/IPS_COMMUNICATION_OUTBOX_101.md`
+- Simplified the `101` outbox tests so they focus on the developer-facing
+  result:
+  - `createOutboxJobFromDraft(...)`
+
+### Testing
+- `node --test tests/101-consent-bundle-outbox.test.mjs tests/communication-ips-search-outbox-101.test.mjs`
+- `npm run build`
+
 ## [0.6.1] - 2026-06-01
 
 ### Changed
