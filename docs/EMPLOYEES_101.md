@@ -5,18 +5,18 @@ This is the canonical employee-contract note for the SDK family.
 Read this in `sdk-core` first, then read the runtime guide of the SDK you are
 using:
 
-- `gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md`
-- `gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md`
+- [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
 
 For the shortest executable reference, open:
 
-- `gdc-sdk-core-ts/tests/101-employees.test.mjs`
+- [gdc-sdk-core-ts/tests/101-employees.test.mjs](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/tests/101-employees.test.mjs)
 
 That `101` stays intentionally small. Broader coverage lives in:
 
-- `gdc-sdk-core-ts/tests/employee-draft.test.mjs`
-- `gwtemplate-node-ts/src/__tests__/unit/managers/EmployeeManager.test.ts`
-- `gwtemplate-node-ts/src/__tests__/integration/employeeApi.test.ts`
+- [gdc-sdk-core-ts/tests/employee-draft.test.mjs](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/tests/employee-draft.test.mjs)
+- [gwtemplate-node-ts/src/__tests__/unit/managers/EmployeeManager.test.ts](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/src/__tests__/unit/managers/EmployeeManager.test.ts)
+- [gwtemplate-node-ts/src/__tests__/integration/employeeApi.test.ts](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/src/__tests__/integration/employeeApi.test.ts)
 
 ## Ownership Split
 
@@ -42,11 +42,6 @@ Employee search is a bundle operation. New SDK code should emit:
   - `request.method = POST`
   - `request.url = Employee/_search`
   - `resource.resourceType = Parameters`
-
-Legacy compatibility remains supported for:
-
-- `request.method = GET`
-- `request.url = Employee?...`
 
 Meaning of the main search keys:
 
