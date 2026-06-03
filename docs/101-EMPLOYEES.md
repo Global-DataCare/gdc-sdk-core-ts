@@ -64,7 +64,9 @@ Practical rule:
 - `sdk-core` = shared contracts and builders
 - `sdk-node` / `sdk-front` = actor-scoped runtime surface
 
-## Developer-Facing Editing Pattern
+## Create
+
+Start with the create flow first, on its own.
 
 Start with the highest-level editor first.
 
@@ -102,12 +104,36 @@ const createEntry = bundleEditor.toBundleEntry({
 const searchBundle = bundleEditor.toBundleSearch();
 ```
 
-Use this pattern when you want developers to understand:
+Use this pattern when you want developers to understand create:
 
 - how employee claims are authored
 - how to inspect intermediate values with `getClaim(...)`
 - how repeated fields can be accumulated with `addClaim(...)`
-- how the same editor produces both bundle entries and search bundles
+- how one editor produces a create bundle entry
+
+Minimal create shape:
+
+```ts
+const createEntry = bundleEditor.toBundleEntry({
+  method: 'POST',
+  resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
+});
+```
+
+## Search
+
+Teach search as a second, separate step.
+
+The same editor can produce the search bundle, but search should be explained
+independently from create so the reader does not confuse the two operations.
+
+Minimal search shape:
+
+```ts
+const searchBundle = bundleEditor
+  .removeClaim(ClaimsPersonSchemaorg.identifier)
+  .toBundleSearch();
+```
 
 Only after that should you explain the lower-level building blocks:
 
@@ -166,6 +192,10 @@ Meaning of the main search keys:
 - `org.schema.Person.email` + `org.schema.Person.hasOccupation.identifier.value`
   - targets one functional employee role
   - recommended exact operational lookup
+
+## Lifecycle
+
+Teach lifecycle only after create and search are already clear.
 
 ## Lifecycle Semantics
 
