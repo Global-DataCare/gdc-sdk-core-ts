@@ -39,7 +39,46 @@ If a developer only needs to edit one consent, they should stop at
 If they then need to queue and send that `Communication`, this is the next
 layer.
 
-## Step By Step
+## Step 1. Consent Editing In `common-utils`
+
+Before the `sdk-core` draft/outbox step, the consent `Communication` is edited
+at the higher level in `gdc-common-utils-ts`.
+
+Minimal example:
+
+```ts
+import { bundleEditor } from 'gdc-common-utils-ts';
+import {
+  EXAMPLE_PROFESSIONAL_DID,
+  EXAMPLE_SUBJECT_DID,
+} from 'gdc-common-utils-ts/examples/shared';
+import {
+  HealthcareBasicSections,
+  HealthcareConsentPurposes,
+} from 'gdc-common-utils-ts';
+
+const communicationClaims = bundleEditor
+  .newConsentAccessBundleEditor({
+    subjectDid: EXAMPLE_SUBJECT_DID,
+    actorDid: EXAMPLE_PROFESSIONAL_DID,
+  })
+  .setPurposeList([HealthcareConsentPurposes.Treatment])
+  .setSectionList([HealthcareBasicSections.HistoryOfMedicationUse.attributeValue])
+  .toCommunicationClaims();
+```
+
+What a new developer should understand at this step:
+
+- `common-utils` owns the high-level consent editing surface
+- the developer edits consent meaning, not transport/runtime details
+- the result of this step is `communicationClaims`
+- that result is what `sdk-core` stages into draft/outbox next
+
+If you want the executable source for this editing step, open:
+
+- [101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
+
+## Step 2. Draft And Outbox In `sdk-core`
 
 Executable references:
 
