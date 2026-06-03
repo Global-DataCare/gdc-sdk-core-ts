@@ -38,6 +38,9 @@ open these documents in this order:
 - [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
   Real backend initialization with `initializeCommunicationIdentity(...)`,
   `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
+- [gdc-sdk-node-ts/docs/101-LIVE_GW_LOCAL.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-LIVE_GW_LOCAL.md)
+  Exact local TTY and Docker commands for running the SDK against a real local
+  GW CORE.
 - [gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
   Real frontend/native initialization with `new ClientSDK(...)`,
   `initializeSession(...)`, provider discovery, and profile/session bootstrap.
