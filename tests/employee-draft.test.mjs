@@ -7,6 +7,7 @@ import {
   buildEmployeeClaims,
   buildEmployeeSearchBundle,
   buildEmployeeSearchQuery,
+  buildSearchBundle,
 } from '../dist/index.js';
 
 test('EmployeeDraft builds canonical employee claims', () => {
@@ -57,7 +58,7 @@ test('buildEmployeeBatchEntry builds a claims-first Employee entry', () => {
   assert.equal(entry.resource.meta.claims['org.schema.Person.email'], 'receptionist1@acme.org');
 });
 
-test('employee search helpers build canonical batch GET bundles', () => {
+test('employee search helpers keep the legacy GET query builder', () => {
   const query = buildEmployeeSearchQuery({
     employeeClaims: {
       'org.schema.Person.email': 'receptionist1@acme.org',
@@ -67,7 +68,9 @@ test('employee search helpers build canonical batch GET bundles', () => {
   assert.match(query, /^Employee\?/);
   assert.match(query, /org\.schema\.Person\.email=receptionist1%40acme\.org/);
   assert.match(query, /org\.schema\.Person\.hasOccupation\.identifier\.value=ISCO-08%7C4226/);
+});
 
+test('employee search helpers build canonical batch POST bundles by default', () => {
   const bundle = buildEmployeeSearchBundle({
     employeeClaims: {
       'org.schema.Person.email': 'receptionist1@acme.org',
@@ -75,6 +78,25 @@ test('employee search helpers build canonical batch GET bundles', () => {
   });
   assert.equal(bundle.resourceType, 'Bundle');
   assert.equal(bundle.type, 'batch');
+  assert.equal(bundle.entry[0].request.method, 'POST');
+  assert.equal(bundle.entry[0].request.url, 'Employee/_search');
+  assert.deepEqual(bundle.entry[0].resource, {
+    resourceType: 'Parameters',
+    parameter: [
+      { name: 'org.schema.Person.email', valueString: 'receptionist1@acme.org' },
+    ],
+  });
+});
+
+test('generic search bundles still support legacy GET query encoding', () => {
+  const bundle = buildSearchBundle({
+    resourceType: 'Employee',
+    encoding: 'get-query',
+    searchParams: {
+      'org.schema.Person.email': 'receptionist1@acme.org',
+    },
+  });
+
   assert.equal(bundle.entry[0].request.method, 'GET');
   assert.equal(bundle.entry[0].request.url, 'Employee?org.schema.Person.email=receptionist1%40acme.org');
 });

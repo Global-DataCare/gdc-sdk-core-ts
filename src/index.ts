@@ -24,5 +24,6 @@ export * from './identity-store.js';
 export * from './polling-model.js';
 export * from './relationship-access.js';
 export * from './session-model.js';
+export * from './search-bundle.js';
 export * from './smart-endpoint-resolver.js';
 export * from './vital-signs.js';

@@ -1,6 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
+import { buildSearchBundle, buildSearchBundleEntry, SearchRequestEncoding } from './search-bundle.js';
 
 export type EmployeeClaims = Record<string, unknown>;
 
@@ -29,6 +30,7 @@ export type EmployeeBatchEntryOptions = Readonly<{
 
 export type EmployeeSearchBundleOptions = Readonly<{
   employeeClaims?: Record<string, EmployeeSearchValue | undefined>;
+  encoding?: SearchRequestEncoding;
 }>;
 
 function cloneClaims(claims?: EmployeeClaims): EmployeeClaims {
@@ -150,21 +152,15 @@ export function buildEmployeeSearchQuery(input: EmployeeSearchBundleOptions = {}
 export function buildEmployeeSearchBundle(input: EmployeeSearchBundleOptions = {}): {
   resourceType: 'Bundle';
   type: 'batch';
-  entry: Array<{
-    request: {
-      method: 'GET';
-      url: string;
-    };
-  }>;
+  entry: Array<ReturnType<typeof buildSearchBundleEntry>>;
 } {
-  return {
-    resourceType: 'Bundle',
-    type: 'batch',
-    entry: [{
-      request: {
-        method: 'GET',
-        url: buildEmployeeSearchQuery(input),
-      },
-    }],
-  };
+  const claims = input.employeeClaims || {};
+  const searchParams = Object.fromEntries(
+    Object.entries(claims).filter(([, value]) => value !== undefined),
+  ) as Record<string, EmployeeSearchValue>;
+  return buildSearchBundle({
+    resourceType: 'Employee',
+    searchParams,
+    encoding: input.encoding || 'post-parameters',
+  });
 }
