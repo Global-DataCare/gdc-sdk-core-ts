@@ -1,6 +1,6 @@
 {
   "name": "gdc-sdk-core-ts",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "description": "Runtime-neutral actor and capability contracts for GDC SDK convergence",
   "license": "Apache-2.0",
   "author": "Antifraud Services Inc.",
