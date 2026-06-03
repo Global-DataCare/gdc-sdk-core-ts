@@ -47,7 +47,7 @@ at the higher level in `gdc-common-utils-ts`.
 Minimal example:
 
 ```ts
-import { createConsentAccessEditor } from 'gdc-common-utils-ts/utils/communication-bundle-session';
+import { createConsentAccessEditor } from 'gdc-common-utils-ts/utils/communication-attached-bundle-session';
 import {
   setConsentDecision,
   setConsentIdentifier,

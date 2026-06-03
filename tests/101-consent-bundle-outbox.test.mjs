@@ -16,7 +16,7 @@ import {
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
 import { ConsentDecisions } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
 import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
-import { CommunicationBundleSession } from '../../gdc-common-utils-ts/dist/utils/communication-bundle-session.js';
+import { CommunicationAttachedBundleSession } from '../../gdc-common-utils-ts/dist/utils/communication-attached-bundle-session.js';
 
 import {
   CommunicationClaims,
@@ -38,7 +38,7 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
     .setCategoryList([CommunicationCategoryCodes.Notification.attributeValue])
     .toClaims();
 
-  const bundleEditor = new CommunicationBundleSession({
+  const bundleEditor = new CommunicationAttachedBundleSession({
     communicationClaims: communicationClaimsBase,
   });
 
