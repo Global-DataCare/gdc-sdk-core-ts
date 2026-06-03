@@ -43,6 +43,32 @@ Employee search is a bundle operation. New SDK code should emit:
   - `request.url = Employee/_search`
   - `resource.resourceType = Parameters`
 
+Minimal FHIR bundle example:
+
+```json
+{
+  "resourceType": "Bundle",
+  "type": "batch",
+  "entry": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "Employee/_search"
+      },
+      "resource": {
+        "resourceType": "Parameters",
+        "parameter": [
+          {
+            "name": "org.schema.Person.email",
+            "valueString": "employee.two@example.org"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
 Meaning of the main search keys:
 
 - `org.schema.Person.identifier`
