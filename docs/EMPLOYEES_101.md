@@ -24,10 +24,10 @@ That `101` stays intentionally small. Broader coverage lives in:
   - constants
   - shared examples
   - low-level FHIR search serializers
+  - pure employee helper functions such as `buildEmployeeClaims(...)` and `buildEmployeeBatchEntry(...)`
 - `gdc-sdk-core-ts`
   - `EmployeeDraft`
-  - generic search-bundle builders
-  - runtime-neutral bundle authoring
+  - runtime-neutral orchestration and higher-level builders
 - `gdc-sdk-node-ts` and `gdc-sdk-front-ts`
   - reexport and execute the same core model in node/web/native runtimes
 - `gwtemplate-node-ts`

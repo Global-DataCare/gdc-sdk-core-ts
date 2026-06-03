@@ -15,7 +15,7 @@ const ExampleEmployeeClaims = Object.freeze({
 
 test('101: employee draft and search semantics stay explicit', () => {
   const exactHistoricalSearch = buildEmployeeSearchBundle({
-    employeeClaims: {
+    claims: {
       'org.schema.Person.identifier': ExampleEmployeeClaims.purgedDoctorIdentifier,
     },
   });

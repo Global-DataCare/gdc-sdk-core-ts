@@ -42,10 +42,9 @@ test('buildEmployeeClaims merges additional claims and canonical setters', () =>
 
 test('buildEmployeeBatchEntry builds a claims-first Employee entry', () => {
   const entry = buildEmployeeBatchEntry({
-    requestType: 'Employee-create-request-v1.0',
-    requestMethod: 'POST',
+    method: 'POST',
     resourceId: 'employee-001',
-    employeeClaims: buildEmployeeClaims({
+    claims: buildEmployeeClaims({
       email: 'receptionist1@acme.org',
       role: 'ISCO-08|4226',
     }),
@@ -60,7 +59,7 @@ test('buildEmployeeBatchEntry builds a claims-first Employee entry', () => {
 
 test('employee search helpers keep the legacy GET query builder', () => {
   const query = buildEmployeeSearchQuery({
-    employeeClaims: {
+    claims: {
       'org.schema.Person.email': 'receptionist1@acme.org',
       'org.schema.Person.hasOccupation.identifier.value': 'ISCO-08|4226',
     },
@@ -72,7 +71,7 @@ test('employee search helpers keep the legacy GET query builder', () => {
 
 test('employee search helpers build canonical batch POST bundles by default', () => {
   const bundle = buildEmployeeSearchBundle({
-    employeeClaims: {
+    claims: {
       'org.schema.Person.email': 'receptionist1@acme.org',
     },
   });

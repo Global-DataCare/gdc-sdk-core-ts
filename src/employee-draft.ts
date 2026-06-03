@@ -1,50 +1,25 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import { buildSearchBundle, buildSearchBundleEntry, SearchRequestEncoding } from './search-bundle.js';
+import type { EmployeeClaims } from 'gdc-common-utils-ts/utils/employee';
 
-export type EmployeeClaims = Record<string, unknown>;
-
-export type EmployeeSearchValue =
-  | string
-  | number
-  | boolean
-  | readonly (string | number | boolean)[];
-
-export type EmployeeDraftInput = Readonly<{
-  identifier?: string;
-  email?: string;
-  role?: string;
-  worksFor?: string;
-  memberOf?: string;
-  memberOfOrgTaxId?: string;
-  additionalClaims?: EmployeeClaims;
-}>;
-
-export type EmployeeBatchEntryOptions = Readonly<{
-  requestType: string;
-  requestMethod: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  employeeClaims?: EmployeeClaims;
-  resourceId?: string;
-}>;
-
-export type EmployeeSearchBundleOptions = Readonly<{
-  employeeClaims?: Record<string, EmployeeSearchValue | undefined>;
-  encoding?: SearchRequestEncoding;
-}>;
+export type {
+  EmployeeBatchEntryInput,
+  EmployeeBatchMethod,
+  EmployeeClaims,
+  EmployeeDraftInput,
+  EmployeeSearchBundleInput,
+  EmployeeSearchValue,
+} from 'gdc-common-utils-ts/utils/employee';
+export {
+  buildEmployeeBatchEntry,
+  buildEmployeeClaims,
+  buildEmployeeSearchBundle,
+  buildEmployeeSearchQuery,
+} from 'gdc-common-utils-ts/utils/employee';
 
 function cloneClaims(claims?: EmployeeClaims): EmployeeClaims {
   return { ...(claims || {}) };
-}
-
-function normalizeSearchValue(value: EmployeeSearchValue): string {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => String(item).trim())
-      .filter(Boolean)
-      .join(',');
-  }
-  return String(value).trim();
 }
 
 /**
@@ -102,79 +77,4 @@ export class EmployeeDraft {
   toClaims(): EmployeeClaims {
     return cloneClaims(this.claims);
   }
-}
-
-export function buildEmployeeClaims(input: EmployeeDraftInput): EmployeeClaims {
-  const draft = new EmployeeDraft(input.additionalClaims);
-  if (typeof input.identifier === 'string' && input.identifier.trim()) draft.setIdentifier(input.identifier);
-  if (typeof input.email === 'string' && input.email.trim()) draft.setEmail(input.email);
-  if (typeof input.role === 'string' && input.role.trim()) draft.setRole(input.role);
-  if (typeof input.worksFor === 'string' && input.worksFor.trim()) draft.setWorksFor(input.worksFor);
-  if (typeof input.memberOf === 'string' && input.memberOf.trim()) draft.setMemberOf(input.memberOf);
-  if (typeof input.memberOfOrgTaxId === 'string' && input.memberOfOrgTaxId.trim()) {
-    draft.setMemberOfOrgTaxId(input.memberOfOrgTaxId);
-  }
-  return draft.toClaims();
-}
-
-export function buildEmployeeBatchEntry(options: EmployeeBatchEntryOptions): {
-  type: string;
-  request: { method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' };
-  meta: { claims: EmployeeClaims };
-  resource: { resourceType: 'Employee'; id?: string; meta: { claims: EmployeeClaims } };
-} {
-  const claims = cloneClaims(options.employeeClaims);
-  return {
-    type: options.requestType,
-    request: { method: options.requestMethod },
-    meta: { claims },
-    resource: {
-      resourceType: 'Employee',
-      ...(options.resourceId ? { id: options.resourceId } : {}),
-      meta: { claims },
-    },
-  };
-}
-
-/**
- * Builds the legacy query-string search form kept for compatibility with older
- * `_search` wrappers.
- *
- * Prefer `buildEmployeeSearchBundle(...)` for new code so the search request is
- * encoded as `POST + FHIR Parameters`.
- */
-export function buildEmployeeSearchQuery(input: EmployeeSearchBundleOptions = {}): string {
-  const params = new URLSearchParams();
-  const claims = input.employeeClaims || {};
-  for (const [key, value] of Object.entries(claims)) {
-    if (value === undefined || value === null) continue;
-    const normalized = normalizeSearchValue(value);
-    if (!normalized) continue;
-    params.set(key, normalized);
-  }
-  const query = params.toString();
-  return query ? `Employee?${query}` : 'Employee';
-}
-
-/**
- * Builds a canonical employee directory search bundle.
- *
- * Default encoding is `POST + Parameters` because the outer GW route is already
- * `POST .../_search` and this avoids putting search criteria in query strings.
- * Set `encoding: 'get-query'` only when talking to legacy search consumers.
- */
-export function buildEmployeeSearchBundle(input: EmployeeSearchBundleOptions = {}): {
-  resourceType: 'Bundle';
-  type: 'batch';
-  entry: Array<ReturnType<typeof buildSearchBundleEntry>>;
-} {
-  const claims = input.employeeClaims || {};
-  const searchParams = Object.fromEntries(
-    Object.entries(claims).filter(([, value]) => value !== undefined),
-  ) as Record<string, EmployeeSearchValue>;
-  return buildSearchBundle({
-    resourceType: 'Employee',
-    searchParams,
-    encoding: input.encoding || 'post-parameters',
-  });
 }
