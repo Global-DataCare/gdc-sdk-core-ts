@@ -61,6 +61,11 @@ function buildFhirParametersResourceFromSearchParams(
   };
 }
 
+/**
+ * Builds one runtime-neutral search entry that can be wrapped inside a batch
+ * bundle and then submitted through SDK node/front runtimes or portal DIDComm
+ * wrappers.
+ */
 export function buildSearchBundleEntry(input: SearchBundleOptions): {
   request: {
     method: 'GET' | 'POST';
@@ -98,6 +103,12 @@ export function buildSearchBundleEntry(input: SearchBundleOptions): {
   };
 }
 
+/**
+ * Builds a one-entry `Bundle` for search operations.
+ *
+ * New SDK code should use the default `post-parameters` encoding. `get-query`
+ * remains available only for compatibility with legacy GW search handlers.
+ */
 export function buildSearchBundle(input: SearchBundleOptions): {
   resourceType: 'Bundle';
   type: 'batch';

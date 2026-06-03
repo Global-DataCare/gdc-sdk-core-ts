@@ -136,6 +136,13 @@ export function buildEmployeeBatchEntry(options: EmployeeBatchEntryOptions): {
   };
 }
 
+/**
+ * Builds the legacy query-string search form kept for compatibility with older
+ * `_search` wrappers.
+ *
+ * Prefer `buildEmployeeSearchBundle(...)` for new code so the search request is
+ * encoded as `POST + FHIR Parameters`.
+ */
 export function buildEmployeeSearchQuery(input: EmployeeSearchBundleOptions = {}): string {
   const params = new URLSearchParams();
   const claims = input.employeeClaims || {};
@@ -149,6 +156,13 @@ export function buildEmployeeSearchQuery(input: EmployeeSearchBundleOptions = {}
   return query ? `Employee?${query}` : 'Employee';
 }
 
+/**
+ * Builds a canonical employee directory search bundle.
+ *
+ * Default encoding is `POST + Parameters` because the outer GW route is already
+ * `POST .../_search` and this avoids putting search criteria in query strings.
+ * Set `encoding: 'get-query'` only when talking to legacy search consumers.
+ */
 export function buildEmployeeSearchBundle(input: EmployeeSearchBundleOptions = {}): {
   resourceType: 'Bundle';
   type: 'batch';

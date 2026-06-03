@@ -517,6 +517,11 @@ For IPS document requests, the frontend/web app should create a FHIR
 `Communication` whose `Communication.content-reference` contains the relative
 FHIR search path for the index service.
 
+## Employee Contract
+
+Employee lifecycle, search semantics, and the canonical `EmployeeDraft`
+contract live in [docs/EMPLOYEES_101.md](docs/EMPLOYEES_101.md).
+
 - `Communication.content-reference`
   stores what must be searched, for example the relative `Bundle` query path
 - `Communication.recipient`

@@ -46,6 +46,9 @@ The most important real initialization steps are:
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
 
+For employee-specific lifecycle and search semantics, open
+[EMPLOYEES_101.md](./EMPLOYEES_101.md).
+
 Initialization split to keep explicit:
 
 - `appId` / `appVersion`
