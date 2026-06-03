@@ -18,6 +18,7 @@ export * from './communication-outbox.js';
 export * from './communication-resource-helpers.js';
 export * from './did-resolution-session.js';
 export * from './discovery-facade.js';
+export * from './employee-draft.js';
 export * from './identity-model.js';
 export * from './identity-store.js';
 export * from './polling-model.js';
