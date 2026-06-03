@@ -9,7 +9,7 @@ Use this together with:
 - its executable test:
   [101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
 - the `sdk-core` flat-claim facade 101:
-  [RESOURCE_CLAIMS_101.md](./RESOURCE_CLAIMS_101.md)
+  [101-RESOURCE_CLAIMS.md](./101-RESOURCE_CLAIMS.md)
 - the `sdk-core` outbox test:
   [101-consent-bundle-outbox.test.mjs](../tests/101-consent-bundle-outbox.test.mjs)
 

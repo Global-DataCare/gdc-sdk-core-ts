@@ -29,16 +29,16 @@ evaluations they all depend on.
 If you are new and need to see real SDK initialization and real method usage,
 open these documents in this order:
 
-- [docs/SDK_FLOWS_101.md](./docs/SDK_FLOWS_101.md)
+- [docs/101-SDK_FLOWS.md](./docs/101-SDK_FLOWS.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
-- [docs/CONSENT_COMMUNICATION_101.md](./docs/CONSENT_COMMUNICATION_101.md)
+- [docs/101-CONSENT_COMMUNICATION.md](./docs/101-CONSENT_COMMUNICATION.md)
   How an already-edited consent bundle `Communication` moves into draft and outbox.
-- [docs/IPS_COMMUNICATION_OUTBOX_101.md](./docs/IPS_COMMUNICATION_OUTBOX_101.md)
+- [docs/101-IPS_COMMUNICATION_OUTBOX.md](./docs/101-IPS_COMMUNICATION_OUTBOX.md)
   How an IPS request `Communication` from `common-utils` moves into draft and outbox.
-- [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
   Real backend initialization with `initializeCommunicationIdentity(...)`,
   `new NodeHttpClient(...)`, runtime facades, and step-by-step GW usage.
-- [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
   Real frontend/native initialization with `new ClientSDK(...)`,
   `initializeSession(...)`, provider discovery, and profile/session bootstrap.
 
@@ -520,7 +520,7 @@ FHIR search path for the index service.
 ## Employee Contract
 
 Employee lifecycle, search semantics, and the canonical `EmployeeDraft`
-contract live in [docs/EMPLOYEES_101.md](docs/EMPLOYEES_101.md).
+contract live in [docs/101-EMPLOYEES.md](docs/101-EMPLOYEES.md).
 
 - `Communication.content-reference`
   stores what must be searched, for example the relative `Bundle` query path

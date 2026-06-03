@@ -5,8 +5,8 @@ This is the canonical employee-contract note for the SDK family.
 Read this in `sdk-core` first, then read the runtime guide of the SDK you are
 using:
 
-- [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
-- [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
+- [gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 
 For the shortest executable reference, open:
 
@@ -30,8 +30,29 @@ That `101` stays intentionally small. Broader coverage lives in:
   - runtime-neutral orchestration and higher-level builders
 - `gdc-sdk-node-ts` and `gdc-sdk-front-ts`
   - reexport and execute the same core model in node/web/native runtimes
+  - restrict the operational surface by actor/capability
 - `gwtemplate-node-ts`
   - validates and processes the submitted bundles
+
+## Actor Ownership
+
+Employee management belongs to the organization controller surface.
+
+- `gdc-sdk-core-ts`
+  - models employee claims, bundle entries, lifecycle semantics, and capability vocabulary
+  - does not decide which runtime actor is allowed to call create/search/disable/purge
+- `gdc-sdk-node-ts`
+  - should expose employee management through `OrganizationControllerSdk`
+  - capability guards belong in the node runtime facade/session layer
+- `gdc-sdk-front-ts`
+  - should expose employee management through `orgAdmin`
+  - capability-to-service mapping belongs in the frontend session/profile layer
+
+Practical rule:
+
+- `common-utils` = pure helpers and constants
+- `sdk-core` = shared contracts and builders
+- `sdk-node` / `sdk-front` = actor-scoped runtime surface
 
 ## Search Semantics
 

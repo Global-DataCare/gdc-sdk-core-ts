@@ -22,32 +22,32 @@ If what you need first is:
 
 open these files before reading the rest of this document:
 
-1. [gdc-sdk-node-ts/docs/SDK_END_TO_END_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_END_TO_END_101.md)
+1. [gdc-sdk-node-ts/docs/101-SDK_END_TO_END.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md)
    Ordered Node backend onboarding with end-to-end flows and copy/paste
    examples.
-2. [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+2. [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
    Backend runtime initialization and real GW usage.
-3. [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+3. [gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
    Frontend/native runtime initialization and real app-session usage.
 
 The most important real initialization steps are:
 
 - backend technical identity bootstrap:
-  [initializeCommunicationIdentity(...) in gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+  [initializeCommunicationIdentity(...) in gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - backend runtime client creation:
-  [`new NodeHttpClient(...)` in gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+  [`new NodeHttpClient(...)` in gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - frontend technical identity bootstrap:
-  [initializeCommunicationIdentity(...) in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+  [initializeCommunicationIdentity(...) in gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - frontend SDK creation:
-  [`new ClientSDK(...)` in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+  [`new ClientSDK(...)` in gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - frontend session bootstrap:
-  [`initializeSession(...)` in gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+  [`initializeSession(...)` in gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
 
 For employee-specific lifecycle and search semantics, open
-[EMPLOYEES_101.md](./EMPLOYEES_101.md).
+[101-EMPLOYEES.md](./101-EMPLOYEES.md).
 
 Initialization split to keep explicit:
 
@@ -251,7 +251,7 @@ The flows are different depending on the actor family:
 
 If you are integrating from a backend:
 
-- start with [gdc-sdk-node-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- start with [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - first runtime class to instantiate:
   [NodeHttpClient](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/node-runtime-client.ts)
 - role-oriented facades after that:
@@ -261,7 +261,7 @@ If you are integrating from a backend:
 
 If you are integrating from a web/native app:
 
-- start with [gdc-sdk-front-ts/docs/SDK_INTEGRATION_101.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/SDK_INTEGRATION_101.md)
+- start with [gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 - first runtime class to instantiate:
   [ClientSDK](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ClientSDK.ts)
 - session/profile runtime after that:
