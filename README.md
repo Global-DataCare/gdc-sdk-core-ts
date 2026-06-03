@@ -29,6 +29,9 @@ evaluations they all depend on.
 If you are new and need to see real SDK initialization and real method usage,
 open these documents in this order:
 
+- [docs/101-SDK_PACKAGE_BOUNDARIES.md](./docs/101-SDK_PACKAGE_BOUNDARIES.md)
+  Why `core`, `node`, and `front` are separate packages, what each one owns,
+  and why actor-scoped facades are enforced.
 - [docs/101-SDK_FLOWS.md](./docs/101-SDK_FLOWS.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
 - [docs/101-CONSENT_COMMUNICATION.md](./docs/101-CONSENT_COMMUNICATION.md)
@@ -50,6 +53,8 @@ Important:
 - `gdc-sdk-core-ts` does not initialize a runtime client by itself.
 - Runtime initialization lives in `gdc-sdk-node-ts` and `gdc-sdk-front-ts`.
 - Shared payload shapes and examples live in `gdc-common-utils-ts`.
+- Package-boundary guidance lives in
+  [docs/101-SDK_PACKAGE_BOUNDARIES.md](./docs/101-SDK_PACKAGE_BOUNDARIES.md).
 
 Shared example files to open while reading those guides:
 
