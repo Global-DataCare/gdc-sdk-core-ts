@@ -1,6 +1,14 @@
 # Resource Claims 101
 
-This guide shows the simple `sdk-core` facade layer for flat FHIR claims.
+This guide shows the simple `sdk-core` facade layer for flat project-specific
+claims carried by FHIR-like resources.
+
+Teaching rule for this `101`:
+
+- start from the highest-level fluent facade first
+- show one resource family at a time
+- only after that point to the lower-level shared helpers in `common-utils`
+- do not start from raw claim maps
 
 Use these classes when developers or AI agents want:
 
@@ -14,9 +22,10 @@ The classes below are thin wrappers over the canonical helpers in
 Executable reference:
 
 - [tests/101-resource-claims.test.mjs](../tests/101-resource-claims.test.mjs)
-- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
-- [gdc-common-utils-ts/docs/MEDICATION_STATEMENT_CLAIMS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/MEDICATION_STATEMENT_CLAIMS_101.md)
-- [gdc-common-utils-ts/docs/HEALTHCARE_ROLES_I18N_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/HEALTHCARE_ROLES_I18N_101.md)
+- [gdc-common-utils-ts/docs/101-CONSENT_ACCESS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-CONSENT_ACCESS.md)
+- [gdc-common-utils-ts/docs/101-COMMUNICATION_LAYERING.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-COMMUNICATION_LAYERING.md)
+- [gdc-common-utils-ts/docs/101-MEDICATION_STATEMENT_CLAIMS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-MEDICATION_STATEMENT_CLAIMS.md)
+- [gdc-common-utils-ts/docs/101-HEALTHCARE_ROLES_I18N.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-HEALTHCARE_ROLES_I18N.md)
 - [gdc-common-utils-ts/__tests__/101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
 - [gdc-common-utils-ts/__tests__/101-medication-claim-helpers.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-medication-claim-helpers.test.ts)
 

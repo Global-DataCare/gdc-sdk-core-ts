@@ -3,6 +3,13 @@
 This guide explains the main GW/GDC flows through SDK usage, step by step, with
 links to the shared example files that define the actual payload data.
 
+Teaching rule for this `101`:
+
+- start from business journeys before low-level payloads
+- keep actor ownership explicit
+- separate create/search/lifecycle when describing employee flows
+- use lower-level wire details only after the main journey is clear
+
 Use this when you are new to the SDK family and need to answer:
 
 - which flow starts first
@@ -10,6 +17,10 @@ Use this when you are new to the SDK family and need to answer:
 - what data each call needs
 - where that data comes from
 - which shared example file to open to see the exact shape
+
+Before reading communication-heavy flows, read:
+
+- [101-COMMUNICATION_LAYERING.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-COMMUNICATION_LAYERING.md)
 
 ## Before Anything Else: Where Initialization Really Lives
 
@@ -86,6 +97,12 @@ Only after that should docs show:
 - runtime request
 
 Never start a `101` by teaching raw GW request bodies.
+
+For communication/index flows, also keep this explicit:
+
+- the canonical contract lives in `resource.meta.claims`
+- `Communication.contentdata` is the canonical claim for embedded payload data
+- versioned FHIR shapes are optional projections or compatibility inputs
 
 ### 2. Prefer builders/helpers over hand-shaped nested objects
 
@@ -401,7 +418,7 @@ Open these files first:
 - [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
 - [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
 - [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
-- [CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
+- [101-CONSENT_ACCESS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-CONSENT_ACCESS.md)
 
 Shared helpers:
 

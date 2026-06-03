@@ -2,10 +2,19 @@
 
 This guide is only about the `sdk-core` step that comes after consent editing.
 
+Teaching rule for this `101`:
+
+- start from the highest-level object the developer should hold
+- explain one concern at a time
+- leave lower-level claim/container details for the second half
+- do not start from raw wire payloads
+
 Use this together with:
 
+- the canonical communication layering 101 in `common-utils`:
+  [101-COMMUNICATION_LAYERING.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-COMMUNICATION_LAYERING.md)
 - the canonical consent editing 101 in `common-utils`:
-  [CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
+  [101-CONSENT_ACCESS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-CONSENT_ACCESS.md)
 - its executable test:
   [101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
 - the `sdk-core` flat-claim facade 101:
@@ -18,8 +27,8 @@ Use this together with:
 Keep the split simple:
 
 - `common-utils`
-  builds or edits the real `Consent` resources inside the bundle carried by a
-  `Communication`
+  builds the canonical claims model for the consent communication, including
+  the consent payload carried semantically inside `resource.meta.claims`
 - `sdk-core`
   takes that already-built `Communication` and turns it into a draft and then
   into an outbox job
@@ -74,8 +83,14 @@ already-authored `Communication` and queues it for transport.
 
 - `Communication`
   is the auditable envelope
-- attached `Bundle`
-  carries the real `Consent` resources
+- `resource.meta.claims`
+  is the canonical semantic contract
+- `Communication.contentdata`
+  is the canonical claim for embedded payload data when the communication
+  carries the consent artifact
+- versioned FHIR attachment fields
+  are optional projection or compatibility shapes; backend normalization can
+  extract claims from them
 - `draft`
   is the local staged object
 - `outboxJob`

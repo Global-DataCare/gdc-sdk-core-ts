@@ -4,6 +4,12 @@ This document explains why the SDK family is split across `gdc-sdk-core-ts`,
 `gdc-sdk-node-ts`, and `gdc-sdk-front-ts`, what each package owns, and why the
 actor-scoped facades exist.
 
+Teaching rule for this `101`:
+
+- start from package responsibilities before implementation details
+- keep high-level package ownership separate from low-level helper examples
+- keep actor ownership explicit
+
 ## Problem This Split Solves
 
 The same business flows must be consumed from very different runtimes:
