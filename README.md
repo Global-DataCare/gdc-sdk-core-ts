@@ -53,8 +53,12 @@ Important:
 - `gdc-sdk-core-ts` does not initialize a runtime client by itself.
 - Runtime initialization lives in `gdc-sdk-node-ts` and `gdc-sdk-front-ts`.
 - Shared payload shapes and examples live in `gdc-common-utils-ts`.
+- FHIR-like resources in these shared flows may carry `resource.meta.claims`,
+  which is a project-specific claims container and not part of base FHIR.
 - Package-boundary guidance lives in
   [docs/101-SDK_PACKAGE_BOUNDARIES.md](./docs/101-SDK_PACKAGE_BOUNDARIES.md).
+- Onboarding rule across the repo family:
+  high-level surface first, lower-level builders second, raw wire payloads last.
 
 Shared example files to open while reading those guides:
 
@@ -65,7 +69,7 @@ Shared example files to open while reading those guides:
 - [gdc-common-utils-ts/src/examples/frontend-session.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/frontend-session.ts)
 - [gdc-common-utils-ts/src/examples/relationship-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/relationship-access.ts)
 - [gdc-common-utils-ts/src/examples/lifecycle.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/lifecycle.ts)
-- [gdc-common-utils-ts/docs/LIFECYCLE_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/LIFECYCLE_101.md)
+- [gdc-common-utils-ts/docs/101-LIFECYCLE.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-LIFECYCLE.md)
 
 ## Flow Families
 
@@ -118,7 +122,7 @@ Primary reusable examples:
 
 - [gdc-common-utils-ts/src/examples/related-person.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/related-person.ts)
 - [gdc-common-utils-ts/src/examples/professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
-- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
+- [gdc-common-utils-ts/docs/101-CONSENT_ACCESS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-CONSENT_ACCESS.md)
 
 ### Permission lifecycle
 
@@ -172,7 +176,7 @@ Main helpers:
 
 Reference:
 
-- [gdc-common-utils-ts/docs/CONSENT_ACCESS_101.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/CONSENT_ACCESS_101.md)
+- [gdc-common-utils-ts/docs/101-CONSENT_ACCESS.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-CONSENT_ACCESS.md)
 
 ### 2. Relationship invitation and acceptance
 
@@ -442,7 +446,7 @@ package:
 - [`createStaticDiscoveryFacade(...)`](src/discovery-facade.ts)
 - [`resolveProviderIdentityForSubject(...)`](src/did-resolution-session.ts)
 - [`resolveSmartTokenEndpointForSubject(...)`](src/smart-endpoint-resolver.ts)
-- [`gdc-common-utils-ts/docs/DATASPACE_DISCOVERY_DEFAULTS_101.md`](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/DATASPACE_DISCOVERY_DEFAULTS_101.md)
+- [`gdc-common-utils-ts/docs/101-DATASPACE_DISCOVERY_DEFAULTS.md`](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-DATASPACE_DISCOVERY_DEFAULTS.md)
   - shared portal/backend bootstrap guide for `defaults-only`,
     `default-first`, and `internet-first` discovery seeding
 
@@ -549,7 +553,7 @@ Typical flow:
 
 See the executable example:
 
-- [`tests/communication-ips-search-outbox-101.test.mjs`](tests/communication-ips-search-outbox-101.test.mjs)
+- [`tests/101-communication-ips-search-outbox.test.mjs`](tests/101-communication-ips-search-outbox.test.mjs)
 
 ### High-level document facade
 
