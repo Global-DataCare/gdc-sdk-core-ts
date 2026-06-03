@@ -47,24 +47,47 @@ at the higher level in `gdc-common-utils-ts`.
 Minimal example:
 
 ```ts
-import { bundleEditor } from 'gdc-common-utils-ts';
+import { createConsentAccessEditor } from 'gdc-common-utils-ts/utils/communication-bundle-session';
+import {
+  setConsentDecision,
+  setConsentIdentifier,
+  setConsentSubject,
+  setPurposeList,
+  setSectionList,
+} from 'gdc-common-utils-ts/utils/consent-claim-helpers';
 import {
   EXAMPLE_PROFESSIONAL_DID,
+  EXAMPLE_CONSENT_IDENTIFIER,
   EXAMPLE_SUBJECT_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 import {
   HealthcareBasicSections,
   HealthcareConsentPurposes,
-} from 'gdc-common-utils-ts';
+} from 'gdc-common-utils-ts/constants/healthcare';
+import { ConsentDecisions } from 'gdc-common-utils-ts/models/consent-rule';
 
-const communicationClaims = bundleEditor
-  .newConsentAccessBundleEditor({
-    subjectDid: EXAMPLE_SUBJECT_DID,
-    actorDid: EXAMPLE_PROFESSIONAL_DID,
-  })
-  .setPurposeList([HealthcareConsentPurposes.Treatment])
-  .setSectionList([HealthcareBasicSections.HistoryOfMedicationUse.attributeValue])
-  .toCommunicationClaims();
+const consentAccessEditor = createConsentAccessEditor({
+  communicationClaims: {
+    '@context': 'org.hl7.fhir.r4',
+  },
+});
+
+let consentClaims = { '@context': 'org.hl7.fhir.api' };
+consentClaims = setConsentIdentifier(consentClaims, EXAMPLE_CONSENT_IDENTIFIER);
+consentClaims = setConsentSubject(consentClaims, EXAMPLE_SUBJECT_DID);
+consentClaims = setConsentDecision(consentClaims, ConsentDecisions.Permit);
+consentClaims = setPurposeList(consentClaims, [HealthcareConsentPurposes.Treatment]);
+consentClaims = setSectionList(consentClaims, [
+  HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+]);
+
+consentAccessEditor.upsertActiveConsentEntry({
+  claims: consentClaims,
+  fullUrl: `urn:uuid:${EXAMPLE_CONSENT_IDENTIFIER}`,
+});
+consentAccessEditor.saveAndReleaseActiveEntry();
+
+const communicationClaims = consentAccessEditor.getCommunicationClaims();
 ```
 
 What a new developer should understand at this step:
