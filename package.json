@@ -16,7 +16,7 @@
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "gdc-common-utils-ts": "file:../gdc-common-utils-ts"
+    "gdc-common-utils-ts": "^1.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
