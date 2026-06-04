@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-06-04
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.16.0`.
+- Reworked the employee teaching and test path around:
+  - `BundleEditor`
+  - `BundleEntryEditor`
+  - `EmployeeEntryEditor`
+  instead of mixing employee-specific setters directly into the generic bundle
+  editor surface.
+- Clarified the employee `101` so create/search/disable/purge all show:
+  - one declared bundle operation
+  - one allowed employee resource type
+  - one employee entry editor opened from `newEntry(...).asEmployee()`
+
+### Testing
+- `node --test tests/employee-draft.test.mjs tests/101-employees.test.mjs`
+- `npm run build`
+
 ## [0.7.0] - 2026-06-04
 
 ### Added

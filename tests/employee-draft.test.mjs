@@ -20,6 +20,7 @@ import {
   EmployeeBundleOperations,
   EmployeeBundleRoutes,
   EmployeeClaimKeys,
+  EmployeeResourceTypes,
   EmployeeSearchResourceType,
   ExampleEmployeeDirectory,
   ExampleEmployeeOrganization,
@@ -53,10 +54,25 @@ test('EmployeeDraft normalizes missing identifiers and can generate one on deman
   assert.equal(draft.getEmployeeIdentifier(), generatedIdentifier);
 });
 
-test('BundleEditor keeps one active employee entry and builds bundles by operation', () => {
+test('BundleEditor keeps generic claim editing separate from employee-specific helper methods', () => {
+  const sharedProfessionalRoleComparison = createSharedProfessionalRoleComparisonInput();
+  const bundleEntryEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.search)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
+    .newEntry()
+    .setClaim(EmployeeClaimKeys.email, sharedProfessionalRoleComparison.sharedEmail)
+    .setClaim(EmployeeClaimKeys.role, sharedProfessionalRoleComparison.doctorRole);
+
+  assert.equal(bundleEntryEditor.getClaim(EmployeeClaimKeys.email), sharedProfessionalRoleComparison.sharedEmail);
+  assert.equal(bundleEntryEditor.getClaim(EmployeeClaimKeys.role), sharedProfessionalRoleComparison.doctorRole);
+});
+
+test('Employee entry adapters keep one active employee entry and build bundles by operation', () => {
   const bundleEditor = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.create)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role)
     .addClaim(EmployeeClaimKeys.memberOf, ExampleEmployeeDirectory.doctorActive.identifier);
@@ -74,11 +90,13 @@ test('BundleEditor keeps one active employee entry and builds bundles by operati
   assert.equal(createBundle.entry[0].fullUrl, generatedIdentifier);
 });
 
-test('BundleEditor supports direct identifier and fullUrl edits on the active entry', () => {
+test('Employee entry adapters support direct identifier and fullUrl edits on the active entry', () => {
   const sharedProfessionalRoleComparison = createSharedProfessionalRoleComparisonInput();
   const bundleEditor = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.create)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setIdentifier(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
     .setEmail(sharedProfessionalRoleComparison.sharedEmail)
     .setRole(sharedProfessionalRoleComparison.doctorRole);
@@ -90,15 +108,19 @@ test('BundleEditor supports direct identifier and fullUrl edits on the active en
   assert.equal(bundleEditor.getFullUrl(), ExampleEmployeeDirectory.controllerActive.identifier);
 });
 
-test('BundleEditor can build several employee create entries in one batch bundle', () => {
-  const createBundleEditor = new BundleEditor().setBundleOperation(EmployeeBundleOperations.create);
+test('Employee entry adapters can build several employee create entries in one batch bundle', () => {
+  const createBundleEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.create)
+    .setAllowedResourceType(EmployeeResourceTypes.employee);
 
   createBundleEditor
     .newEntry(ExampleEmployeeDirectory.controllerActive.identifier)
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.controllerActive.email)
     .setRole(ExampleEmployeeDirectory.controllerActive.role)
     .doneEntry()
     .newEntry(ExampleEmployeeDirectory.doctorActive.identifier)
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role)
     .doneEntry();
@@ -111,10 +133,12 @@ test('BundleEditor can build several employee create entries in one batch bundle
   assert.equal(bundle.entry[1].resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
 });
 
-test('BundleEditor can build disable and purge bundles with the same editor API', () => {
+test('Employee entry adapters can build disable and purge bundles with the same editor API', () => {
   const disableBundle = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.disable)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry(ExampleEmployeeDirectory.doctorActive.identifier)
+    .asEmployee()
     .doneEntry()
     .build();
 
@@ -123,7 +147,9 @@ test('BundleEditor can build disable and purge bundles with the same editor API'
 
   const purgeBundle = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.purge)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
+    .asEmployee()
     .doneEntry()
     .build();
 
@@ -135,10 +161,12 @@ test('BundleEditor can build disable and purge bundles with the same editor API'
   );
 });
 
-test('BundleEditor builds canonical search bundles from one active search entry', () => {
+test('Employee entry adapters build canonical search bundles from one active search entry', () => {
   const searchBundle = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.search)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role)
     .doneEntry()

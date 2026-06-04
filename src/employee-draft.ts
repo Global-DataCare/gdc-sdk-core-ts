@@ -1,7 +1,6 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import { BundleEditor } from '../../gdc-common-utils-ts/dist/utils/bundle-editor.js';
 import {
   EmployeeBatchEntryTypes,
   EmployeeBundleMethods,
@@ -45,7 +44,9 @@ export type {
 export {
   buildEmployeeBatchEntry,
 } from 'gdc-common-utils-ts/utils/employee';
-export { BundleEditor } from '../../gdc-common-utils-ts/dist/utils/bundle-editor.js';
+export { BundleEditor } from 'gdc-common-utils-ts/utils/bundle-editor';
+export { BundleReader } from 'gdc-common-utils-ts/utils/bundle-reader';
+export { BundleEntryEditor, EmployeeEntryEditor } from 'gdc-common-utils-ts/utils/bundle-editor';
 
 function normalizeEmployeeSearchClaims(
   claims?: EmployeeSearchBundleInput['claims'],

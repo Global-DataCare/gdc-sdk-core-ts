@@ -32,12 +32,15 @@ That `101` stays intentionally small. Broader coverage lives in:
 - `gdc-common-utils-ts`
   - constants
   - shared examples
+  - `BundleEditor`
+  - `BundleReader`
+  - `BundleEntryEditor`
+  - `EmployeeEntryEditor`
   - low-level FHIR search serializers
   - pure employee helper functions such as `buildEmployeeClaims(...)` and `buildEmployeeBatchEntry(...)`
 - `gdc-sdk-core-ts`
   - `EmployeeDraft`
-  - `BundleEditor`
-  - runtime-neutral orchestration and higher-level builders
+  - runtime-neutral orchestration and employee documentation
 - `gdc-sdk-node-ts` and `gdc-sdk-front-ts`
   - reexport and execute the same core model in node/web/native runtimes
   - restrict the operational surface by actor/capability
@@ -70,9 +73,9 @@ Start with the create flow first, on its own.
 
 Start with the highest-level editor first.
 
-- first choice for onboarding: `BundleEditor`
+- first choice for onboarding: `BundleEditor` + `EmployeeEntryEditor`
 - second level: `EmployeeDraft`
-- lower level: `buildEmployeeClaims(...)`, `buildEmployeeBatchEntry(...)`,
+- lower level: `BundleReader`, `buildEmployeeClaims(...)`, `buildEmployeeBatchEntry(...)`,
   `buildEmployeeSearchBundle(...)`
 
 When teaching a new controller flow, prefer showing an explicit editor/session
@@ -87,23 +90,30 @@ import {
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
 } from 'gdc-common-utils-ts/examples';
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+import {
+  EmployeeBundleOperations,
+  EmployeeResourceTypes,
+} from 'gdc-common-utils-ts/utils/employee';
 
-const bundle = new BundleEditor()
+const employeeEntry = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.create)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry()
+  .asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
 
-const generatedEmployeeIdentifier = bundle.getIdentifier();
-const createBatchBundle = bundle.doneEntry().build();
+const generatedEmployeeIdentifier = employeeEntry.getIdentifier();
+const createBatchBundle = employeeEntry.doneEntry().build();
 ```
 
 Use this pattern when you want developers to understand create:
 
 - one bundle has one declared business operation
+- `setAllowedResourceType(...)` keeps this batch homogeneous
 - `newEntry()` opens the active entry
+- `asEmployee()` switches from generic entry editing to employee-specific editing
 - if the entry needs an identifier and none was provided, it is generated
 - generic claim editing and employee-specific setters both edit the active entry
 - `doneEntry()` closes that entry in memory
@@ -118,18 +128,23 @@ import {
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
 } from 'gdc-common-utils-ts/examples';
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+import {
+  EmployeeBundleOperations,
+  EmployeeResourceTypes,
+} from 'gdc-common-utils-ts/utils/employee';
 
-const bundle = new BundleEditor()
+const employeeEntry = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.create)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry()
+  .asEmployee()
   .setClaim(ClaimsPersonSchemaorg.email, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
 
-console.log(bundle.getClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue));
+console.log(employeeEntry.getClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue));
 
-const createBatchBundle = bundle.doneEntry().build();
+const createBatchBundle = employeeEntry.doneEntry().build();
 ```
 
 Create several employees one by one in the same bundle:
@@ -140,15 +155,21 @@ import {
   EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE,
   EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
 } from 'gdc-common-utils-ts/examples';
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+import {
+  EmployeeBundleOperations,
+  EmployeeResourceTypes,
+} from 'gdc-common-utils-ts/utils/employee';
 
 const createManyEmployeesBatchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.create)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
+  .asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.role)
   .doneEntry()
   .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .doneEntry()
@@ -169,7 +190,9 @@ import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
 const employeeSearchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.search)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry()
+  .asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .doneEntry()
@@ -201,7 +224,9 @@ import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
 const disableBatchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.disable)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .asEmployee()
   .doneEntry()
   .build();
 ```
@@ -224,7 +249,9 @@ import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
 const disablePatchBatchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.disable)
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier);
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .asEmployee();
 ```
 
 Disable several employees one by one:
@@ -234,9 +261,12 @@ import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
 const disableManyEmployeesBatchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.disable)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
+  .asEmployee()
   .doneEntry()
   .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .asEmployee()
   .doneEntry()
   .build();
 ```
@@ -255,7 +285,9 @@ import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
 const purgeBatchBundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.purge)
+  .setAllowedResourceType(EmployeeResourceTypes.employee)
   .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .asEmployee()
   .doneEntry()
   .build();
 ```

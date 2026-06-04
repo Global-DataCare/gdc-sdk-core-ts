@@ -22,6 +22,7 @@ import {
   EmployeeBundleMethods as SharedEmployeeBundleMethods,
   EmployeeBundleOperations as SharedEmployeeBundleOperations,
   EmployeeBundleRoutes as SharedEmployeeBundleRoutes,
+  EmployeeResourceTypes as SharedEmployeeResourceTypes,
 } from 'gdc-common-utils-ts/utils/employee';
 
 export const EmployeeClaimKeys = Object.freeze({
@@ -37,13 +38,9 @@ export const EmployeeBundleMethods = SharedEmployeeBundleMethods;
 export const EmployeeBundleRoutes = SharedEmployeeBundleRoutes;
 export const EmployeeBatchEntryTypes = SharedEmployeeBatchEntryTypes;
 export const EmployeeBundleOperations = SharedEmployeeBundleOperations;
+export const EmployeeResourceTypes = SharedEmployeeResourceTypes;
 
-export const EmployeeSearchResourceType = Object.freeze({
-  bundle: 'Bundle',
-  batch: 'batch',
-  parameters: 'Parameters',
-  employee: 'Employee',
-});
+export const EmployeeSearchResourceType = SharedEmployeeResourceTypes;
 
 export const ExampleEmployeeDirectory = Object.freeze({
   controllerActive: EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE,

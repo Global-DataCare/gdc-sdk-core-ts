@@ -13,6 +13,7 @@ import {
   EmployeeBundleRoutes,
   EmployeeBundleOperations,
   EmployeeClaimKeys,
+  EmployeeResourceTypes,
   EmployeeSearchResourceType,
   ExampleEmployeeDirectory,
   createSharedProfessionalRoleComparisonInput,
@@ -49,16 +50,18 @@ test('101: employee draft and search semantics stay explicit', () => {
     sameEmailDifferentRoles[1][EmployeeClaimKeys.role],
   );
 
-  const createBundleEditor = new BundleEditor()
+  const createEmployeeEntry = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.create)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role);
 
-  const generatedIdentifier = createBundleEditor.getIdentifier();
+  const generatedIdentifier = createEmployeeEntry.getIdentifier();
   assert.match(String(generatedIdentifier), /^urn:uuid:/);
 
-  const createBatchBundle = createBundleEditor.doneEntry().build();
+  const createBatchBundle = createEmployeeEntry.doneEntry().build();
   assert.equal(createBatchBundle.resourceType, EmployeeSearchResourceType.bundle);
   assert.equal(createBatchBundle.type, EmployeeSearchResourceType.batch);
   assert.equal(createBatchBundle.entry[0].request.method, EmployeeBundleMethods.create);
@@ -71,7 +74,9 @@ test('101: employee draft and search semantics stay explicit', () => {
 
   const operationalSearchEditor = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.search)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role);
 
@@ -81,7 +86,9 @@ test('101: employee draft and search semantics stay explicit', () => {
 
   const roleOnlySearch = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.search)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
+    .asEmployee()
     .setRole(sharedProfessionalRoleComparison.doctorRole)
     .doneEntry()
     .build();
@@ -98,6 +105,7 @@ test('101: employee draft and search semantics stay explicit', () => {
 
   const allEmployeesSearch = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.search)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry()
     .doneEntry()
     .build();
@@ -109,7 +117,9 @@ test('101: employee draft and search semantics stay explicit', () => {
 
   const purgeBatchBundle = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.purge)
+    .setAllowedResourceType(EmployeeResourceTypes.employee)
     .newEntry(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
+    .asEmployee()
     .doneEntry()
     .build();
 
