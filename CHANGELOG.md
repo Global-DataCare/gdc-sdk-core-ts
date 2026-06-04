@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
   - `createOutboxJobFromDraft(...)`
 
 ### Testing
-- `node --test tests/101-consent-bundle-outbox.test.mjs tests/communication-ips-search-outbox-101.test.mjs`
+- `node --test tests/101-consent-bundle-outbox.test.mjs tests/101-communication-ips-search-outbox.test.mjs`
 - `npm run build`
 
 ## [0.6.1] - 2026-06-01

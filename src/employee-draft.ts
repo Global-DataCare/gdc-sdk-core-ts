@@ -3,13 +3,18 @@
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
 import {
   buildEmployeeBatchEntry,
-  buildEmployeeSearchBundle,
+  buildEmployeeClaims,
+  buildEmployeeSearchBundle as buildEmployeeSearchBundleBase,
 } from 'gdc-common-utils-ts/utils/employee';
 import type {
   EmployeeBatchEntryInput,
   EmployeeClaims,
   EmployeeSearchBundleInput,
 } from 'gdc-common-utils-ts/utils/employee';
+
+export type EmployeeBatchBundleInput = Readonly<{
+  entries: readonly EmployeeBatchEntryInput[];
+}>;
 
 export type {
   EmployeeBatchEntryInput,
@@ -21,9 +26,40 @@ export type {
 } from 'gdc-common-utils-ts/utils/employee';
 export {
   buildEmployeeBatchEntry,
-  buildEmployeeClaims,
-  buildEmployeeSearchBundle,
 } from 'gdc-common-utils-ts/utils/employee';
+
+function normalizeEmployeeSearchClaims(
+  claims?: EmployeeSearchBundleInput['claims'],
+): EmployeeSearchBundleInput['claims'] {
+  const normalized = { ...(claims || {}) };
+  delete normalized['@context'];
+  return normalized;
+}
+
+export { buildEmployeeClaims };
+
+export function buildEmployeeSearchBundle(
+  input: EmployeeSearchBundleInput = {},
+): ReturnType<typeof buildEmployeeSearchBundleBase> {
+  return buildEmployeeSearchBundleBase({
+    ...input,
+    claims: normalizeEmployeeSearchClaims(input.claims),
+  });
+}
+
+export function buildEmployeeBatchBundle(
+  input: EmployeeBatchBundleInput,
+): {
+  resourceType: 'Bundle';
+  type: 'batch';
+  entry: Array<ReturnType<typeof buildEmployeeBatchEntry>>;
+} {
+  return {
+    resourceType: 'Bundle',
+    type: 'batch',
+    entry: [...input.entries].map((entry) => buildEmployeeBatchEntry(entry)),
+  };
+}
 
 function cloneClaims(claims?: EmployeeClaims): EmployeeClaims {
   return { ...(claims || {}) };
@@ -205,6 +241,18 @@ export class EmployeeBundleSession {
     return buildEmployeeBatchEntry({
       ...input,
       claims: this.toClaims(),
+    });
+  }
+
+  /** Builds a one-entry canonical employee `_batch` bundle from the current editor state. */
+  public toBundleBatch(input: Omit<EmployeeBatchEntryInput, 'claims'>): ReturnType<typeof buildEmployeeBatchBundle> {
+    return buildEmployeeBatchBundle({
+      entries: [
+        {
+          ...input,
+          claims: this.toClaims(),
+        },
+      ],
     });
   }
 

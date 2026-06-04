@@ -8,6 +8,7 @@ import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/intero
 import {
   communication,
   createSummaryOperationRequestParameters,
+  createSummaryOperationRequestParametersResource,
   createSummaryOperationRequestReferencePath,
   createSummaryOperationRequestReferenceUrl,
 } from '../../gdc-common-utils-ts/dist/utils/communication-bundle-document-request.js';
@@ -33,12 +34,20 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     createSummaryOperationRequestParameters(EXAMPLE_SUBJECT_DID);
 
   // Step 2.
-  // common-utils flattens the semantic IPS request parameters into the relative
-  // Bundle search path that will later live in Communication.content-reference.
+  // common-utils first defines the semantic IPS request parameters.
+  // Those parameters are the source of truth, regardless of how the request
+  // will later travel.
+  const summaryOperationRequestParametersResource =
+    createSummaryOperationRequestParametersResource(summaryOperationRequestParameters);
+
+  // Step 3.
+  // current Communication flows flatten the same semantic parameters into the
+  // relative Bundle search path that will later live in
+  // Communication.content-reference.
   const summaryOperationRequestReferencePath =
     createSummaryOperationRequestReferencePath(summaryOperationRequestParameters);
 
-  // Step 3.
+  // Step 4.
   // Runtime/backend may also need the absolute GW CORE URL that will receive
   // the request, but that URL is not the main thing the frontend edits.
   const summaryOperationRequestReferenceUrl =
@@ -47,7 +56,7 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
       summaryOperationRequestReferencePath,
     });
 
-  // Step 4.
+  // Step 5.
   // common-utils builds the auditable Communication claims that carry the IPS
   // search request in Communication.content-reference.
   const communicationClaims = communication.newIpsSummarySearchCommunication({
@@ -55,7 +64,7 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     requesterId: EXAMPLE_PROFESSIONAL_DID,
   });
 
-  // Step 5.
+  // Step 6.
   // sdk-core receives that already-built Communication and stages it in a
   // draft for transport/runtime layers.
   const draft = addClaimsResourceToDraft(
@@ -68,15 +77,20 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     communicationClaims,
   );
 
-  // Step 6.
+  // Step 7.
   // sdk-core freezes the draft into the outbox job that runtime layers will
   // actually send.
   const job = createOutboxJobFromDraft(draft);
 
-  // Step 7.
-  // Assertions: common-utils and sdk-core both point at the same IPS search.
+  // Step 8.
+  // Assertions:
+  // - the semantic request can be rendered as FHIR Parameters
+  // - the current Communication flow still carries a relative `_search?...`
+  //   reference
+  // - sdk-core preserves that request envelope unchanged in the outbox
   assert.equal(summaryOperationRequestReferencePath, EXAMPLE_IPS_BUNDLE_REFERENCE_URL);
   assert.equal(summaryOperationRequestReferenceUrl, EXAMPLE_IPS_BUNDLE_REFERENCE_ABSOLUTE_URL);
+  assert.equal(summaryOperationRequestParametersResource.resourceType, 'Parameters');
   assert.equal(
     communicationClaims[CommunicationClaim.ContentReference],
     EXAMPLE_IPS_BUNDLE_REFERENCE_URL,

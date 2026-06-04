@@ -97,11 +97,10 @@ const bundleEditor = new EmployeeBundleSession()
 console.log(bundleEditor.getClaim(ClaimsPersonSchemaorg.email));
 // shared.professional@example.org
 
-const createEntry = bundleEditor.toBundleEntry({
+const createBatchBundle = bundleEditor.toBundleBatch({
   method: 'POST',
   resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
 });
-const searchBundle = bundleEditor.toBundleSearch();
 ```
 
 Use this pattern when you want developers to understand create:
@@ -114,11 +113,17 @@ Use this pattern when you want developers to understand create:
 Minimal create shape:
 
 ```ts
-const createEntry = bundleEditor.toBundleEntry({
+const createBatchBundle = bundleEditor.toBundleBatch({
   method: 'POST',
   resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
 });
 ```
+
+What `createBatchBundle` means:
+
+- it is the canonical one-entry employee `_batch` bundle
+- in portal-web flows, the frontend usually sends this bundle to its own backend
+- the backend then wraps/submits it according to its runtime or DIDComm contract
 
 ## Search
 
@@ -130,17 +135,87 @@ independently from create so the reader does not confuse the two operations.
 Minimal search shape:
 
 ```ts
-const searchBundle = bundleEditor
-  .removeClaim(ClaimsPersonSchemaorg.identifier)
+const employeeSearchBundle = new EmployeeBundleSession()
+  .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
+  .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .toBundleSearch();
+```
+
+Operational search rules:
+
+- `email + role`
+  - recommended exact operational lookup
+- `email`
+  - returns all active employee profiles for that mailbox
+- `role`
+  - returns all active employee profiles for that role
+- no filters
+  - returns all employees
+- `identifier`
+  - targets one exact technical or historical profile
+
+## Disable
+
+Disable is a separate lifecycle operation.
+
+Today the shared employee editor still produces the inner `_batch` entry with
+`request.method = DELETE`.
+
+```ts
+const disableBatchBundle = new EmployeeBundleSession()
+  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .toBundleBatch({
+    method: 'DELETE',
+    resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
+  });
+```
+
+Current live contract:
+
+- disable = `_batch` + inner `request.method = DELETE`
+- this is still a soft delete / disable in business semantics
+- it does not release the license
+
+Preferred target contract:
+
+- disable/enable should be state transitions via `PATCH`
+- purge should remain a separate terminal operation
+
+Conceptual `PATCH` example:
+
+```ts
+const disablePatchBatchBundle = new EmployeeBundleSession()
+  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .toBundleBatch({
+    method: 'PATCH',
+    resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
+  });
+```
+
+## Purge
+
+Purge is a separate lifecycle operation and does not reuse the same contract as
+create/search.
+
+Runtime layers call the explicit `Employee/_purge` flow and normally identify
+the employee by `identifier`.
+
+```ts
+const employeePurgeSelectorClaims = new EmployeeBundleSession()
+  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .toClaims();
 ```
 
 Only after that should you explain the lower-level building blocks:
 
 - `EmployeeDraft`
   - for authoring canonical employee claims only
+- `toBundleEntry(...)`
+  - lower-level escape hatch when a caller explicitly needs one raw batch entry
 - `buildEmployeeBatchEntry(...)`
   - for shaping one employee batch entry
+- `buildEmployeeBatchBundle(...)`
+  - for shaping a canonical employee `_batch` bundle
 - `buildEmployeeSearchBundle(...)`
   - for shaping the canonical `POST + Parameters` employee search bundle
 
