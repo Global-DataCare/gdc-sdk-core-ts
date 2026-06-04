@@ -50,9 +50,11 @@ test('101: employee draft and search semantics stay explicit', () => {
     sameEmailDifferentRoles[1][EmployeeClaimKeys.role],
   );
 
-  const createEmployeeEntry = new BundleEditor()
+  const createBundleEditor = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.create)
-    .setAllowedResourceType(EmployeeResourceTypes.employee)
+    .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+  const createEmployeeEntry = createBundleEditor
     .newEntry()
     .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
@@ -61,7 +63,9 @@ test('101: employee draft and search semantics stay explicit', () => {
   const generatedIdentifier = createEmployeeEntry.getIdentifier();
   assert.match(String(generatedIdentifier), /^urn:uuid:/);
 
-  const createBatchBundle = createEmployeeEntry.doneEntry().build();
+  createEmployeeEntry.doneEntry();
+
+  const createBatchBundle = createBundleEditor.build();
   assert.equal(createBatchBundle.resourceType, EmployeeSearchResourceType.bundle);
   assert.equal(createBatchBundle.type, EmployeeSearchResourceType.batch);
   assert.equal(createBatchBundle.entry[0].request.method, EmployeeBundleMethods.create);
@@ -72,15 +76,19 @@ test('101: employee draft and search semantics stay explicit', () => {
     generatedIdentifier,
   );
 
-  const operationalSearchEditor = new BundleEditor()
+  const operationalSearchBundleEditor = new BundleEditor()
     .setBundleOperation(EmployeeBundleOperations.search)
-    .setAllowedResourceType(EmployeeResourceTypes.employee)
+    .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+  const operationalSearchEditor = operationalSearchBundleEditor
     .newEntry()
     .asEmployee()
     .setEmail(ExampleEmployeeDirectory.doctorActive.email)
     .setRole(ExampleEmployeeDirectory.doctorActive.role);
 
-  const operationalSearch = operationalSearchEditor.doneEntry().build();
+  operationalSearchEditor.doneEntry();
+
+  const operationalSearch = operationalSearchBundleEditor.build();
   assert.equal(operationalSearch.entry[0].request.method, EmployeeBundleMethods.search);
   assert.equal(operationalSearch.entry[0].request.url, EmployeeBundleRoutes.search);
 

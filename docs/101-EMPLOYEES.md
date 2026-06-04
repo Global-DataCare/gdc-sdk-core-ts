@@ -95,17 +95,19 @@ import {
   EmployeeResourceTypes,
 } from 'gdc-common-utils-ts/utils/employee';
 
-const employeeEntry = new BundleEditor()
+const bundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.create)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry()
-  .asEmployee()
+  .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+const employeeEntry = bundle.newEntry().asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
 
 const generatedEmployeeIdentifier = employeeEntry.getIdentifier();
-const createBatchBundle = employeeEntry.doneEntry().build();
+employeeEntry.doneEntry();
+
+const createBatchBundle = bundle.build();
 ```
 
 Use this pattern when you want developers to understand create:
@@ -133,18 +135,20 @@ import {
   EmployeeResourceTypes,
 } from 'gdc-common-utils-ts/utils/employee';
 
-const employeeEntry = new BundleEditor()
+const bundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.create)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry()
-  .asEmployee()
+  .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+const employeeEntry = bundle.newEntry().asEmployee()
   .setClaim(ClaimsPersonSchemaorg.email, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
 
 console.log(employeeEntry.getClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue));
 
-const createBatchBundle = employeeEntry.doneEntry().build();
+employeeEntry.doneEntry();
+
+const createBatchBundle = bundle.build();
 ```
 
 Create several employees one by one in the same bundle:
@@ -188,15 +192,18 @@ Minimal search shape:
 ```ts
 import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
-const employeeSearchBundle = new BundleEditor()
+const bundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.search)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
+  .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+bundle
   .newEntry()
   .asEmployee()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .doneEntry()
-  .build();
+  .doneEntry();
+
+const employeeSearchBundle = bundle.build();
 ```
 
 Operational search rules:
@@ -222,13 +229,16 @@ Today the shared employee editor still produces the inner `_batch` entry with
 ```ts
 import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
-const disableBatchBundle = new BundleEditor()
+const bundle = new BundleEditor()
   .setBundleOperation(EmployeeBundleOperations.disable)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
+  .setAllowedResourceType(EmployeeResourceTypes.employee);
+
+bundle
   .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
   .asEmployee()
-  .doneEntry()
-  .build();
+  .doneEntry();
+
+const disableBatchBundle = bundle.build();
 ```
 
 Current live contract:
