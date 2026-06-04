@@ -1,6 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 export * from './actor-model.js';
+export * from './actor-facade-surface.js';
 export * from './app-identity.js';
 export * from './bootstrap-facade.js';
 export * from './communication-bundle-contracts.js';

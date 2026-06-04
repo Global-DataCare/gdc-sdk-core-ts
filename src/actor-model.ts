@@ -56,6 +56,7 @@ const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
     ActorCapabilities.OrganizationRequestSmartToken,
   ],
   [ActorKinds.OrganizationEmployee]: [
+    ActorCapabilities.OrganizationActivateDevice,
     ActorCapabilities.OrganizationIssueActivationCode,
     ActorCapabilities.OrganizationRequestSmartToken,
   ],
@@ -63,13 +64,18 @@ const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
     ActorCapabilities.IndividualBootstrap,
     ActorCapabilities.IndividualDisable,
     ActorCapabilities.IndividualPurge,
+    ActorCapabilities.IndividualIngestCommunication,
+    ActorCapabilities.IndividualUpsertRelatedPerson,
     ActorCapabilities.IndividualMemberDisable,
     ActorCapabilities.IndividualMemberPurge,
     ActorCapabilities.ConsentGrantProfessionalAccess,
+    ActorCapabilities.IndividualImportIps,
+    ActorCapabilities.IndividualGenerateDigitalTwin,
   ],
   [ActorKinds.IndividualMember]: [
     ActorCapabilities.IndividualImportIps,
     ActorCapabilities.IndividualGenerateDigitalTwin,
+    ActorCapabilities.IndividualUpsertRelatedPerson,
   ],
   [ActorKinds.Professional]: [
     ActorCapabilities.ProfessionalMedication,
@@ -128,24 +134,32 @@ export function buildActorSessionDescriptorFromActorFlags(
     capabilities.add(ActorCapabilities.OrganizationCreateEmployee);
     capabilities.add(ActorCapabilities.OrganizationDisableEmployee);
     capabilities.add(ActorCapabilities.OrganizationPurgeEmployee);
+    capabilities.add(ActorCapabilities.OrganizationRequestSmartToken);
   }
   if (input.actorFlags.organizationEmployee) {
     actorKinds.add(ActorKinds.OrganizationEmployee);
+    capabilities.add(ActorCapabilities.OrganizationActivateDevice);
     capabilities.add(ActorCapabilities.OrganizationIssueActivationCode);
+    capabilities.add(ActorCapabilities.OrganizationRequestSmartToken);
   }
   if (input.actorFlags.individualController) {
     actorKinds.add(ActorKinds.IndividualController);
     capabilities.add(ActorCapabilities.IndividualBootstrap);
     capabilities.add(ActorCapabilities.IndividualDisable);
     capabilities.add(ActorCapabilities.IndividualPurge);
+    capabilities.add(ActorCapabilities.IndividualIngestCommunication);
+    capabilities.add(ActorCapabilities.IndividualUpsertRelatedPerson);
     capabilities.add(ActorCapabilities.IndividualMemberDisable);
     capabilities.add(ActorCapabilities.IndividualMemberPurge);
     capabilities.add(ActorCapabilities.ConsentGrantProfessionalAccess);
+    capabilities.add(ActorCapabilities.IndividualImportIps);
+    capabilities.add(ActorCapabilities.IndividualGenerateDigitalTwin);
   }
   if (input.actorFlags.individualMember) {
     actorKinds.add(ActorKinds.IndividualMember);
     capabilities.add(ActorCapabilities.IndividualImportIps);
     capabilities.add(ActorCapabilities.IndividualGenerateDigitalTwin);
+    capabilities.add(ActorCapabilities.IndividualUpsertRelatedPerson);
   }
   if (input.actorFlags.professionalPhysician) {
     actorKinds.add(ActorKinds.Professional);
