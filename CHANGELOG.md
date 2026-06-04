@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.1] - 2026-06-04
+
+### Added
+- Added canonical actor-facade surface contracts in `sdk-core` so runtime
+  packages can converge on one shared actor-to-surface map:
+  - `src/actor-facade-surface.ts`
+  - `tests/actor-facade-surface.test.mjs`
+
+### Changed
+- Expanded the actor capability matrix so individual-controller and
+  individual-member flows include the related-person and communication
+  capabilities already consumed by runtime packages.
+- Kept `docs/101-EMPLOYEES.md` focused on employee semantics while moving the
+  bundle/editor mechanics to the canonical `common-utils` employee editor 101.
+
+### Testing
+- `node --test tests/actor-contracts.test.mjs tests/actor-facade-surface.test.mjs tests/101-employees.test.mjs`
+- `npm run build`
+
 ## [0.8.0] - 2026-06-04
 
 ### Changed
