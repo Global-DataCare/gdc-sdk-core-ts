@@ -534,6 +534,10 @@ FHIR search path for the index service.
 Employee lifecycle, search semantics, and the canonical `EmployeeDraft`
 contract live in [docs/101-EMPLOYEES.md](docs/101-EMPLOYEES.md).
 
+The shared bundle/editor mechanics for employee live in:
+
+- [gdc-common-utils-ts/docs/101-EMPLOYEE_ENTRY_EDITOR.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-EMPLOYEE_ENTRY_EDITOR.md)
+
 - `Communication.content-reference`
   stores what must be searched, for example the relative `Bundle` query path
 - `Communication.recipient`

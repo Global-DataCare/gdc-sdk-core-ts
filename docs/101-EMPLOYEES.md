@@ -2,13 +2,13 @@
 
 This is the canonical employee-contract note for the SDK family.
 
-Teaching rule for this `101`:
+This `101` is the canonical functional note for employee semantics in
+`sdk-core`.
 
-- first show the highest-level editing surface a new frontend/backend developer
-  can use safely
-- only after that show the lower-level claims/builders layer
-- do not start from raw claims maps or raw FHIR bundle internals unless the
-  reader is already blocked by an advanced case
+The editor-level mechanics live in `common-utils`:
+
+- [gdc-common-utils-ts/docs/101-EMPLOYEE_ENTRY_EDITOR.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-EMPLOYEE_ENTRY_EDITOR.md)
+- [gdc-common-utils-ts/docs/101-BUNDLE_EDITOR_READER.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-BUNDLE_EDITOR_READER.md)
 
 Read this in `sdk-core` first, then read the runtime guide of the SDK you are
 using:
@@ -27,23 +27,18 @@ That `101` stays intentionally small. Broader coverage lives in:
 - [gwtemplate-node-ts/src/__tests__/unit/managers/EmployeeManager.test.ts](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/src/__tests__/unit/managers/EmployeeManager.test.ts)
 - [gwtemplate-node-ts/src/__tests__/integration/employeeApi.test.ts](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/src/__tests__/integration/employeeApi.test.ts)
 
-## Ownership Split
+## Package Split
 
 - `gdc-common-utils-ts`
-  - constants
-  - shared examples
-  - `BundleEditor`
-  - `BundleReader`
-  - `BundleEntryEditor`
-  - `EmployeeEntryEditor`
-  - low-level FHIR search serializers
-  - pure employee helper functions such as `buildEmployeeClaims(...)` and `buildEmployeeBatchEntry(...)`
+  - owns `BundleEditor`, `BundleReader`, `BundleEntryEditor`, and `EmployeeEntryEditor`
+  - owns editor-level tests and examples
+  - owns employee bundle construction mechanics
 - `gdc-sdk-core-ts`
   - `EmployeeDraft`
-  - runtime-neutral orchestration and employee documentation
+  - runtime-neutral employee semantics and documentation
 - `gdc-sdk-node-ts` and `gdc-sdk-front-ts`
-  - reexport and execute the same core model in node/web/native runtimes
-  - restrict the operational surface by actor/capability
+  - runtime execution
+  - actor-scoped surface
 - `gwtemplate-node-ts`
   - validates and processes the submitted bundles
 
@@ -61,150 +56,31 @@ Employee management belongs to the organization controller surface.
   - should expose employee management through `orgAdmin`
   - capability-to-service mapping belongs in the frontend session/profile layer
 
-Practical rule:
+Practical rule in this repo:
 
-- `common-utils` = pure helpers and constants
-- `sdk-core` = shared contracts and builders
+- `common-utils` = bundle mechanics and resource editors
+- `sdk-core` = employee semantics and shared contracts
 - `sdk-node` / `sdk-front` = actor-scoped runtime surface
 
-## Create
+## Editor Mechanics
 
-Start with the create flow first, on its own.
+Do not teach bundle construction details from this document.
 
-Start with the highest-level editor first.
+Use these instead:
 
-- first choice for onboarding: `BundleEditor` + `EmployeeEntryEditor`
-- second level: `EmployeeDraft`
-- lower level: `BundleReader`, `buildEmployeeClaims(...)`, `buildEmployeeBatchEntry(...)`,
-  `buildEmployeeSearchBundle(...)`
+- [gdc-common-utils-ts/docs/101-EMPLOYEE_ENTRY_EDITOR.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-EMPLOYEE_ENTRY_EDITOR.md)
+- [gdc-common-utils-ts/__tests__/101-employee-examples.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-employee-examples.test.ts)
 
-When teaching a new controller flow, prefer showing an explicit editor/session
-object instead of jumping directly to raw claims maps.
+That is where the canonical explanation lives for:
 
-Recommended example:
-
-```ts
-import { BundleEditor } from 'gdc-sdk-core-ts';
-import {
-  EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
-  EXAMPLE_PROVIDER_ORGANIZATION_DID,
-} from 'gdc-common-utils-ts/examples';
-import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import {
-  EmployeeBundleOperations,
-  EmployeeResourceTypes,
-} from 'gdc-common-utils-ts/utils/employee';
-
-const bundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.create)
-  .setAllowedResourceType(EmployeeResourceTypes.employee);
-
-const employeeEntry = bundle.newEntry().asEmployee()
-  .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
-  .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
-
-const generatedEmployeeIdentifier = employeeEntry.getIdentifier();
-employeeEntry.doneEntry();
-
-const createBatchBundle = bundle.build();
-```
-
-Use this pattern when you want developers to understand create:
-
-- one bundle has one declared business operation
-- `setAllowedResourceType(...)` keeps this batch homogeneous
-- `newEntry()` opens the active entry
-- `asEmployee()` switches from generic entry editing to employee-specific editing
-- if the entry needs an identifier and none was provided, it is generated
-- generic claim editing and employee-specific setters both edit the active entry
-- `doneEntry()` closes that entry in memory
-- `build()` produces the final bundle to send to the backend
-
-Alternative explicit-claim example:
-
-```ts
-import { BundleEditor } from 'gdc-sdk-core-ts';
-import {
-  EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
-  EXAMPLE_PROVIDER_ORGANIZATION_DID,
-} from 'gdc-common-utils-ts/examples';
-import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
-import {
-  EmployeeBundleOperations,
-  EmployeeResourceTypes,
-} from 'gdc-common-utils-ts/utils/employee';
-
-const bundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.create)
-  .setAllowedResourceType(EmployeeResourceTypes.employee);
-
-const employeeEntry = bundle.newEntry().asEmployee()
-  .setClaim(ClaimsPersonSchemaorg.email, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
-  .setClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
-
-console.log(employeeEntry.getClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue));
-
-employeeEntry.doneEntry();
-
-const createBatchBundle = bundle.build();
-```
-
-Create several employees one by one in the same bundle:
-
-```ts
-import { BundleEditor } from 'gdc-sdk-core-ts';
-import {
-  EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE,
-  EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
-} from 'gdc-common-utils-ts/examples';
-import {
-  EmployeeBundleOperations,
-  EmployeeResourceTypes,
-} from 'gdc-common-utils-ts/utils/employee';
-
-const createManyEmployeesBatchBundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.create)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
-  .asEmployee()
-  .setEmail(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.email)
-  .setRole(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.role)
-  .doneEntry()
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .asEmployee()
-  .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
-  .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .doneEntry()
-  .build();
-```
+- `BundleEditor`
+- `BundleEntryEditor`
+- `EmployeeEntryEditor`
+- `build()`
+- `doneEntry()`
+- employee create/search/disable/purge bundle shaping
 
 ## Search
-
-Teach search as a second, separate step.
-
-The same editor can produce the search bundle, but search should be explained
-independently from create so the reader does not confuse the two operations.
-
-Minimal search shape:
-
-```ts
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
-
-const bundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.search)
-  .setAllowedResourceType(EmployeeResourceTypes.employee);
-
-bundle
-  .newEntry()
-  .asEmployee()
-  .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
-  .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .doneEntry();
-
-const employeeSearchBundle = bundle.build();
-```
 
 Operational search rules:
 
@@ -221,26 +97,6 @@ Operational search rules:
 
 ## Disable
 
-Disable is a separate lifecycle operation.
-
-Today the shared employee editor still produces the inner `_batch` entry with
-`request.method = DELETE`.
-
-```ts
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
-
-const bundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.disable)
-  .setAllowedResourceType(EmployeeResourceTypes.employee);
-
-bundle
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .asEmployee()
-  .doneEntry();
-
-const disableBatchBundle = bundle.build();
-```
-
 Current live contract:
 
 - disable = `_batch` + inner `request.method = DELETE`
@@ -252,35 +108,6 @@ Preferred target contract:
 - disable/enable should be state transitions via `PATCH`
 - purge should remain a separate terminal operation
 
-Conceptual `PATCH` example:
-
-```ts
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
-
-const disablePatchBatchBundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.disable)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .asEmployee();
-```
-
-Disable several employees one by one:
-
-```ts
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
-
-const disableManyEmployeesBatchBundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.disable)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
-  .asEmployee()
-  .doneEntry()
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .asEmployee()
-  .doneEntry()
-  .build();
-```
-
 ## Purge
 
 Purge is a separate lifecycle operation, but it should still be modeled as a
@@ -289,18 +116,6 @@ bundle operation in frontend and SDK code.
 Runtime layers call the explicit `Employee/_purge` flow and identify the
 employee by the canonical `identifier`. That is the only selector you normally
 need for purge.
-
-```ts
-import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
-
-const purgeBatchBundle = new BundleEditor()
-  .setBundleOperation(EmployeeBundleOperations.purge)
-  .setAllowedResourceType(EmployeeResourceTypes.employee)
-  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .asEmployee()
-  .doneEntry()
-  .build();
-```
 
 Only after that should you explain the lower-level building blocks:
 
@@ -315,55 +130,6 @@ Only after that should you explain the lower-level building blocks:
 - `buildEmployeePurgeBundle(...)`
   - for shaping the canonical one-entry employee purge bundle routed later to
     `Employee/_purge`
-
-## Search Semantics
-
-Employee search is a bundle operation. New SDK code should emit:
-
-- outer route: `POST .../Employee/_search`
-- inner bundle entry:
-  - `request.method = POST`
-  - `request.url = Employee/_search`
-  - `resource.resourceType = Parameters`
-
-Minimal FHIR bundle example:
-
-```json
-{
-  "resourceType": "Bundle",
-  "type": "batch",
-  "entry": [
-    {
-      "request": {
-        "method": "POST",
-        "url": "Employee/_search"
-      },
-      "resource": {
-        "resourceType": "Parameters",
-        "parameter": [
-          {
-            "name": "org.schema.Person.email",
-            "valueString": "employee.two@example.org"
-          }
-        ]
-      }
-    }
-  ]
-}
-```
-
-Meaning of the main search keys:
-
-- `org.schema.Person.identifier`
-  - targets one technical employee profile
-  - useful for audit/history
-  - still resolves a profile that was previously purged
-- `org.schema.Person.email`
-  - targets the functional person mailbox
-  - can return more than one active employee if that email has more than one role
-- `org.schema.Person.email` + `org.schema.Person.hasOccupation.identifier.value`
-  - targets one functional employee role
-  - recommended exact operational lookup
 
 ## Lifecycle
 
