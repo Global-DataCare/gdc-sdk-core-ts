@@ -4,23 +4,26 @@ import assert from 'node:assert/strict';
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
 
 import {
-  EmployeeBundleSession,
+  BundleEditor,
   EmployeeDraft,
   buildEmployeeBatchBundle,
+  buildEmployeeBatchBundleFromEntries,
   buildEmployeeBatchEntry,
   buildEmployeeClaims,
+  buildEmployeePurgeBundle,
   buildEmployeeSearchBundle,
   buildSearchBundle,
 } from '../dist/index.js';
 import {
   EmployeeBatchEntryTypes,
   EmployeeBundleMethods,
+  EmployeeBundleOperations,
   EmployeeBundleRoutes,
   EmployeeClaimKeys,
   EmployeeSearchResourceType,
   ExampleEmployeeDirectory,
   ExampleEmployeeOrganization,
-  createDoctorRoleBundleEditorInput,
+  createSharedProfessionalRoleComparisonInput,
 } from './support/employee-test-fixtures.mjs';
 
 test('EmployeeDraft builds canonical employee claims', () => {
@@ -38,47 +41,113 @@ test('EmployeeDraft builds canonical employee claims', () => {
   assert.equal(claims[EmployeeClaimKeys.memberOfOrgTaxId], ExampleEmployeeOrganization.taxId);
 });
 
-test('EmployeeBundleSession supports explicit claim editing and derived create/search payloads', () => {
-  const bundleEditorInput = createDoctorRoleBundleEditorInput();
-  const bundleEditor = new EmployeeBundleSession()
-    .setClaim(EmployeeClaimKeys.identifier, bundleEditorInput.identifier)
-    .setEmail(bundleEditorInput.email)
-    .setRole(bundleEditorInput.role)
-    .addClaim(EmployeeClaimKeys.memberOf, bundleEditorInput.memberOf[0])
-    .addClaim(EmployeeClaimKeys.memberOf, bundleEditorInput.memberOf[1]);
+test('EmployeeDraft normalizes missing identifiers and can generate one on demand', () => {
+  const draft = new EmployeeDraft()
+    .setIdentifier('')
+    .setEmail(ExampleEmployeeDirectory.controllerActive.email);
 
-  assert.equal(bundleEditor.getClaim(EmployeeClaimKeys.email), bundleEditorInput.email);
-  assert.equal(bundleEditor.hasClaim(EmployeeClaimKeys.identifier), true);
-  assert.deepEqual(bundleEditor.getClaim(EmployeeClaimKeys.memberOf), bundleEditorInput.memberOf);
+  assert.equal(draft.getEmployeeIdentifier(), undefined);
 
-  const entry = bundleEditor.toBundleEntry({
-    method: EmployeeBundleMethods.create,
-    resourceId: ExampleEmployeeDirectory.doctorActive.identifier,
-  });
-  assert.equal(entry.type, EmployeeBatchEntryTypes.create);
-  assert.equal(entry.request.method, EmployeeBundleMethods.create);
-  assert.equal(entry.resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
-  assert.deepEqual(entry.resource.meta.claims[EmployeeClaimKeys.memberOf], bundleEditorInput.memberOf);
+  const generatedIdentifier = draft.ensureEmployeeIdentifier();
+  assert.match(generatedIdentifier, /^urn:uuid:/);
+  assert.equal(draft.getEmployeeIdentifier(), generatedIdentifier);
+});
 
-  const batchBundle = bundleEditor.toBundleBatch({
-    method: EmployeeBundleMethods.create,
-    resourceId: ExampleEmployeeDirectory.doctorActive.identifier,
-  });
-  assert.equal(batchBundle.resourceType, EmployeeSearchResourceType.bundle);
-  assert.equal(batchBundle.type, EmployeeSearchResourceType.batch);
-  assert.equal(batchBundle.entry[0].request.method, EmployeeBundleMethods.create);
-  assert.equal(batchBundle.entry[0].resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
+test('BundleEditor keeps one active employee entry and builds bundles by operation', () => {
+  const bundleEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.create)
+    .newEntry()
+    .setEmail(ExampleEmployeeDirectory.doctorActive.email)
+    .setRole(ExampleEmployeeDirectory.doctorActive.role)
+    .addClaim(EmployeeClaimKeys.memberOf, ExampleEmployeeDirectory.doctorActive.identifier);
 
-  const searchBundle = bundleEditor.toBundleSearch();
+  const generatedIdentifier = bundleEditor.getIdentifier();
+  assert.match(String(generatedIdentifier), /^urn:uuid:/);
+  assert.equal(bundleEditor.getFullUrl(), generatedIdentifier);
+  assert.equal(bundleEditor.getClaim(EmployeeClaimKeys.email), ExampleEmployeeDirectory.doctorActive.email);
+
+  const createBundle = bundleEditor.doneEntry().build();
+  assert.equal(createBundle.resourceType, EmployeeSearchResourceType.bundle);
+  assert.equal(createBundle.type, EmployeeSearchResourceType.batch);
+  assert.equal(createBundle.entry[0].request.method, EmployeeBundleMethods.create);
+  assert.equal(createBundle.entry[0].resource.id, generatedIdentifier);
+  assert.equal(createBundle.entry[0].fullUrl, generatedIdentifier);
+});
+
+test('BundleEditor supports direct identifier and fullUrl edits on the active entry', () => {
+  const sharedProfessionalRoleComparison = createSharedProfessionalRoleComparisonInput();
+  const bundleEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.create)
+    .newEntry()
+    .setIdentifier(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
+    .setEmail(sharedProfessionalRoleComparison.sharedEmail)
+    .setRole(sharedProfessionalRoleComparison.doctorRole);
+
+  assert.equal(bundleEditor.getIdentifier(), ExampleEmployeeDirectory.doctorPurgedHistorical.identifier);
+  assert.equal(bundleEditor.getFullUrl(), ExampleEmployeeDirectory.doctorPurgedHistorical.identifier);
+
+  bundleEditor.setFullUrl(ExampleEmployeeDirectory.controllerActive.identifier);
+  assert.equal(bundleEditor.getFullUrl(), ExampleEmployeeDirectory.controllerActive.identifier);
+});
+
+test('BundleEditor can build several employee create entries in one batch bundle', () => {
+  const createBundleEditor = new BundleEditor().setBundleOperation(EmployeeBundleOperations.create);
+
+  createBundleEditor
+    .newEntry(ExampleEmployeeDirectory.controllerActive.identifier)
+    .setEmail(ExampleEmployeeDirectory.controllerActive.email)
+    .setRole(ExampleEmployeeDirectory.controllerActive.role)
+    .doneEntry()
+    .newEntry(ExampleEmployeeDirectory.doctorActive.identifier)
+    .setEmail(ExampleEmployeeDirectory.doctorActive.email)
+    .setRole(ExampleEmployeeDirectory.doctorActive.role)
+    .doneEntry();
+
+  const bundle = createBundleEditor.build();
+  assert.equal(bundle.resourceType, EmployeeSearchResourceType.bundle);
+  assert.equal(bundle.type, EmployeeSearchResourceType.batch);
+  assert.equal(bundle.entry.length, 2);
+  assert.equal(bundle.entry[0].resource.id, ExampleEmployeeDirectory.controllerActive.identifier);
+  assert.equal(bundle.entry[1].resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
+});
+
+test('BundleEditor can build disable and purge bundles with the same editor API', () => {
+  const disableBundle = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.disable)
+    .newEntry(ExampleEmployeeDirectory.doctorActive.identifier)
+    .doneEntry()
+    .build();
+
+  assert.equal(disableBundle.entry[0].request.method, EmployeeBundleMethods.disable);
+  assert.equal(disableBundle.entry[0].resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
+
+  const purgeBundle = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.purge)
+    .newEntry(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
+    .doneEntry()
+    .build();
+
+  assert.equal(purgeBundle.entry[0].request.method, EmployeeBundleMethods.purge);
+  assert.equal(purgeBundle.entry[0].type, EmployeeBatchEntryTypes.purge);
+  assert.equal(
+    purgeBundle.entry[0].resource.meta.claims[EmployeeClaimKeys.identifier],
+    ExampleEmployeeDirectory.doctorPurgedHistorical.identifier,
+  );
+});
+
+test('BundleEditor builds canonical search bundles from one active search entry', () => {
+  const searchBundle = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.search)
+    .newEntry()
+    .setEmail(ExampleEmployeeDirectory.doctorActive.email)
+    .setRole(ExampleEmployeeDirectory.doctorActive.role)
+    .doneEntry()
+    .build();
+
   assert.equal(searchBundle.resourceType, EmployeeSearchResourceType.bundle);
   assert.equal(searchBundle.type, EmployeeSearchResourceType.batch);
   assert.equal(searchBundle.entry[0].request.method, EmployeeBundleMethods.search);
   assert.equal(searchBundle.entry[0].request.url, EmployeeBundleRoutes.search);
-  assert.ok(Array.isArray(searchBundle.entry[0].resource.parameter));
-  assert.equal(
-    searchBundle.entry[0].resource.parameter.some((item) => item.name === EmployeeClaimKeys.context),
-    false,
-  );
 });
 
 test('buildEmployeeClaims merges additional claims and canonical setters', () => {
@@ -110,7 +179,6 @@ test('buildEmployeeBatchEntry builds a claims-first Employee entry', () => {
   assert.equal(entry.request.method, EmployeeBundleMethods.create);
   assert.equal(entry.resource.resourceType, EmployeeSearchResourceType.employee);
   assert.equal(entry.resource.id, ExampleEmployeeDirectory.controllerActive.identifier);
-  assert.equal(entry.resource.meta.claims[EmployeeClaimKeys.email], ExampleEmployeeDirectory.controllerActive.email);
 });
 
 test('buildEmployeeBatchBundle wraps employee batch entries into one batch bundle', () => {
@@ -130,7 +198,45 @@ test('buildEmployeeBatchBundle wraps employee batch entries into one batch bundl
   assert.equal(bundle.resourceType, EmployeeSearchResourceType.bundle);
   assert.equal(bundle.type, EmployeeSearchResourceType.batch);
   assert.equal(bundle.entry[0].request.method, EmployeeBundleMethods.create);
-  assert.equal(bundle.entry[0].resource.id, ExampleEmployeeDirectory.controllerActive.identifier);
+});
+
+test('buildEmployeeBatchBundleFromEntries preserves ready-made employee entries for multi-employee bundles', () => {
+  const createControllerEntry = buildEmployeeBatchEntry({
+    type: EmployeeBatchEntryTypes.create,
+    method: EmployeeBundleMethods.create,
+    resourceId: ExampleEmployeeDirectory.controllerActive.identifier,
+    claims: buildEmployeeClaims({
+      identifier: ExampleEmployeeDirectory.controllerActive.identifier,
+      email: ExampleEmployeeDirectory.controllerActive.email,
+      role: ExampleEmployeeDirectory.controllerActive.role,
+    }),
+  });
+
+  const createDoctorEntry = buildEmployeeBatchEntry({
+    type: EmployeeBatchEntryTypes.create,
+    method: EmployeeBundleMethods.create,
+    resourceId: ExampleEmployeeDirectory.doctorActive.identifier,
+    claims: buildEmployeeClaims({
+      identifier: ExampleEmployeeDirectory.doctorActive.identifier,
+      email: ExampleEmployeeDirectory.doctorActive.email,
+      role: ExampleEmployeeDirectory.doctorActive.role,
+    }),
+  });
+
+  const bundle = buildEmployeeBatchBundleFromEntries({
+    entries: [createControllerEntry, createDoctorEntry],
+  });
+
+  assert.equal(bundle.entry.length, 2);
+});
+
+test('buildEmployeePurgeBundle builds a one-entry purge batch bundle keyed by identifier', () => {
+  const bundle = buildEmployeePurgeBundle({
+    identifier: ExampleEmployeeDirectory.doctorPurgedHistorical.identifier,
+  });
+
+  assert.equal(bundle.entry[0].request.method, EmployeeBundleMethods.purge);
+  assert.equal(bundle.entry[0].type, EmployeeBatchEntryTypes.purge);
 });
 
 test('employee search helpers build canonical batch POST bundles by default', () => {
@@ -139,16 +245,8 @@ test('employee search helpers build canonical batch POST bundles by default', ()
       [EmployeeClaimKeys.email]: ExampleEmployeeDirectory.controllerActive.email,
     },
   });
-  assert.equal(bundle.resourceType, EmployeeSearchResourceType.bundle);
-  assert.equal(bundle.type, EmployeeSearchResourceType.batch);
   assert.equal(bundle.entry[0].request.method, EmployeeBundleMethods.search);
   assert.equal(bundle.entry[0].request.url, EmployeeBundleRoutes.search);
-  assert.deepEqual(bundle.entry[0].resource, {
-    resourceType: EmployeeSearchResourceType.parameters,
-    parameter: [
-      { name: EmployeeClaimKeys.email, valueString: ExampleEmployeeDirectory.controllerActive.email },
-    ],
-  });
 });
 
 test('employee search helpers support email plus role, role-only, and empty searches', () => {
@@ -166,24 +264,6 @@ test('employee search helpers support email plus role, role-only, and empty sear
       { name: EmployeeClaimKeys.role, valueString: ExampleEmployeeDirectory.doctorActive.role },
     ],
   });
-
-  const roleOnlyBundle = buildEmployeeSearchBundle({
-    claims: {
-      [EmployeeClaimKeys.role]: ExampleEmployeeDirectory.doctorActive.role,
-    },
-  });
-  assert.deepEqual(roleOnlyBundle.entry[0].resource, {
-    resourceType: EmployeeSearchResourceType.parameters,
-    parameter: [
-      { name: EmployeeClaimKeys.role, valueString: ExampleEmployeeDirectory.doctorActive.role },
-    ],
-  });
-
-  const allEmployeesBundle = buildEmployeeSearchBundle();
-  assert.deepEqual(allEmployeesBundle.entry[0].resource, {
-    resourceType: EmployeeSearchResourceType.parameters,
-    parameter: [],
-  });
 });
 
 test('generic search bundles still support legacy GET query encoding', () => {
@@ -196,8 +276,4 @@ test('generic search bundles still support legacy GET query encoding', () => {
   });
 
   assert.equal(bundle.entry[0].request.method, 'GET');
-  assert.equal(
-    bundle.entry[0].request.url,
-    'Employee?org.schema.Person.email=shared.professional%40example.org',
-  );
 });

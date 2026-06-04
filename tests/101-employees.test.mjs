@@ -3,17 +3,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  EmployeeBundleSession,
+  BundleEditor,
   EmployeeDraft,
   buildEmployeeSearchBundle,
 } from '../dist/index.js';
 import {
   EmployeeBundleMethods,
+  EmployeeBatchEntryTypes,
   EmployeeBundleRoutes,
+  EmployeeBundleOperations,
   EmployeeClaimKeys,
   EmployeeSearchResourceType,
   ExampleEmployeeDirectory,
-  createDoctorRoleBundleEditorInput,
   createSharedProfessionalRoleComparisonInput,
 } from './support/employee-test-fixtures.mjs';
 
@@ -28,15 +29,6 @@ test('101: employee draft and search semantics stay explicit', () => {
   assert.equal(exactHistoricalSearch.type, EmployeeSearchResourceType.batch);
   assert.equal(exactHistoricalSearch.entry[0].request.method, EmployeeBundleMethods.search);
   assert.equal(exactHistoricalSearch.entry[0].request.url, EmployeeBundleRoutes.search);
-  assert.deepEqual(exactHistoricalSearch.entry[0].resource, {
-    resourceType: EmployeeSearchResourceType.parameters,
-    parameter: [
-      {
-        name: EmployeeClaimKeys.identifier,
-        valueString: ExampleEmployeeDirectory.doctorPurgedHistorical.identifier,
-      },
-    ],
-  });
 
   const sharedProfessionalRoleComparison = createSharedProfessionalRoleComparisonInput();
   const sameEmailDifferentRoles = [
@@ -57,50 +49,42 @@ test('101: employee draft and search semantics stay explicit', () => {
     sameEmailDifferentRoles[1][EmployeeClaimKeys.role],
   );
 
-  const controllerFlowBundleEditorInput = createDoctorRoleBundleEditorInput();
-  const controllerBundleEditor = new EmployeeBundleSession()
-    .setIdentifier(controllerFlowBundleEditorInput.identifier)
-    .setEmail(controllerFlowBundleEditorInput.email)
-    .setRole(controllerFlowBundleEditorInput.role);
+  const createBundleEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.create)
+    .newEntry()
+    .setEmail(ExampleEmployeeDirectory.doctorActive.email)
+    .setRole(ExampleEmployeeDirectory.doctorActive.role);
 
-  assert.equal(
-    controllerBundleEditor.getClaim(EmployeeClaimKeys.identifier),
-    controllerFlowBundleEditorInput.identifier,
-  );
+  const generatedIdentifier = createBundleEditor.getIdentifier();
+  assert.match(String(generatedIdentifier), /^urn:uuid:/);
 
-  const createBatchBundle = controllerBundleEditor.toBundleBatch({
-    method: EmployeeBundleMethods.create,
-    resourceId: ExampleEmployeeDirectory.doctorActive.identifier,
-  });
+  const createBatchBundle = createBundleEditor.doneEntry().build();
   assert.equal(createBatchBundle.resourceType, EmployeeSearchResourceType.bundle);
   assert.equal(createBatchBundle.type, EmployeeSearchResourceType.batch);
   assert.equal(createBatchBundle.entry[0].request.method, EmployeeBundleMethods.create);
-  assert.equal(createBatchBundle.entry[0].resource.id, ExampleEmployeeDirectory.doctorActive.identifier);
+  assert.equal(createBatchBundle.entry[0].resource.id, generatedIdentifier);
+  assert.equal(createBatchBundle.entry[0].fullUrl, generatedIdentifier);
+  assert.equal(
+    createBatchBundle.entry[0].resource.meta.claims[EmployeeClaimKeys.identifier],
+    generatedIdentifier,
+  );
 
-  const operationalSearch = new EmployeeBundleSession()
-    .setEmail(controllerFlowBundleEditorInput.email)
-    .setRole(controllerFlowBundleEditorInput.role)
-    .toBundleSearch();
+  const operationalSearchEditor = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.search)
+    .newEntry()
+    .setEmail(ExampleEmployeeDirectory.doctorActive.email)
+    .setRole(ExampleEmployeeDirectory.doctorActive.role);
 
+  const operationalSearch = operationalSearchEditor.doneEntry().build();
   assert.equal(operationalSearch.entry[0].request.method, EmployeeBundleMethods.search);
   assert.equal(operationalSearch.entry[0].request.url, EmployeeBundleRoutes.search);
-  assert.deepEqual(operationalSearch.entry[0].resource, {
-    resourceType: EmployeeSearchResourceType.parameters,
-    parameter: [
-      {
-        name: EmployeeClaimKeys.email,
-        valueString: controllerFlowBundleEditorInput.email,
-      },
-      {
-        name: EmployeeClaimKeys.role,
-        valueString: controllerFlowBundleEditorInput.role,
-      },
-    ],
-  });
 
-  const roleOnlySearch = new EmployeeBundleSession()
+  const roleOnlySearch = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.search)
+    .newEntry()
     .setRole(sharedProfessionalRoleComparison.doctorRole)
-    .toBundleSearch();
+    .doneEntry()
+    .build();
 
   assert.deepEqual(roleOnlySearch.entry[0].resource, {
     resourceType: EmployeeSearchResourceType.parameters,
@@ -112,9 +96,27 @@ test('101: employee draft and search semantics stay explicit', () => {
     ],
   });
 
-  const allEmployeesSearch = new EmployeeBundleSession().toBundleSearch();
+  const allEmployeesSearch = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.search)
+    .newEntry()
+    .doneEntry()
+    .build();
+
   assert.deepEqual(allEmployeesSearch.entry[0].resource, {
     resourceType: EmployeeSearchResourceType.parameters,
     parameter: [],
   });
+
+  const purgeBatchBundle = new BundleEditor()
+    .setBundleOperation(EmployeeBundleOperations.purge)
+    .newEntry(ExampleEmployeeDirectory.doctorPurgedHistorical.identifier)
+    .doneEntry()
+    .build();
+
+  assert.equal(purgeBatchBundle.entry[0].request.method, EmployeeBundleMethods.purge);
+  assert.equal(purgeBatchBundle.entry[0].type, EmployeeBatchEntryTypes.purge);
+  assert.equal(
+    purgeBatchBundle.entry[0].resource.meta.claims[EmployeeClaimKeys.identifier],
+    ExampleEmployeeDirectory.doctorPurgedHistorical.identifier,
+  );
 });

@@ -17,6 +17,12 @@ import {
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 import { ClaimsOrganizationSchemaorg, ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
+import {
+  EmployeeBatchEntryTypes as SharedEmployeeBatchEntryTypes,
+  EmployeeBundleMethods as SharedEmployeeBundleMethods,
+  EmployeeBundleOperations as SharedEmployeeBundleOperations,
+  EmployeeBundleRoutes as SharedEmployeeBundleRoutes,
+} from 'gdc-common-utils-ts/utils/employee';
 
 export const EmployeeClaimKeys = Object.freeze({
   context: '@context',
@@ -27,18 +33,10 @@ export const EmployeeClaimKeys = Object.freeze({
   memberOfOrgTaxId: ClaimsPersonSchemaorg.memberOfOrgTaxId,
 });
 
-export const EmployeeBundleMethods = Object.freeze({
-  create: 'POST',
-  search: 'POST',
-});
-
-export const EmployeeBundleRoutes = Object.freeze({
-  search: 'Employee/_search',
-});
-
-export const EmployeeBatchEntryTypes = Object.freeze({
-  create: 'Employee-create-request-v1.0',
-});
+export const EmployeeBundleMethods = SharedEmployeeBundleMethods;
+export const EmployeeBundleRoutes = SharedEmployeeBundleRoutes;
+export const EmployeeBatchEntryTypes = SharedEmployeeBatchEntryTypes;
+export const EmployeeBundleOperations = SharedEmployeeBundleOperations;
 
 export const EmployeeSearchResourceType = Object.freeze({
   bundle: 'Bundle',

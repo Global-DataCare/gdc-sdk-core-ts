@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-06-04
+
+### Added
+- Added the employee `101` and tests around the new shared bundle-editing
+  flow:
+  - `docs/101-EMPLOYEES.md`
+  - `tests/101-employees.test.mjs`
+
+### Changed
+- Switched employee bundle editing to consume the shared `BundleEditor`
+  provided by `gdc-common-utils-ts`.
+- Updated the employee teaching path so the `sdk-core` guide explains:
+  - one bundle operation per bundle
+  - one active entry at a time
+  - generic claim editing plus employee-specific setters
+  - create / search / disable / purge as separate sections
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.15.0`.
+
+### Testing
+- `node --test tests/employee-draft.test.mjs tests/101-employees.test.mjs`
+- `npm run build`
+
 ## [0.6.9] - 2026-06-02
 
 ### Changed

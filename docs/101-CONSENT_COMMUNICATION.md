@@ -101,6 +101,14 @@ If you want the executable source for this editing step, open:
 
 - [101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
 
+Alternative low-level note:
+
+- the same `bundleEditor` can also use
+  `getActiveEntryClaim(...)` / `setActiveEntryClaim(...)`
+- use that only when you need direct control over one claim in the selected
+  active `Consent` entry
+- keep the higher-level consent helpers as the first teaching path
+
 ## Step 2. Draft And Outbox In `sdk-core`
 
 Executable references:

@@ -36,7 +36,7 @@ That `101` stays intentionally small. Broader coverage lives in:
   - pure employee helper functions such as `buildEmployeeClaims(...)` and `buildEmployeeBatchEntry(...)`
 - `gdc-sdk-core-ts`
   - `EmployeeDraft`
-  - `EmployeeBundleSession`
+  - `BundleEditor`
   - runtime-neutral orchestration and higher-level builders
 - `gdc-sdk-node-ts` and `gdc-sdk-front-ts`
   - reexport and execute the same core model in node/web/native runtimes
@@ -70,7 +70,7 @@ Start with the create flow first, on its own.
 
 Start with the highest-level editor first.
 
-- first choice for onboarding: `EmployeeBundleSession`
+- first choice for onboarding: `BundleEditor`
 - second level: `EmployeeDraft`
 - lower level: `buildEmployeeClaims(...)`, `buildEmployeeBatchEntry(...)`,
   `buildEmployeeSearchBundle(...)`
@@ -81,49 +81,79 @@ object instead of jumping directly to raw claims maps.
 Recommended example:
 
 ```ts
-import { EmployeeBundleSession } from 'gdc-sdk-core-ts';
+import { BundleEditor } from 'gdc-sdk-core-ts';
 import {
   EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
 } from 'gdc-common-utils-ts/examples';
 import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
 
-const bundleEditor = new EmployeeBundleSession()
-  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+const bundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.create)
+  .newEntry()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
   .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
 
-console.log(bundleEditor.getClaim(ClaimsPersonSchemaorg.email));
-// shared.professional@example.org
-
-const createBatchBundle = bundleEditor.toBundleBatch({
-  method: 'POST',
-  resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
-});
+const generatedEmployeeIdentifier = bundle.getIdentifier();
+const createBatchBundle = bundle.doneEntry().build();
 ```
 
 Use this pattern when you want developers to understand create:
 
-- how employee claims are authored
-- how to inspect intermediate values with `getClaim(...)`
-- how repeated fields can be accumulated with `addClaim(...)`
-- how one editor produces a create bundle entry
+- one bundle has one declared business operation
+- `newEntry()` opens the active entry
+- if the entry needs an identifier and none was provided, it is generated
+- generic claim editing and employee-specific setters both edit the active entry
+- `doneEntry()` closes that entry in memory
+- `build()` produces the final bundle to send to the backend
 
-Minimal create shape:
+Alternative explicit-claim example:
 
 ```ts
-const createBatchBundle = bundleEditor.toBundleBatch({
-  method: 'POST',
-  resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
-});
+import { BundleEditor } from 'gdc-sdk-core-ts';
+import {
+  EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
+  EXAMPLE_PROVIDER_ORGANIZATION_DID,
+} from 'gdc-common-utils-ts/examples';
+import { ClaimsPersonSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const bundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.create)
+  .newEntry()
+  .setClaim(ClaimsPersonSchemaorg.email, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
+  .setClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue, EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
+  .addClaim(ClaimsPersonSchemaorg.memberOf, EXAMPLE_PROVIDER_ORGANIZATION_DID);
+
+console.log(bundle.getClaim(ClaimsPersonSchemaorg.hasOccupationalRoleValue));
+
+const createBatchBundle = bundle.doneEntry().build();
 ```
 
-What `createBatchBundle` means:
+Create several employees one by one in the same bundle:
 
-- it is the canonical one-entry employee `_batch` bundle
-- in portal-web flows, the frontend usually sends this bundle to its own backend
-- the backend then wraps/submits it according to its runtime or DIDComm contract
+```ts
+import { BundleEditor } from 'gdc-sdk-core-ts';
+import {
+  EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE,
+  EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE,
+} from 'gdc-common-utils-ts/examples';
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const createManyEmployeesBatchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.create)
+  .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
+  .setEmail(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.email)
+  .setRole(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.role)
+  .doneEntry()
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
+  .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
+  .doneEntry()
+  .build();
+```
 
 ## Search
 
@@ -135,10 +165,15 @@ independently from create so the reader does not confuse the two operations.
 Minimal search shape:
 
 ```ts
-const employeeSearchBundle = new EmployeeBundleSession()
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const employeeSearchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.search)
+  .newEntry()
   .setEmail(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.email)
   .setRole(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.role)
-  .toBundleSearch();
+  .doneEntry()
+  .build();
 ```
 
 Operational search rules:
@@ -162,12 +197,13 @@ Today the shared employee editor still produces the inner `_batch` entry with
 `request.method = DELETE`.
 
 ```ts
-const disableBatchBundle = new EmployeeBundleSession()
-  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .toBundleBatch({
-    method: 'DELETE',
-    resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
-  });
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const disableBatchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.disable)
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .doneEntry()
+  .build();
 ```
 
 Current live contract:
@@ -184,40 +220,59 @@ Preferred target contract:
 Conceptual `PATCH` example:
 
 ```ts
-const disablePatchBatchBundle = new EmployeeBundleSession()
-  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .toBundleBatch({
-    method: 'PATCH',
-    resourceId: EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier,
-  });
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const disablePatchBatchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.disable)
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier);
+```
+
+Disable several employees one by one:
+
+```ts
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const disableManyEmployeesBatchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.disable)
+  .newEntry(EXAMPLE_EMPLOYEE_CONTROLLER_ACTIVE.identifier)
+  .doneEntry()
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .doneEntry()
+  .build();
 ```
 
 ## Purge
 
-Purge is a separate lifecycle operation and does not reuse the same contract as
-create/search.
+Purge is a separate lifecycle operation, but it should still be modeled as a
+bundle operation in frontend and SDK code.
 
-Runtime layers call the explicit `Employee/_purge` flow and normally identify
-the employee by `identifier`.
+Runtime layers call the explicit `Employee/_purge` flow and identify the
+employee by the canonical `identifier`. That is the only selector you normally
+need for purge.
 
 ```ts
-const employeePurgeSelectorClaims = new EmployeeBundleSession()
-  .setIdentifier(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
-  .toClaims();
+import { EmployeeBundleOperations } from 'gdc-common-utils-ts/utils/employee';
+
+const purgeBatchBundle = new BundleEditor()
+  .setBundleOperation(EmployeeBundleOperations.purge)
+  .newEntry(EXAMPLE_EMPLOYEE_DOCTOR_ACTIVE.identifier)
+  .doneEntry()
+  .build();
 ```
 
 Only after that should you explain the lower-level building blocks:
 
 - `EmployeeDraft`
   - for authoring canonical employee claims only
-- `toBundleEntry(...)`
-  - lower-level escape hatch when a caller explicitly needs one raw batch entry
 - `buildEmployeeBatchEntry(...)`
   - for shaping one employee batch entry
 - `buildEmployeeBatchBundle(...)`
   - for shaping a canonical employee `_batch` bundle
 - `buildEmployeeSearchBundle(...)`
   - for shaping the canonical `POST + Parameters` employee search bundle
+- `buildEmployeePurgeBundle(...)`
+  - for shaping the canonical one-entry employee purge bundle routed later to
+    `Employee/_purge`
 
 ## Search Semantics
 
