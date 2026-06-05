@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
   `CommunicationClaims` surface.
 
 ### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.18.1`.
 - Clarified the discovery boundary in the README and facade comments so host
   discovery starts from the contextualized hosting-operator base URL rather
   than the host root.
