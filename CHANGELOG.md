@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.2] - 2026-06-04
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.17.0`.
+
+### Testing
+- `npm run type-check`
+- `npm test`
+
 ## [0.8.1] - 2026-06-04
 
 ### Added
