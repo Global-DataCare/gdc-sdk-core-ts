@@ -19,6 +19,9 @@ All notable changes to this project will be documented in this file.
 - Clarified the discovery boundary in the README and facade comments so host
   discovery starts from the contextualized hosting-operator base URL rather
   than the host root.
+- Clarified the canonical host-scoped DSP entrypoint shape as
+  `/host/cds-{hostCoverageScope}/{version}/{hostNetwork}/.well-known/dspace-version`
+  so host coverage scope stays distinct from legal jurisdiction.
 - Updated the consent outbox coverage to write and assert the canonical
   `Communication.topic` claim through the shared claim helpers.
 

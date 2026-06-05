@@ -37,7 +37,7 @@ export type PreloadedHostingOperatorRecord = Readonly<{
    *
    * For GW CORE this should normally be the fully contextualized hosting
    * operator URL, for example:
-   * `/host/cds-{jurisdiction}/{version}/{hostNetwork}/.well-known/dspace-version`
+   * `/host/cds-{hostCoverageScope}/{version}/{hostNetwork}/.well-known/dspace-version`
    */
   discoveryUrl?: string;
   /**
