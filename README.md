@@ -452,9 +452,10 @@ package:
 
 Discovery boundary rule:
 
-- `gdc-sdk-core-ts` defines runtime-neutral contracts only
-- host DSP resolution from `/.well-known/dspace-version` and `/dsp/catalog/dcat.json`
-  belongs to `gdc-sdk-node-ts` or a backend/BFF adapter
+- `gdc-sdk-core-ts` defines runtime-neutral contracts plus reusable
+  transport-agnostic discovery resolvers that accept injected `fetch`
+- host DSP resolution uses the contextualized hosting-operator entrypoint
+  `/<hosting-operator-network-context>/.well-known/dspace-version`
 - frontend DTO/card mapping belongs to `gdc-sdk-front-ts`
 
 ### Polling helpers

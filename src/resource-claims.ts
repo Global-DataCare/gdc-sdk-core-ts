@@ -17,6 +17,8 @@ import {
 import type {
   InteroperableClaims as ConsentInteroperableClaims,
 } from 'gdc-common-utils-ts/utils/consent-claim-helpers';
+
+const COMMUNICATION_TOPIC_CLAIM = 'Communication.topic';
 import {
   addActorIdentifierList,
   addPurposeList,
@@ -133,6 +135,18 @@ export class CommunicationClaims {
 
   getCategoryList(): string[] {
     return getCommunicationCategoryList(this.claims);
+  }
+
+  setTopic(value: unknown): this {
+    this.claims = {
+      ...this.claims,
+      [COMMUNICATION_TOPIC_CLAIM]: String(value ?? '').trim(),
+    };
+    return this;
+  }
+
+  getTopic(): string {
+    return String(this.claims[COMMUNICATION_TOPIC_CLAIM] ?? '').trim();
   }
 
   setText(value: unknown): this {

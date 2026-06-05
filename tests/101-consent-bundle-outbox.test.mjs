@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 
 import { CommunicationCategoryCodes } from '../../gdc-common-utils-ts/dist/constants/communication.js';
 import { ResourceTypesFhirR4 } from '../../gdc-common-utils-ts/dist/constants/fhir-resource-types.js';
-import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
+import {
+  HealthcareActorRoles,
+  HealthcareBasicSections,
+  HealthcareConsentPurposes,
+  HealthcareKindOfDocumentSections,
+} from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
 import {
   EXAMPLE_COMMUNICATION_UUID,
   EXAMPLE_CONSENT_DATE,
@@ -28,6 +33,8 @@ import {
   isCommunicationDraftReady,
 } from '../dist/index.js';
 
+const CONSENT_COMMUNICATION_TOPIC = HealthcareKindOfDocumentSections['LP173394-0'].attributeValue;
+
 test('101: consent bundle Communication goes into draft and outbox step by step', () => {
   // Step 1.
   // Build the Communication wrapper and the Consent claims through the sdk-core
@@ -36,6 +43,7 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
     .setIdentifier(EXAMPLE_COMMUNICATION_UUID)
     .setSubject(EXAMPLE_SUBJECT_DID)
     .setCategoryList([CommunicationCategoryCodes.Notification.attributeValue])
+    .setTopic(CONSENT_COMMUNICATION_TOPIC)
     .toClaims();
 
   const bundleEditor = new CommunicationAttachedBundleSession({
@@ -85,5 +93,6 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
   assert.equal(isCommunicationDraftReady(draft), true);
   assert.equal(job.status, CommunicationOutboxStatuses.Ready);
   assert.equal(job.payload.resourceType, ResourceTypesFhirR4.Communication);
+  assert.equal(job.payload.meta?.claims?.[CommunicationClaim.Topic], CONSENT_COMMUNICATION_TOPIC);
   assert.equal(job.payload.meta?.claims?.[CommunicationClaim.ContentAttachmentData] !== undefined, true);
 });

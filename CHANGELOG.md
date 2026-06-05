@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Added runtime-neutral dataspace discovery building blocks in `sdk-core` so
+  Node and frontend runtimes can share the same HTTP/default-first resolution
+  logic:
+  - `DataspaceResolver`
+  - `HttpDataspaceResolver`
+  - `DefaultFirstDataspaceDiscovery`
+  - shared discovery types and exports
+- Added canonical `Communication.topic` claim helpers to the shared
+  `CommunicationClaims` surface.
+
+### Changed
+- Clarified the discovery boundary in the README and facade comments so host
+  discovery starts from the contextualized hosting-operator base URL rather
+  than the host root.
+- Updated the consent outbox coverage to write and assert the canonical
+  `Communication.topic` claim through the shared claim helpers.
+
+### Testing
+- `npm run build`
+
 ## [0.8.2] - 2026-06-04
 
 ### Changed

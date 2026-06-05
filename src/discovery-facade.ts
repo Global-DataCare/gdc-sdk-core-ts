@@ -21,11 +21,11 @@ export type DiscoveryResolutionResult = {
  * Implemented here:
  * - contract only
  * - static in-memory reference implementation
+ * - reusable dataspace discovery resolvers exported from `src/discovery/*`
  *
- * Still pending in node/frontend runtimes:
- * - real did:web HTTP resolution
- * - DSP `/.well-known/dspace-version` fetch
- * - DSP catalog artifact consumption
+ * Runtime adapters may still add:
+ * - concrete backend/frontend wiring around `fetch`
+ * - did:web HTTP resolution
  * - cache freshness/retry policy
  */
 export interface DiscoveryFacade {
