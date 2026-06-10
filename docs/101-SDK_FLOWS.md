@@ -21,6 +21,7 @@ Use this when you are new to the SDK family and need to answer:
 Before reading communication-heavy flows, read:
 
 - [101-COMMUNICATION_LAYERING.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-COMMUNICATION_LAYERING.md)
+- [101-INDIVIDUAL_ONBOARDING_PDF_REQUEST.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-INDIVIDUAL_ONBOARDING_PDF_REQUEST.md)
 
 ## Before Anything Else: Where Initialization Really Lives
 
