@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.9.0] - 2026-06-10
 
 ### Added
 - Added runtime-neutral dataspace discovery building blocks in `sdk-core` so
@@ -14,9 +14,22 @@ All notable changes to this project will be documented in this file.
   - shared discovery types and exports
 - Added canonical `Communication.topic` claim helpers to the shared
   `CommunicationClaims` surface.
+- Added the first shared individual onboarding facade so frontend/backend
+  runtimes can reuse one canonical onboarding draft flow:
+  - `src/individual-onboarding-facade.ts`
+- Added explicit onboarding helpers for:
+  - deriving controller-prefilled form fields from KYC
+  - controller/subject setter ergonomics
+  - validation
+  - claims merge/build
+  - `DocumentReference` draft output
+  - onboarding PDF request-bundle creation
+- Added focused executable onboarding coverage in:
+  - `tests/individual-onboarding-facade.test.mjs`
 
 ### Changed
-- Updated the shared dependency target to `gdc-common-utils-ts@^1.18.1`.
+- Updated the shared dependency target to the onboarding-capable
+  `gdc-common-utils-ts@^1.20.0`.
 - Clarified the discovery boundary in the README and facade comments so host
   discovery starts from the contextualized hosting-operator base URL rather
   than the host root.
@@ -27,6 +40,7 @@ All notable changes to this project will be documented in this file.
   `Communication.topic` claim through the shared claim helpers.
 
 ### Testing
+- `npm test`
 - `npm run build`
 
 ## [0.8.2] - 2026-06-04

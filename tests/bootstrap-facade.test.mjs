@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createBootstrapFacade, ServiceCapability } from '../dist/index.js';
+import { serializeServiceCapabilityTokens } from 'gdc-common-utils-ts/constants/service-capabilities';
 
 test('bootstrap facade builds canonical activation payload and warns on deprecated legacy credentials', () => {
   const facade = createBootstrapFacade();
@@ -42,7 +43,11 @@ test('bootstrap facade organization activation accumulates service capabilities 
 
   assert.equal(
     serviceClaims['org.schema.Service.serviceType'],
-    'indexing.cruds,indexing.rs,digitaltwin.rs',
+    serializeServiceCapabilityTokens([
+      ServiceCapability.IndexProvider,
+      ServiceCapability.IndexReader,
+      ServiceCapability.DigitalTwinReader,
+    ]),
   );
   assert.equal(
     serviceClaims['org.schema.Service.url'],
