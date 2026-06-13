@@ -21,6 +21,7 @@ import type {
 const COMMUNICATION_TOPIC_CLAIM = 'Communication.topic';
 import {
   addActorIdentifierList,
+  addActorRoleList,
   addPurposeList,
   addSectionList,
   getActorIdentifierList,
@@ -33,6 +34,10 @@ import {
   getConsentSubject,
   getPurposeList,
   getSectionList,
+  removeActorIdentifierList,
+  removeActorRoleList,
+  removePurposeList,
+  removeSectionList,
   setActorIdentifierList,
   setActorRoleList,
   setConsentDate,
@@ -257,6 +262,16 @@ export class ConsentClaims {
     return this;
   }
 
+  addActorRoleList(values: string | readonly string[]): this {
+    this.claims = addActorRoleList(this.claims, values);
+    return this;
+  }
+
+  removeActorRoleList(values: string | readonly string[]): this {
+    this.claims = removeActorRoleList(this.claims, values);
+    return this;
+  }
+
   getActorRoleList(): string[] {
     return getActorRoleList(this.claims);
   }
@@ -268,6 +283,11 @@ export class ConsentClaims {
 
   addActorIdentifierList(values: string | readonly string[]): this {
     this.claims = addActorIdentifierList(this.claims, values);
+    return this;
+  }
+
+  removeActorIdentifierList(values: string | readonly string[]): this {
+    this.claims = removeActorIdentifierList(this.claims, values);
     return this;
   }
 
@@ -285,8 +305,18 @@ export class ConsentClaims {
     return this;
   }
 
+  removeSectionList(values: string | readonly string[]): this {
+    this.claims = removeSectionList(this.claims, values);
+    return this;
+  }
+
   getSectionList(): string[] {
     return getSectionList(this.claims);
+  }
+
+  removePurposeList(values: string | readonly string[]): this {
+    this.claims = removePurposeList(this.claims, values);
+    return this;
   }
 
   toClaims(): ConsentInteroperableClaims {

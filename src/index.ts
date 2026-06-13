@@ -24,6 +24,8 @@ export * from './employee-draft.js';
 export * from './identity-model.js';
 export * from './identity-store.js';
 export * from './individual-onboarding-facade.js';
+export * from './individual-organization-lifecycle-facade.js';
+export * from './license-controller-facade.js';
 export * from './individual-onboarding-submission.js';
 export * from './polling-model.js';
 export * from './relationship-access.js';

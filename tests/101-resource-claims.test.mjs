@@ -32,6 +32,10 @@ import {
   CommunicationClaims,
   ConsentClaims,
   MedicationStatementClaims,
+  removeActorIdentifierList,
+  removeActorRoleList,
+  removePurposeList,
+  removeSectionList,
 } from '../dist/index.js';
 
 test('101: sdk-core resource claim classes stay thin and discoverable', () => {
@@ -135,5 +139,85 @@ test('101: sdk-core resource claim classes stay thin and discoverable', () => {
   assert.equal(
     jurisdictionEmergencyConsentClaims[ClaimConsent.purpose],
     HealthcareConsentPurposes.EmergencyTreatment,
+  );
+
+  const reducedConsentClaims = ConsentClaims.create()
+    .setActorIdentifierList([
+      EXAMPLE_EMAIL_PROFESSIONAL,
+      EXAMPLE_PROVIDER_ORGANIZATION_DID,
+    ])
+    .setActorRoleList([
+      HealthcareActorRoles.GeneralistMedicalPractitioner,
+      HealthcareActorRoles.NursingProfessional,
+    ])
+    .setPurposeList([
+      HealthcareConsentPurposes.Treatment,
+      HealthcareConsentPurposes.EmergencyTreatment,
+    ])
+    .setSectionList([
+      HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+      HealthcareBasicSections.Results.attributeValue,
+    ])
+    .removeActorIdentifierList([EXAMPLE_PROVIDER_ORGANIZATION_DID])
+    .removeActorRoleList([HealthcareActorRoles.NursingProfessional])
+    .removePurposeList([HealthcareConsentPurposes.EmergencyTreatment])
+    .removeSectionList([HealthcareBasicSections.Results.attributeValue])
+    .toClaims();
+
+  assert.equal(
+    reducedConsentClaims[ClaimConsent.actorIdentifier],
+    EXAMPLE_EMAIL_PROFESSIONAL,
+  );
+  assert.equal(
+    reducedConsentClaims[ClaimConsent.actorRole],
+    HealthcareActorRoles.GeneralistMedicalPractitioner,
+  );
+  assert.equal(
+    reducedConsentClaims[ClaimConsent.purpose],
+    HealthcareConsentPurposes.Treatment,
+  );
+  assert.equal(
+    reducedConsentClaims[ClaimConsent.action],
+    HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+  );
+
+  const helperReducedConsentClaims = removeSectionList(
+    removePurposeList(
+      removeActorRoleList(
+        removeActorIdentifierList(
+          {
+            '@context': 'org.hl7.fhir.api',
+            [ClaimConsent.actorIdentifier]: [
+              EXAMPLE_EMAIL_PROFESSIONAL,
+              EXAMPLE_PROVIDER_ORGANIZATION_DID,
+            ].join(','),
+            [ClaimConsent.actorRole]: [
+              HealthcareActorRoles.GeneralistMedicalPractitioner,
+              HealthcareActorRoles.NursingProfessional,
+            ].join(','),
+            [ClaimConsent.purpose]: [
+              HealthcareConsentPurposes.Treatment,
+              HealthcareConsentPurposes.EmergencyTreatment,
+            ].join(','),
+            [ClaimConsent.action]: [
+              HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+              HealthcareBasicSections.Results.attributeValue,
+            ].join(','),
+          },
+          [EXAMPLE_PROVIDER_ORGANIZATION_DID],
+        ),
+        [HealthcareActorRoles.NursingProfessional],
+      ),
+      [HealthcareConsentPurposes.EmergencyTreatment],
+    ),
+    [HealthcareBasicSections.Results.attributeValue],
+  );
+
+  assert.equal(helperReducedConsentClaims[ClaimConsent.actorIdentifier], EXAMPLE_EMAIL_PROFESSIONAL);
+  assert.equal(helperReducedConsentClaims[ClaimConsent.actorRole], HealthcareActorRoles.GeneralistMedicalPractitioner);
+  assert.equal(helperReducedConsentClaims[ClaimConsent.purpose], HealthcareConsentPurposes.Treatment);
+  assert.equal(
+    helperReducedConsentClaims[ClaimConsent.action],
+    HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
   );
 });

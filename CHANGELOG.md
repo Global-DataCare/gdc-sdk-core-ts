@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.1] - 2026-06-13
+
+### Added
+- Added a neutral `IndividualOrganizationLifecycleFacade` over the shared
+  lifecycle draft/result readers, with explicit helpers for:
+  - disable and purge draft creation
+  - identifier/owner/resource-id setters
+  - claims merge/build
+  - lifecycle result readback
+- Added a neutral `LicenseControllerFacade` over the shared license search/list
+  helpers so runtimes can expose one canonical surface for:
+  - license list/search
+  - commercial offer search/list
+  - commercial order search/list
+
+### Changed
+- Expanded actor facade surface parity so shared runtime-neutral contracts now
+  expose:
+  - `searchOrganizationEmployees(...)`
+  - `searchClinicalBundle(...)`
+  - `getLatestIps(...)`
+  where the actor surface already had corresponding runtime support.
+- Expanded the neutral actor surface again so license-centric runtimes can
+  publish:
+  - `searchLicenses(...)`
+  - `listLicenses(...)`
+  - `searchLicenseOffers(...)`
+  - `listLicenseOffers(...)`
+  - `searchLicenseOrders(...)`
+  - `listLicenseOrders(...)`
+- Extended consent claim-helper parity so `ConsentClaims` now supports the same
+  add/remove grouped-list mutations for:
+  - actor identifiers
+  - actor roles
+  - purposes
+  - sections
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.21.0`.
+- Refreshed the release roadmap in `TODO.md` to reflect the broader neutral
+  surface around lifecycle, bundle authoring, license/query DTOs, and consent
+  management.
+
+### Testing
+- `npm run build`
+- `npm test -- 101-resource-claims.test.mjs individual-organization-lifecycle-facade.test.mjs`
+
+## [0.9.1] - 2026-06-11
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.20.1` so
+  downstream SDK packages consume the published licensing/`IndividualProduct`
+  helper surface.
+
+### Testing
+- `npm run build`
+
 ## [0.9.0] - 2026-06-10
 
 ### Added
