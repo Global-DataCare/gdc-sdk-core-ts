@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
   - identifier/owner/resource-id setters
   - claims merge/build
   - lifecycle result readback
+- Added a neutral `LicenseControllerFacade` over the shared license search/list
+  helpers so runtimes can expose one canonical surface for:
+  - license list/search
+  - commercial offer search/list
+  - commercial order search/list
 
 ### Changed
 - Expanded actor facade surface parity so shared runtime-neutral contracts now
@@ -19,6 +24,14 @@ All notable changes to this project will be documented in this file.
   - `searchClinicalBundle(...)`
   - `getLatestIps(...)`
   where the actor surface already had corresponding runtime support.
+- Expanded the neutral actor surface again so license-centric runtimes can
+  publish:
+  - `searchLicenses(...)`
+  - `listLicenses(...)`
+  - `searchLicenseOffers(...)`
+  - `listLicenseOffers(...)`
+  - `searchLicenseOrders(...)`
+  - `listLicenseOrders(...)`
 - Extended consent claim-helper parity so `ConsentClaims` now supports the same
   add/remove grouped-list mutations for:
   - actor identifiers
