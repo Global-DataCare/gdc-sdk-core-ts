@@ -1,6 +1,6 @@
 {
   "name": "gdc-sdk-core-ts",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Runtime-neutral actor and capability contracts for GDC SDK convergence",
   "license": "Apache-2.0",
   "author": "Antifraud Services Inc.",
@@ -16,7 +16,7 @@
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "gdc-common-utils-ts": "^1.21.0"
+    "gdc-common-utils-ts": "^1.23.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

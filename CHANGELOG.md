@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.2] - 2026-06-13
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.23.0`.
+- Refreshed the lockfile so `sdk-core` resolves the published `1.23.0`
+  package tarball instead of the previous `1.21.0` line.
+- Pulled the newly published shared invoice/charge-item claims surface into the
+  runtime-neutral dependency baseline so downstream node/frontend SDK layers
+  that combine `sdk-core` with the shared utilities can align on one published
+  source for:
+  - canonical invoice claim keys
+  - canonical charge-item claim keys
+  - invoice/charge-item contextualized claim variants
+  - invoice repeated-row builder semantics
+  - invoice `meta.claims` projection support
+- Kept the `sdk-core` source surface intentionally stable in this patch:
+  - no runtime-neutral facade files changed
+  - no actor/capability contracts changed
+  - the release is a dependency and packaging alignment cut so downstream
+    packages install the current published shared claims surface
+
+### Shared Surface Brought In By `gdc-common-utils-ts@1.23.0`
+- Invoice-level claims now available through the shared baseline include:
+  - `Invoice.identifier`
+  - `Invoice.date`
+  - `Invoice.status`
+  - `Invoice.subject`
+  - `Invoice.recipient`
+  - `Invoice.issuer`
+  - `Invoice.issuer-display`
+  - `Invoice.payment-terms`
+  - `Invoice.payment-url`
+  - `Invoice.totalnet-value`
+  - `Invoice.totalnet-currency`
+  - `Invoice.totalgross-value`
+  - `Invoice.totalgross-currency`
+- Charge-item-level claims now available through the shared baseline include:
+  - `ChargeItem.identifier`
+  - `ChargeItem.status`
+  - `ChargeItem.part-of`
+  - `ChargeItem.code`
+  - `ChargeItem.code-text`
+  - `ChargeItem.category`
+  - `ChargeItem.supplier-productcode`
+  - `ChargeItem.quantity`
+  - `ChargeItem.quantity-number`
+  - `ChargeItem.quantity-unit`
+  - `ChargeItem.items-per-unit`
+  - `ChargeItem.items-quantity`
+  - `ChargeItem.items-quantity-number`
+  - `ChargeItem.items-quantity-unit`
+- Builder and projection helpers now available in the shared baseline include:
+  - invoice claim construction through `createInvoiceBundleEditor()`
+  - repeated invoice + charge-item claim-row generation
+  - contextualized claim generation for `org.hl7.fhir.api.*`
+  - invoice `resource.meta.claims` embedding in generated FHIR resources
+
+### Testing
+- `npm install gdc-common-utils-ts@^1.23.0`
+
 ## [0.10.1] - 2026-06-13
 
 ### Added
