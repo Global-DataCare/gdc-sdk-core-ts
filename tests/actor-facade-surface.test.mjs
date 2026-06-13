@@ -18,6 +18,7 @@ test('organization controller facade surface includes employee methods and exclu
   assert.equal(controllerSurface.includes(ActorFacadeMethods.createOrganizationEmployee), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.disableEmployee), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.purgeEmployee), true);
+  assert.equal(controllerSurface.includes(ActorFacadeMethods.searchOrganizationEmployees), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.upsertRelatedPersonAndPoll), false);
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.OrganizationController,
@@ -46,6 +47,14 @@ test('individual-side facade surface owns related-person management and not orga
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.IndividualController,
     ActorFacadeMethods.upsertRelatedPersonAndPoll,
+  ), true);
+  assert.equal(actorKindSupportsFacadeMethod(
+    ActorKinds.IndividualController,
+    ActorFacadeMethods.searchClinicalBundle,
+  ), true);
+  assert.equal(actorKindSupportsFacadeMethod(
+    ActorKinds.IndividualController,
+    ActorFacadeMethods.getLatestIps,
   ), true);
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.IndividualController,

@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0] - 2026-06-12
+
+### Added
+- Added a neutral `IndividualOrganizationLifecycleFacade` over the shared
+  lifecycle draft/result readers, with explicit helpers for:
+  - disable and purge draft creation
+  - identifier/owner/resource-id setters
+  - claims merge/build
+  - lifecycle result readback
+
+### Changed
+- Expanded actor facade surface parity so shared runtime-neutral contracts now
+  expose:
+  - `searchOrganizationEmployees(...)`
+  - `searchClinicalBundle(...)`
+  - `getLatestIps(...)`
+  where the actor surface already had corresponding runtime support.
+- Extended consent claim-helper parity so `ConsentClaims` now supports the same
+  add/remove grouped-list mutations for:
+  - actor identifiers
+  - actor roles
+  - purposes
+  - sections
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.21.0`.
+- Refreshed the release roadmap in `TODO.md` to reflect the broader neutral
+  surface around lifecycle, bundle authoring, license/query DTOs, and consent
+  management.
+
+### Testing
+- `npm run build`
+- `npm test -- 101-resource-claims.test.mjs individual-organization-lifecycle-facade.test.mjs`
+
 ## [0.9.1] - 2026-06-11
 
 ### Changed
