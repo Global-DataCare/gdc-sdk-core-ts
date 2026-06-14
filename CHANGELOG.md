@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.1] - 2026-06-14
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.24.1`.
+- Refreshed the lockfile so `sdk-core` resolves the published
+  `gdc-common-utils-ts@1.24.1` package.
+- Kept the `sdk-core` source surface stable in this patch:
+  - no runtime-neutral facade contracts changed
+  - no actor/capability matrices changed
+  - the release exists to align downstream SDK layers on the latest published
+    confidential-storage public-projection contract
+
+### Shared Surface Brought In By `gdc-common-utils-ts@1.24.1`
+- Shared confidential-storage runtime metadata now available through the
+  baseline includes:
+  - `AuditInfo.disposition`
+  - `PublicInfo`
+  - `ConfidentialStorageDoc.public`
+- Shared model JSDoc now clarifies that `public` contains copied or generated
+  lookup/routing metadata that stays outside encrypted `content` and must not
+  be treated as a second canonical payload.
+
+### Testing
+- `npm install gdc-common-utils-ts@^1.24.1`
+- `npm run build`
+- `npm test`
+
 ## [0.11.0] - 2026-06-13
 
 ### Added
