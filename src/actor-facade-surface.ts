@@ -12,10 +12,14 @@ import type { ActorKind } from 'gdc-common-utils-ts/models/actor-session';
  * - docs can point to one neutral source of truth
  */
 export const ActorFacadeMethods = Object.freeze({
+  activateOrganizationInGatewayFromIcaProof: 'activateOrganizationInGatewayFromIcaProof',
   activateEmployeeDeviceWithActivationRequest: 'activateEmployeeDeviceWithActivationRequest',
+  confirmLegalOrganizationOrder: 'confirmLegalOrganizationOrder',
   confirmIndividualOrganizationOrder: 'confirmIndividualOrganizationOrder',
   createOrganizationEmployee: 'createOrganizationEmployee',
+  disableHost: 'disableHost',
   disableEmployee: 'disableEmployee',
+  disableTenant: 'disableTenant',
   disableIndividual: 'disableIndividual',
   disableIndividualMember: 'disableIndividualMember',
   disableIndividualOrganization: 'disableIndividualOrganization',
@@ -24,7 +28,9 @@ export const ActorFacadeMethods = Object.freeze({
   importIpsOrFhirAndUpdateIndex: 'importIpsOrFhirAndUpdateIndex',
   ingestCommunicationAndUpdateIndex: 'ingestCommunicationAndUpdateIndex',
   getLatestIps: 'getLatestIps',
+  purgeHost: 'purgeHost',
   purgeEmployee: 'purgeEmployee',
+  purgeTenant: 'purgeTenant',
   purgeIndividual: 'purgeIndividual',
   purgeIndividualMember: 'purgeIndividualMember',
   purgeIndividualOrganization: 'purgeIndividualOrganization',
@@ -41,13 +47,21 @@ export const ActorFacadeMethods = Object.freeze({
 export type ActorFacadeMethod = typeof ActorFacadeMethods[keyof typeof ActorFacadeMethods];
 
 const actorFacadeSurfaceMatrix: Record<ActorKind, readonly ActorFacadeMethod[]> = {
-  [ActorKinds.HostOnboarding]: [],
+  [ActorKinds.HostOnboarding]: [
+    ActorFacadeMethods.activateOrganizationInGatewayFromIcaProof,
+    ActorFacadeMethods.confirmLegalOrganizationOrder,
+    ActorFacadeMethods.disableHost,
+    ActorFacadeMethods.purgeHost,
+    ActorFacadeMethods.submitAndPoll,
+  ],
   [ActorKinds.OrganizationController]: [
     ActorFacadeMethods.activateEmployeeDeviceWithActivationRequest,
     ActorFacadeMethods.createOrganizationEmployee,
     ActorFacadeMethods.disableEmployee,
+    ActorFacadeMethods.disableTenant,
     ActorFacadeMethods.listLicenses,
     ActorFacadeMethods.purgeEmployee,
+    ActorFacadeMethods.purgeTenant,
     ActorFacadeMethods.requestSmartToken,
     ActorFacadeMethods.searchLicenses,
     ActorFacadeMethods.searchOrganizationEmployees,

@@ -2,6 +2,67 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] - 2026-06-13
+
+### Added
+- Added a neutral host-registry lifecycle facade and shared submit/poll helpers
+  in:
+  - `src/hosting-controller-facade.ts`
+- Added runtime-neutral host route and input contracts for:
+  - legal-organization order confirmation
+  - hosted-tenant disable/purge payload authoring
+  - host disable/purge payload authoring
+- Added canonical host facade surface coverage in:
+  - `tests/actor-facade-surface.test.mjs`
+
+### Changed
+- Expanded the actor-facade surface matrix so `HostOnboarding` now advertises:
+  - `activateOrganizationInGatewayFromIcaProof(...)`
+  - `confirmLegalOrganizationOrder(...)`
+  - `disableHost(...)`
+  - `purgeHost(...)`
+  - `submitAndPoll(...)`
+- Expanded the actor capability matrix so shared host/tenant runtime contracts
+  now expose:
+  - `HostingActivateOrganization`
+  - `HostingConfirmOrder`
+  - `HostingDisableHost`
+  - `HostingPurgeHost`
+  - `OrganizationDisableTenant`
+  - `OrganizationPurgeTenant`
+- Updated `buildActorSessionDescriptorFromActorFlags(...)` so organization
+  controllers inherit the tenant disable/purge capabilities in the canonical
+  runtime-neutral actor descriptor.
+- Exported the new hosting facade from the public package entrypoint in:
+  - `src/index.ts`
+- Updated the shared dependency target to `gdc-common-utils-ts@^1.24.0`.
+- Restored the lockfile to resolve the published `gdc-common-utils-ts@1.24.0`
+  package instead of the temporary local `file:../gdc-common-utils-ts` link.
+
+### Shared Surface Brought In By `gdc-common-utils-ts@1.24.0`
+- Shared host/operator and tenant capability metadata now available through the
+  baseline include:
+  - canonical `Hosting...` actor capabilities
+  - canonical `OrganizationDisableTenant` / `OrganizationPurgeTenant`
+  - `ActorCapabilityDocs`
+  - `getActorCapabilityDoc(...)`
+- Shared activation-policy support now available through the baseline includes:
+  - service `category` authorization validation
+  - service `serviceType` authorization validation
+  - wildcard host-category authorization support
+- Shared hosted-identity and persistence helpers now available through the
+  baseline include:
+  - hosted provider DID builders
+  - provider-sector DID builders
+  - canonical individual/member DID builders
+  - confidential-storage blob persistence helpers
+  - deep undefined sanitization helpers
+
+### Testing
+- `npm install gdc-common-utils-ts@^1.24.0`
+- `npm run build`
+- `npm test`
+
 ## [0.10.2] - 2026-06-13
 
 ### Changed

@@ -77,3 +77,14 @@ test('license list/search is advertised in actor facade surfaces once GW exposes
   assert.equal(controllerSurface.includes(ActorFacadeMethods.searchLicenses), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.listLicenses), true);
 });
+
+test('host onboarding facade surface is declared in sdk-core for shared runtime consumption', () => {
+  const hostSurface = getActorFacadeMethods(ActorKinds.HostOnboarding);
+
+  assert.equal(hostSurface.includes(ActorFacadeMethods.activateOrganizationInGatewayFromIcaProof), true);
+  assert.equal(hostSurface.includes(ActorFacadeMethods.confirmLegalOrganizationOrder), true);
+  assert.equal(hostSurface.includes(ActorFacadeMethods.disableHost), true);
+  assert.equal(hostSurface.includes(ActorFacadeMethods.purgeHost), true);
+  assert.equal(hostSurface.includes(ActorFacadeMethods.submitAndPoll), true);
+  assert.equal(hostSurface.includes(ActorFacadeMethods.createOrganizationEmployee), false);
+});

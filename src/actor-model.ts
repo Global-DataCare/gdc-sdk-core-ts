@@ -48,11 +48,18 @@ export type ActorSessionDescriptorInput = {
 };
 
 const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
-  [ActorKinds.HostOnboarding]: [],
+  [ActorKinds.HostOnboarding]: [
+    ActorCapabilities.HostingActivateOrganization,
+    ActorCapabilities.HostingConfirmOrder,
+    ActorCapabilities.HostingDisableHost,
+    ActorCapabilities.HostingPurgeHost,
+  ],
   [ActorKinds.OrganizationController]: [
     ActorCapabilities.OrganizationCreateEmployee,
     ActorCapabilities.OrganizationDisableEmployee,
     ActorCapabilities.OrganizationPurgeEmployee,
+    ActorCapabilities.OrganizationDisableTenant,
+    ActorCapabilities.OrganizationPurgeTenant,
     ActorCapabilities.OrganizationRequestSmartToken,
   ],
   [ActorKinds.OrganizationEmployee]: [
@@ -134,6 +141,8 @@ export function buildActorSessionDescriptorFromActorFlags(
     capabilities.add(ActorCapabilities.OrganizationCreateEmployee);
     capabilities.add(ActorCapabilities.OrganizationDisableEmployee);
     capabilities.add(ActorCapabilities.OrganizationPurgeEmployee);
+    capabilities.add(ActorCapabilities.OrganizationDisableTenant);
+    capabilities.add(ActorCapabilities.OrganizationPurgeTenant);
     capabilities.add(ActorCapabilities.OrganizationRequestSmartToken);
   }
   if (input.actorFlags.organizationEmployee) {
