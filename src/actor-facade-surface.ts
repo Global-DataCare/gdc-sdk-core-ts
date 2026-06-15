@@ -27,6 +27,7 @@ export const ActorFacadeMethods = Object.freeze({
   grantProfessionalAccess: 'grantProfessionalAccess',
   importIpsOrFhirAndUpdateIndex: 'importIpsOrFhirAndUpdateIndex',
   ingestCommunicationAndUpdateIndex: 'ingestCommunicationAndUpdateIndex',
+  searchCommunicationParticipants: 'searchCommunicationParticipants',
   getLatestIps: 'getLatestIps',
   purgeHost: 'purgeHost',
   purgeEmployee: 'purgeEmployee',
@@ -87,6 +88,7 @@ const actorFacadeSurfaceMatrix: Record<ActorKind, readonly ActorFacadeMethod[]> 
     ActorFacadeMethods.purgeIndividualOrganization,
     ActorFacadeMethods.requestSmartToken,
     ActorFacadeMethods.searchClinicalBundle,
+    ActorFacadeMethods.searchCommunicationParticipants,
     ActorFacadeMethods.searchLicenses,
     ActorFacadeMethods.startIndividualOrganization,
     ActorFacadeMethods.submitAndPoll,
@@ -100,6 +102,7 @@ const actorFacadeSurfaceMatrix: Record<ActorKind, readonly ActorFacadeMethod[]> 
     ActorFacadeMethods.grantProfessionalAccess,
     ActorFacadeMethods.ingestCommunicationAndUpdateIndex,
     ActorFacadeMethods.requestSmartToken,
+    ActorFacadeMethods.searchCommunicationParticipants,
     ActorFacadeMethods.submitAndPoll,
   ],
 };

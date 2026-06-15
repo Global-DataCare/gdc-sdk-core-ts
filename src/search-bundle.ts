@@ -8,10 +8,16 @@ export type SearchParameterPrimitive =
 
 export type SearchRequestEncoding = 'get-query' | 'post-parameters';
 
+export const SearchBundleTypes = Object.freeze({
+  Search: 'search',
+  SearchResponse: 'search-response',
+} as const);
+
 export type SearchBundleOptions = Readonly<{
   resourceType: string;
   searchParams?: Record<string, SearchParameterPrimitive | undefined>;
   encoding?: SearchRequestEncoding;
+  bundleType?: (typeof SearchBundleTypes)[keyof typeof SearchBundleTypes];
 }>;
 
 function normalizeSearchPrimitiveValues(
@@ -111,12 +117,12 @@ export function buildSearchBundleEntry(input: SearchBundleOptions): {
  */
 export function buildSearchBundle(input: SearchBundleOptions): {
   resourceType: 'Bundle';
-  type: 'batch';
+  type: (typeof SearchBundleTypes)[keyof typeof SearchBundleTypes];
   entry: Array<ReturnType<typeof buildSearchBundleEntry>>;
 } {
   return {
     resourceType: 'Bundle',
-    type: 'batch',
+    type: input.bundleType || SearchBundleTypes.Search,
     entry: [buildSearchBundleEntry(input)],
   };
 }
