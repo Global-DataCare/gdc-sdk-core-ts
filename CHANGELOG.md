@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Expanded the shared actor-facade surface so organization/personal runtime
+  layers can advertise `searchCommunicationParticipants(...)` as a canonical
+  communication search capability:
+  - `src/actor-facade-surface.ts`
+  - `tests/actor-facade-surface.test.mjs`
+
+### Changed
+- Updated the shared search-bundle helper so canonical search payloads can use
+  business-level bundle types such as `search` and `search-response` rather
+  than always forcing `batch`:
+  - `src/search-bundle.ts`
+
 ## [0.11.1] - 2026-06-14
 
 ### Changed
