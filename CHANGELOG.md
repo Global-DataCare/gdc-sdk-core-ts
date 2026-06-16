@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-06-15
+
+### Added
+- Added canonical v2 architecture and contribution rules for runtime-neutral
+  facades and actor/profile capability contracts:
+  - `ARCHITECTURE.md`
+  - `CONTRIBUTING.md`
+
+### Changed
+- Standardized lifecycle facade naming around operation-first preparation
+  methods:
+  - `prepareLifecycleIndividualOrganization(...)`
+  - `prepareLifecycleIndividualOrganizationDisable(...)`
+  - `prepareLifecycleIndividualOrganizationPurge(...)`
+  in:
+  - `src/individual-organization-lifecycle-facade.ts`
+  - `tests/individual-organization-lifecycle-facade.test.mjs`
+- Standardized search facade naming around operation-first preparation methods:
+  - `prepareSearchLicenseList(...)`
+  - `prepareSearchLicenseOffer(...)`
+  - `prepareSearchLicenseOrder(...)`
+  in:
+  - `src/license-controller-facade.ts`
+  - `tests/license-controller-facade.test.mjs`
+- Rebased runtime-neutral lifecycle and hosting surfaces onto the shared v2
+  `Editor` and `State` terminology from `gdc-common-utils-ts`:
+  - `src/hosting-controller-facade.ts`
+  - `src/individual-organization-lifecycle-facade.ts`
+- Documented the v2 layering rule that shared high-level `get...` / `set...`
+  methods must originate in `gdc-common-utils-ts` before they are wrapped by
+  role/sector capability facades in `sdk-core`.
+
+### Breaking
+- Runtime-neutral consumers must migrate from mixed `create...` / `new...`
+  preparation names to the canonical `prepare...` families.
+- Runtime-neutral consumers must align with the v2 shared `Editor` / `State`
+  surface instead of relying on older `Draft` naming for lifecycle and
+  non-provisional helper state.
+
 ### Added
 - Expanded the shared actor-facade surface so organization/personal runtime
   layers can advertise `searchCommunicationParticipants(...)` as a canonical

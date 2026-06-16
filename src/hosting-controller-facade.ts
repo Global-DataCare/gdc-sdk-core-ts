@@ -1,6 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import { LifecycleRequestType } from 'gdc-common-utils-ts/constants/lifecycle';
+import { OrganizationLifecycleEditor } from 'gdc-common-utils-ts/utils/organization-lifecycle';
 import type { PollOptions, SubmitAndPollResult, SubmitPayload } from './polling-model.js';
 import { resolvePollOptionsFromSeconds } from './polling-model.js';
 
@@ -41,7 +42,8 @@ export type LegalOrganizationOrderInput = {
  * organization identifier claims already used by GW CORE today.
  */
 export type HostedTenantLifecycleInput = {
-  organizationClaims: Record<string, unknown>;
+  organizationClaims?: Record<string, unknown>;
+  organizationEditor?: OrganizationLifecycleEditor;
   dataType?: string;
   additionalClaims?: Record<string, unknown>;
   timeoutSeconds?: number;
@@ -179,11 +181,13 @@ type SubmitHostedTenantLifecycleDeps = {
 export async function submitHostedTenantLifecycleWithDeps(
   deps: SubmitHostedTenantLifecycleDeps,
 ): Promise<SubmitAndPollResult> {
-  const claims = {
-    '@context': 'org.schema',
-    ...(deps.input.organizationClaims || {}),
-    ...(deps.input.additionalClaims || {}),
-  };
+  const editor = deps.input.organizationEditor
+    ? new OrganizationLifecycleEditor(deps.input.organizationEditor.getState())
+    : new OrganizationLifecycleEditor().setClaims(deps.input.organizationClaims || {});
+  if (deps.input.additionalClaims) {
+    editor.mergeClaims(deps.input.additionalClaims);
+  }
+  editor.setRequestType(deps.input.dataType || deps.requestType);
   const payload: SubmitPayload = {
     jti: `jti-${createRuntimeUuid()}`,
     iss: String(deps.hostCtx.controllerDid || '').trim() || undefined,
@@ -191,14 +195,7 @@ export async function submitHostedTenantLifecycleWithDeps(
     type: 'application/didcomm-plain+json',
     thid: `${deps.thidPrefix}-${createRuntimeUuid()}`,
     body: {
-      data: [{
-        type: deps.input.dataType || deps.requestType,
-        meta: { claims },
-        resource: {
-          resourceType: 'Organization',
-          meta: { claims },
-        },
-      }],
+      data: [editor.buildCurrentGwDataEntry()],
     },
   };
   const pollOptions = resolvePollOptionsFromSeconds(

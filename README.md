@@ -1,5 +1,9 @@
 # gdc-sdk-core-ts
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) and
+[CONTRIBUTING.md](./CONTRIBUTING.md) before adding or reshaping facades,
+profile contracts, or high-level tests.
+
 Runtime-neutral shared contracts and helpers for GDC SDK consumers.
 
 This package is for code that needs to understand and build GDC business flows

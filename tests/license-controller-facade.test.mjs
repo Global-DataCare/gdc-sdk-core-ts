@@ -25,7 +25,7 @@ test('license controller facade stays thin over shared search editor and list re
   const facade = createLicenseControllerFacade();
 
   const editor = facade
-    .newSearchEditorLicenseList()
+    .prepareSearchLicenseList()
     .setSerialNumbers([EXAMPLE_LICENSE_ACTIVE_RECORD.id])
     .setUserClass(DeviceUserClasses.Employee)
     .setAppType(DeviceAppTypes.Mobile)
@@ -55,11 +55,11 @@ test('license controller facade stays thin over shared search editor and list re
   });
 
   const offerEntry = facade
-    .newSearchEditorLicenseOffer()
+    .prepareSearchLicenseOffer()
     .setOfferId(EXAMPLE_LICENSE_OFFER_ID)
     .buildSearchEntry();
   const orderEntry = facade
-    .newSearchEditorLicenseOrder()
+    .prepareSearchLicenseOrder()
     .setAcceptedOfferId(EXAMPLE_LICENSE_OFFER_ID)
     .setInvoiceId(EXAMPLE_LICENSE_INVOICE_ID)
     .buildSearchEntry();

@@ -2,7 +2,7 @@
 
 import {
   LicenseListSearchEditor,
-  type LicenseListSearchDraft,
+  type LicenseListSearchState,
   type LicenseListRecord,
   type LicenseListSummary,
   readLicenseListRecords,
@@ -11,8 +11,8 @@ import {
 import {
   LicenseOfferSearchEditor,
   LicenseOrderSearchEditor,
-  type LicenseOfferSearchDraft,
-  type LicenseOrderSearchDraft,
+  type LicenseOfferSearchState,
+  type LicenseOrderSearchState,
   type LicenseOfferRecord,
   type LicenseOrderRecord,
   readLicenseOfferRecords,
@@ -21,9 +21,9 @@ import {
   summarizeLicenseOrderRecords,
 } from 'gdc-common-utils-ts/utils/license-commercial-search';
 
-export type LicenseControllerQueryInput = Partial<LicenseListSearchDraft>;
-export type LicenseOfferControllerQueryInput = Partial<LicenseOfferSearchDraft>;
-export type LicenseOrderControllerQueryInput = Partial<LicenseOrderSearchDraft>;
+export type LicenseControllerQueryInput = Partial<LicenseListSearchState>;
+export type LicenseOfferControllerQueryInput = Partial<LicenseOfferSearchState>;
+export type LicenseOrderControllerQueryInput = Partial<LicenseOrderSearchState>;
 
 /**
  * Runtime-neutral high-level surface for license table filters and list
@@ -33,21 +33,17 @@ export interface LicenseControllerFacade {
   /**
    * Starts one semantic search editor for frontend/BFF code.
    */
-  newSearchEditorLicenseList(initial?: LicenseControllerQueryInput): LicenseListSearchEditor;
+  prepareSearchLicenseList(initial?: LicenseControllerQueryInput): LicenseListSearchEditor;
   /**
    * Starts one semantic commercial-offer search editor for portal/BFF list
    * screens.
    */
-  newSearchEditorLicenseOffer(initial?: LicenseOfferControllerQueryInput): LicenseOfferSearchEditor;
+  prepareSearchLicenseOffer(initial?: LicenseOfferControllerQueryInput): LicenseOfferSearchEditor;
   /**
    * Starts one semantic commercial-order search editor for portal/BFF list
    * screens.
    */
-  newSearchEditorLicenseOrder(initial?: LicenseOrderControllerQueryInput): LicenseOrderSearchEditor;
-  /**
-   * @deprecated Prefer `newSearchEditorLicenseList(...)`.
-   */
-  createSearchEditor(initial?: LicenseControllerQueryInput): LicenseListSearchEditor;
+  prepareSearchLicenseOrder(initial?: LicenseOrderControllerQueryInput): LicenseOrderSearchEditor;
   /**
    * Normalizes one raw runtime response into list rows safe for UI use.
    */
@@ -84,17 +80,14 @@ export interface LicenseControllerFacade {
  */
 export function createLicenseControllerFacade(): LicenseControllerFacade {
   return {
-    newSearchEditorLicenseList(initial = {}) {
+    prepareSearchLicenseList(initial = {}) {
       return new LicenseListSearchEditor(initial);
     },
-    newSearchEditorLicenseOffer(initial = {}) {
+    prepareSearchLicenseOffer(initial = {}) {
       return new LicenseOfferSearchEditor(initial);
     },
-    newSearchEditorLicenseOrder(initial = {}) {
+    prepareSearchLicenseOrder(initial = {}) {
       return new LicenseOrderSearchEditor(initial);
-    },
-    createSearchEditor(initial = {}) {
-      return new LicenseListSearchEditor(initial);
     },
     readListRecords(body) {
       return readLicenseListRecords(body);

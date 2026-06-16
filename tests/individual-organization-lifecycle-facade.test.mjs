@@ -10,25 +10,36 @@ import {
 } from '../../gdc-common-utils-ts/dist/constants/schemaorg.js';
 import {
   EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL,
+  EXAMPLE_INDIVIDUAL_DISABLE_MESSAGE,
   EXAMPLE_INDIVIDUAL_ORGANIZATION_DISABLE_REQUEST_TYPE,
   EXAMPLE_INDIVIDUAL_ORGANIZATION_PURGE_REQUEST_TYPE,
   EXAMPLE_LIFECYCLE_PLACEHOLDERS,
 } from '../../gdc-common-utils-ts/dist/examples/index.js';
 
-test('individual organization lifecycle facade stays thin over shared draft and result readers', () => {
+test('individual organization lifecycle facade stays thin over shared editor and result readers', () => {
   const facade = createIndividualOrganizationLifecycleFacade();
 
-  const disableDraft = facade
-    .createDisableDraft()
+  const disableEditor = facade
+    .prepareLifecycleIndividualOrganizationDisable()
     .setRequestType(EXAMPLE_INDIVIDUAL_ORGANIZATION_DISABLE_REQUEST_TYPE);
 
-  facade.setIdentifier(disableDraft, 'urn:uuid:individual-organization-1');
-  facade.setOwnerEmail(disableDraft, EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL);
-  facade.setResourceId(disableDraft, EXAMPLE_LIFECYCLE_PLACEHOLDERS.individualIdentifier);
+  facade.setIdentifier(disableEditor, 'urn:uuid:individual-organization-1');
+  facade.setAlternateName(
+    disableEditor,
+    String(EXAMPLE_INDIVIDUAL_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.alternateName]),
+  );
+  facade.setOwnerEmail(disableEditor, EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL);
+  facade.setResourceId(disableEditor, EXAMPLE_LIFECYCLE_PLACEHOLDERS.individualIdentifier);
 
-  const disablePayload = disableDraft.buildCurrentGwPayload();
+  const disablePayload = disableEditor.buildCurrentGwPayload();
 
-  assert.equal(disableDraft.getDraft().operation, IndividualOrganizationLifecycleOperations.Disable);
+  assert.equal(disableEditor.getState().operation, IndividualOrganizationLifecycleOperations.Disable);
+  assert.equal(facade.getIdentifier(disableEditor), 'urn:uuid:individual-organization-1');
+  assert.equal(
+    facade.getAlternateName(disableEditor),
+    EXAMPLE_INDIVIDUAL_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.alternateName],
+  );
+  assert.equal(facade.getOwnerEmail(disableEditor), EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL);
   assert.equal(disablePayload.body.data[0].type, EXAMPLE_INDIVIDUAL_ORGANIZATION_DISABLE_REQUEST_TYPE);
   assert.equal(
     disablePayload.body.data[0].resource.meta.claims[ClaimsOrganizationSchemaorg.identifier],
@@ -39,15 +50,15 @@ test('individual organization lifecycle facade stays thin over shared draft and 
     EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL,
   );
 
-  const purgeDraft = facade
-    .createPurgeDraft()
+  const purgeEditor = facade
+    .prepareLifecycleIndividualOrganizationPurge()
     .setRequestType(EXAMPLE_INDIVIDUAL_ORGANIZATION_PURGE_REQUEST_TYPE);
 
-  facade.mergeClaims(purgeDraft, {
+  facade.mergeClaims(purgeEditor, {
     [ClaimsOrganizationSchemaorg.identifier]: 'urn:uuid:individual-organization-2',
   });
 
-  assert.equal(purgeDraft.getDraft().operation, IndividualOrganizationLifecycleOperations.Purge);
+  assert.equal(purgeEditor.getState().operation, IndividualOrganizationLifecycleOperations.Purge);
 
   const lifecycleResult = facade.readLifecycleResult({
     body: {

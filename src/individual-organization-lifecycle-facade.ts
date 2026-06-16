@@ -6,79 +6,104 @@ import {
 } from 'gdc-common-utils-ts/utils/lifecycle-result-reader';
 import {
   type IndividualOrganizationLifecycleClaims,
-  IndividualOrganizationLifecycleDraft,
+  IndividualOrganizationLifecycleEditor,
   IndividualOrganizationLifecycleOperations,
-  type IndividualOrganizationLifecycleDraftState,
+  type IndividualOrganizationLifecycleEditorState,
 } from 'gdc-common-utils-ts/utils/individual-organization-lifecycle';
 
 export {
   IndividualOrganizationLifecycleOperations,
 };
 
-export type IndividualOrganizationLifecycleDraftInput =
-  Partial<IndividualOrganizationLifecycleDraftState>;
+export type IndividualOrganizationLifecycleEditorInput =
+  Partial<IndividualOrganizationLifecycleEditorState>;
 
 export interface IndividualOrganizationLifecycleFacade {
-  createDraft(initial?: IndividualOrganizationLifecycleDraftInput): IndividualOrganizationLifecycleDraft;
-  createDisableDraft(initial?: Omit<IndividualOrganizationLifecycleDraftInput, 'operation'>): IndividualOrganizationLifecycleDraft;
-  createPurgeDraft(initial?: Omit<IndividualOrganizationLifecycleDraftInput, 'operation'>): IndividualOrganizationLifecycleDraft;
+  prepareLifecycleIndividualOrganization(initial?: IndividualOrganizationLifecycleEditorInput): IndividualOrganizationLifecycleEditor;
+  prepareLifecycleIndividualOrganizationDisable(initial?: Omit<IndividualOrganizationLifecycleEditorInput, 'operation'>): IndividualOrganizationLifecycleEditor;
+  prepareLifecycleIndividualOrganizationPurge(initial?: Omit<IndividualOrganizationLifecycleEditorInput, 'operation'>): IndividualOrganizationLifecycleEditor;
   setIdentifier(
-    draft: IndividualOrganizationLifecycleDraft,
+    editor: IndividualOrganizationLifecycleEditor,
     identifier: string,
-  ): IndividualOrganizationLifecycleDraft;
+  ): IndividualOrganizationLifecycleEditor;
+  getIdentifier(
+    editor: IndividualOrganizationLifecycleEditor,
+  ): string | undefined;
+  setAlternateName(
+    editor: IndividualOrganizationLifecycleEditor,
+    alternateName: string,
+  ): IndividualOrganizationLifecycleEditor;
+  getAlternateName(
+    editor: IndividualOrganizationLifecycleEditor,
+  ): string | undefined;
   setOwnerEmail(
-    draft: IndividualOrganizationLifecycleDraft,
+    editor: IndividualOrganizationLifecycleEditor,
     email: string,
-  ): IndividualOrganizationLifecycleDraft;
+  ): IndividualOrganizationLifecycleEditor;
+  getOwnerEmail(
+    editor: IndividualOrganizationLifecycleEditor,
+  ): string | undefined;
   setResourceId(
-    draft: IndividualOrganizationLifecycleDraft,
+    editor: IndividualOrganizationLifecycleEditor,
     resourceId?: string,
-  ): IndividualOrganizationLifecycleDraft;
+  ): IndividualOrganizationLifecycleEditor;
   mergeClaims(
-    draft: IndividualOrganizationLifecycleDraft,
+    editor: IndividualOrganizationLifecycleEditor,
     claims: IndividualOrganizationLifecycleClaims,
-  ): IndividualOrganizationLifecycleDraft;
+  ): IndividualOrganizationLifecycleEditor;
   readLifecycleResult(result: Record<string, unknown>): LifecycleResultReader;
 }
 
 /**
- * Thin neutral facade over the shared individual-organization lifecycle draft.
+ * Thin neutral facade over the shared individual-organization lifecycle editor.
  *
  * Intent:
  * - keep `sdk-core` as the canonical public place where runtime packages
  *   discover lifecycle surface
- * - reuse the shared chainable draft from `gdc-common-utils-ts`
+ * - reuse the shared chainable editor from `gdc-common-utils-ts`
  * - expose one explicit readback entry point for lifecycle operation results
  */
 export function createIndividualOrganizationLifecycleFacade():
 IndividualOrganizationLifecycleFacade {
   return {
-    createDraft(initial = {}) {
-      return new IndividualOrganizationLifecycleDraft(initial);
+    prepareLifecycleIndividualOrganization(initial = {}) {
+      return new IndividualOrganizationLifecycleEditor(initial);
     },
-    createDisableDraft(initial = {}) {
-      return new IndividualOrganizationLifecycleDraft({
+    prepareLifecycleIndividualOrganizationDisable(initial = {}) {
+      return new IndividualOrganizationLifecycleEditor({
         ...initial,
         operation: IndividualOrganizationLifecycleOperations.Disable,
       });
     },
-    createPurgeDraft(initial = {}) {
-      return new IndividualOrganizationLifecycleDraft({
+    prepareLifecycleIndividualOrganizationPurge(initial = {}) {
+      return new IndividualOrganizationLifecycleEditor({
         ...initial,
         operation: IndividualOrganizationLifecycleOperations.Purge,
       });
     },
-    setIdentifier(draft, identifier) {
-      return draft.setIdentifier(identifier);
+    setIdentifier(editor, identifier) {
+      return editor.setIdentifier(identifier);
     },
-    setOwnerEmail(draft, email) {
-      return draft.setOwnerEmail(email);
+    getIdentifier(editor) {
+      return editor.getIdentifier();
     },
-    setResourceId(draft, resourceId) {
-      return draft.setResourceId(resourceId);
+    setAlternateName(editor, alternateName) {
+      return editor.setAlternateName(alternateName);
     },
-    mergeClaims(draft, claims) {
-      return draft.mergeClaims(claims);
+    getAlternateName(editor) {
+      return editor.getAlternateName();
+    },
+    setOwnerEmail(editor, email) {
+      return editor.setOwnerEmail(email);
+    },
+    getOwnerEmail(editor) {
+      return editor.getOwnerEmail();
+    },
+    setResourceId(editor, resourceId) {
+      return editor.setResourceId(resourceId);
+    },
+    mergeClaims(editor, claims) {
+      return editor.mergeClaims(claims);
     },
     readLifecycleResult(result) {
       return createLifecycleResultReader(result);
