@@ -10,6 +10,8 @@ This repository is the canonical place for:
 - neutral domain facades
 - actor-aware but runtime-neutral profile and capability contracts
 - role/sector-oriented capability facades that remain runtime-neutral
+- runtime-neutral profile loading and job-manager contracts
+- runtime-neutral outbox, queue, and vault port contracts
 - SDK-level orchestration contracts
 - shared input/output types reused by multiple runtimes
 
@@ -19,6 +21,7 @@ This repository is not the place for:
 - browser/mobile session concerns
 - node/BFF transport wiring
 - concrete storage, KMS, secure-storage, Firestore, localStorage, or job-manager implementations
+- concrete queue workers or outbox delivery loops
 
 ## Ownership Rules
 
@@ -32,6 +35,7 @@ Do not put code here when it:
 
 - is a reusable high-level editor/reader/state that can live in `common-utils`
 - requires HTTP execution, polling, token/session handling, runtime storage, secure local persistence, Firestore, or KMS implementation details
+- chooses one concrete vault or queue adapter such as memory, SQLite, Firestore, or Redis
 
 Do not introduce canonical high-level `get...` / `set...` methods here on
 shared semantic classes if those methods can live in `gdc-common-utils-ts`.
@@ -67,6 +71,33 @@ Runtime actor/profile implementations belong in:
 
 - `gdc-sdk-front-ts` for frontend/confidential-app actor runtimes
 - `gdc-sdk-node-ts` for node/server actor runtimes
+
+## Profile Runtime Layering Rule
+
+The common actor-aware runtime model is:
+
+- `loadProfile(...)`
+- `closeProfile(...)`
+- `JobManager`
+- logical `Outbox`
+- logical `Queue`
+- `Vault` port
+
+Ownership is split like this:
+
+- `common-utils`: shared payload/data shapes when they are runtime-neutral
+- `sdk-core`: contracts such as `IJobManager`, outbox/queue/vault ports, and
+  profile runtime request/response types
+- `sdk-front` / `sdk-node`: concrete implementations and orchestration
+
+Important semantic split:
+
+- `JobManager` is the common orchestration layer per profile/session
+- `Outbox` is the logical set of pending work owned by the profile/runtime
+- `Queue` is the runtime execution/scheduling layer
+- `Vault...` is the persistence adapter
+
+Do not collapse these into one runtime-specific class name.
 
 ## Naming Rules
 

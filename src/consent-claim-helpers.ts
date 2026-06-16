@@ -54,5 +54,8 @@ export {
   setPurposes,
   setRoles,
   setSections,
-  type InteroperableClaims as ConsentInteroperableClaims,
+} from 'gdc-common-utils-ts/utils/consent-claim-helpers';
+
+export type {
+  InteroperableClaims as ConsentInteroperableClaims,
 } from 'gdc-common-utils-ts/utils/consent-claim-helpers';
