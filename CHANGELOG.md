@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added the first v2 runtime-neutral profile/job contract slice so frontend and
+  node runtimes can converge on one actor-aware `loadProfile` shape before
+  implementing runtime-specific storage, sync, and transport behavior:
+  - `src/profile-runtime.ts`
+  - `tests/101-profile-runtime.test.mjs`
+  - `docs/V2_PROFILE_RUNTIME_MIGRATION.md`
+- Added a runtime-neutral organization-controller ICA credential retrieval
+  facade so frontend and BFF runtimes can build and execute direct
+  `GET _retrieve` calls for both the organization VC and the controller legal
+  representative VC without hardcoding route/query rules in app code:
+  - `src/organization-controller-credential-facade.ts`
+  - `tests/organization-controller-credential-facade.test.mjs`
+
+### Changed
+- Bumped the package patch version from `2.0.0` to `2.0.1`.
+- Updated the shared dependency target to `gdc-common-utils-ts@^2.0.2`.
+- Expanded the runtime-neutral actor session/profile layer so SDK runtimes can
+  derive one descriptor directly from one known actor kind and reuse the shared
+  `ProfileAppType` vocabulary from `gdc-common-utils-ts`:
+  - `src/actor-model.ts`
+  - `src/session-model.ts`
+- Expanded the organization-controller facade surface to advertise direct ICA
+  retrieval of organization and legal-representative credentials:
+  - `src/actor-facade-surface.ts`
+  - `tests/actor-facade-surface.test.mjs`
+- Promoted the v2 profile/runtime split into the top-level package guidance so
+  future work keeps `JobManager`, outbox, queue, and vault ownership
+  runtime-neutral in `sdk-core` and concrete in runtime packages:
+  - `ARCHITECTURE.md`
+  - `CONTRIBUTING.md`
+  - `README.md`
+- Exported the new profile-runtime and organization-controller ICA retrieval
+  facades from the package entrypoint:
+  - `src/index.ts`
+- Fixed the shared consent claim helper re-export so the runtime-neutral type
+  alias remains a type-only export:
+  - `src/consent-claim-helpers.ts`
+
+### Testing
+- `npm run type-check`
+- `npm test`
+
 ## [2.0.0] - 2026-06-15
 
 ### Added

@@ -4,6 +4,12 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) and
 [CONTRIBUTING.md](./CONTRIBUTING.md) before adding or reshaping facades,
 profile contracts, or high-level tests.
 
+Short rule:
+
+- `101` tests must be didactic and step by step
+- shared types and fixtures must come from `gdc-common-utils-ts` instead of
+  being re-invented locally as literals
+
 Runtime-neutral shared contracts and helpers for GDC SDK consumers.
 
 This package is for code that needs to understand and build GDC business flows
@@ -36,6 +42,9 @@ open these documents in this order:
 - [docs/101-SDK_PACKAGE_BOUNDARIES.md](./docs/101-SDK_PACKAGE_BOUNDARIES.md)
   Why `core`, `node`, and `front` are separate packages, what each one owns,
   and why actor-scoped facades are enforced.
+- [docs/V2_PROFILE_RUNTIME_MIGRATION.md](./docs/V2_PROFILE_RUNTIME_MIGRATION.md)
+  How the old `ProfileManager` and `JobManager` surface should be split across
+  `common-utils`, `sdk-core`, `sdk-node`, and `sdk-front` in v2.
 - [docs/101-SDK_FLOWS.md](./docs/101-SDK_FLOWS.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
 - [docs/101-CONSENT_COMMUNICATION.md](./docs/101-CONSENT_COMMUNICATION.md)

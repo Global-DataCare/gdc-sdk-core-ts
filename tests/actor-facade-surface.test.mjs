@@ -20,6 +20,9 @@ test('organization controller facade surface includes employee methods and exclu
   assert.equal(controllerSurface.includes(ActorFacadeMethods.searchLicenses), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.listLicenses), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.purgeEmployee), true);
+  assert.equal(controllerSurface.includes(ActorFacadeMethods.retrieveOrganizationCredentialFromIca), true);
+  assert.equal(controllerSurface.includes(ActorFacadeMethods.retrieveLegalRepresentativeCredentialFromIca), true);
+  assert.equal(controllerSurface.includes(ActorFacadeMethods.retrieveControllerCredentialsFromIca), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.searchOrganizationEmployees), true);
   assert.equal(controllerSurface.includes(ActorFacadeMethods.upsertRelatedPersonAndPoll), false);
   assert.equal(actorKindSupportsFacadeMethod(
@@ -39,6 +42,7 @@ test('professional facade surface excludes employee lifecycle methods', () => {
   assert.equal(professionalSurface.includes(ActorFacadeMethods.disableEmployee), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.purgeEmployee), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.requestSmartToken), true);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.retrieveControllerCredentialsFromIca), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.ingestCommunicationAndUpdateIndex), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.searchCommunicationParticipants), true);
 });

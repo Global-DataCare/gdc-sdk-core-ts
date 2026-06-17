@@ -1,6 +1,8 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
-export type AppType = 'Organization' | 'Family';
+import type { ProfileAppType } from 'gdc-common-utils-ts/constants/profile-runtime';
+
+export type AppType = ProfileAppType;
 
 /**
  * Host application identity required by GW CORE.

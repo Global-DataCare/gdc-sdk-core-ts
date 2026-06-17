@@ -4,6 +4,7 @@ import {
   ActorCapabilities,
   ActorKinds,
 } from 'gdc-common-utils-ts/constants/actor-session';
+import type { ProfileAppType } from 'gdc-common-utils-ts/constants/profile-runtime';
 import type {
   ActorKind,
   Capability,
@@ -15,7 +16,7 @@ export type { ActorKind, Capability };
 export type ActorSessionDescriptor = {
   actorKinds: ActorKind[];
   capabilities: Capability[];
-  appType: 'Organization' | 'Family';
+  appType: ProfileAppType;
   profileId: string;
   profileDid?: string;
   role?: string;
@@ -24,7 +25,7 @@ export type ActorSessionDescriptor = {
 export type ActorFacadeDescriptor = {
   actorKind: ActorKind;
   capabilities: Capability[];
-  appType: 'Organization' | 'Family';
+  appType: ProfileAppType;
   profileId: string;
   profileDid?: string;
   role?: string;
@@ -40,11 +41,19 @@ export type ActorFlags = {
 };
 
 export type ActorSessionDescriptorInput = {
-  appType: 'Organization' | 'Family';
+  appType: ProfileAppType;
   profileId: string;
   profileDid?: string;
   role?: string;
   actorFlags: ActorFlags;
+};
+
+export type SingleActorSessionDescriptorInput = {
+  appType: ProfileAppType;
+  profileId: string;
+  profileDid?: string;
+  role?: string;
+  actorKind: ActorKind;
 };
 
 const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
@@ -185,6 +194,27 @@ export function buildActorSessionDescriptorFromActorFlags(
   return {
     actorKinds: [...actorKinds],
     capabilities: [...capabilities],
+    appType: input.appType,
+    profileId: input.profileId,
+    profileDid: input.profileDid,
+    role: input.role,
+  };
+}
+
+/**
+ * Builds one normalized actor session descriptor for exactly one actor kind.
+ *
+ * Runtime packages should prefer this helper when the authenticated actor kind
+ * is already known and no boolean flag expansion is needed.
+ *
+ * @param input Single actor metadata used to derive the canonical capability set.
+ */
+export function buildActorSessionDescriptorForActorKind(
+  input: SingleActorSessionDescriptorInput,
+): ActorSessionDescriptor {
+  return {
+    actorKinds: [input.actorKind],
+    capabilities: [...(actorCapabilityMatrix[input.actorKind] || [])],
     appType: input.appType,
     profileId: input.profileId,
     profileDid: input.profileDid,
