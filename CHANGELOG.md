@@ -17,6 +17,9 @@ All notable changes to this project will be documented in this file.
   representative VC without hardcoding route/query rules in app code:
   - `src/organization-controller-credential-facade.ts`
   - `tests/organization-controller-credential-facade.test.mjs`
+- Added explicit shared documentation and JSDoc that separate:
+  - runtime/device/profile/BFF communication keys
+  - controller business/operation-signing keys used for binding flows
 
 ### Changed
 - Bumped the package patch version from `2.0.0` to `2.0.1`.
@@ -42,6 +45,9 @@ All notable changes to this project will be documented in this file.
 - Fixed the shared consent claim helper re-export so the runtime-neutral type
   alias remains a type-only export:
   - `src/consent-claim-helpers.ts`
+- Clarified the onboarding teaching contract in shared docs so confidential
+  apps, device profiles, and BFF portals do not conflate transport DIDComm keys
+  with `controller.publicKeyJwk`.
 
 ### Testing
 - `npm run type-check`

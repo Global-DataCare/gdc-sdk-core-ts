@@ -66,6 +66,9 @@ Important:
 - `gdc-sdk-core-ts` does not initialize a runtime client by itself.
 - Runtime initialization lives in `gdc-sdk-node-ts` and `gdc-sdk-front-ts`.
 - Shared payload shapes and examples live in `gdc-common-utils-ts`.
+- Communication/profile/device/BFF keys belong to runtime transport identity.
+- Controller `publicKeyJwk` belongs to business/operation identity and must stay
+  separate from runtime communication keys.
 - FHIR-like resources in these shared flows may carry `resource.meta.claims`,
   which is a project-specific claims container and not part of base FHIR.
 - Package-boundary guidance lives in
