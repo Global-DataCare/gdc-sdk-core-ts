@@ -91,6 +91,14 @@ Teach integrations from variables the caller already understands, for example:
 - `publicSignKey`
 - `publicKeys`
 
+Key-role rule for every onboarding example:
+
+- `publicSignKey` is the controller-owned business/operation-signing key
+- `publicKeys` are auxiliary controller-owned public keys when the business
+  flow needs them
+- DIDComm/device/profile/BFF communication keys belong to the runtime
+  communication identity layer, not to `controller.publicKeyJwk`
+
 Only after that should docs show:
 
 - builder/helper
@@ -320,6 +328,9 @@ Where the data comes from:
   comes from the controller signing key you want GW to publish or bind
 - `publicKeys`
   comes from the auxiliary public keys, typically DidComm encryption keys
+- runtime communication keys
+  come from the active device profile, confidential app, or BFF transport
+  layer and must stay separate from `controllerBinding`
 - `controllerBinding`
   should be built with `buildControllerBindingInput(...)`, not hand-shaped as
   `controller.publicKeyJwk` / `controller.jwks`
@@ -335,6 +346,12 @@ Common mistakes to avoid:
 - teaching `controller.publicKeyJwk` as if it were the caller's starting point
 - inlining a full `_activate` body in app code
 - mixing controller-person keys with technical DCR/device keys
+
+Confidential-app and BFF rule:
+
+- the profile/device/app/BFF controls transport communication keys
+- the controller controls business/operation-signing keys
+- rotation of transport/profile keys must not redefine the controller binding
 
 ## 2. Employee Creation And Employee Activation
 

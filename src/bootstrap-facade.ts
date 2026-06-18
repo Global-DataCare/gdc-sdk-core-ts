@@ -38,7 +38,21 @@ export type OrganizationActivationPayload = {
   controller?: {
     did?: string;
     sameAs?: string;
+    /**
+     * Controller-owned business/operation-signing public key.
+     *
+     * This is the key that activation/bootstrap flows bind to the controller
+     * identity. It is distinct from DIDComm/profile/device communication keys
+     * used by the runtime envelope or DCR/backend-auth layers.
+     */
     publicKeyJwk?: unknown;
+    /**
+     * Optional auxiliary controller-owned public keys.
+     *
+     * These are still controller keys, not transport/runtime communication
+     * keys. Keep transport/device keys in runtime-specific communication
+     * identity surfaces instead of mixing them into the controller binding.
+     */
     jwks?: { keys: Array<unknown> };
   };
   organization?: {
@@ -149,6 +163,11 @@ export interface BootstrapFacade {
   }): OrganizationActivationPayload;
   /**
    * Normalizes explicit controller binding input into actor identity state.
+   *
+   * Separation of concerns:
+   * - the runtime/device/BFF controls DIDComm or transport communication keys
+   * - the controller controls business/operation-signing keys
+   * - this helper only models the controller-owned side
    */
   bindControllerIdentity(input: {
     did: string;
