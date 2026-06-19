@@ -249,6 +249,14 @@ For every step below, read in this order:
 - [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
   Shared route context, tenant, jurisdiction, sector, controller binding, and
   helper payload builders.
+
+Important route naming rule:
+
+- tenant routes use `tenantId + jurisdiction + sector`
+- host routes use `host coverage jurisdiction + hostNetwork`
+- do not read the host path segment `test` / `test-network` / `network` as the
+  tenant business sector
+- do not force tenant `jurisdiction` from the host `cds-{jurisdiction}` prefix
 - [organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
   Organization activation, order/offer, employee creation, employee activation.
 - [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
