@@ -10,9 +10,28 @@ import { resolvePollOptionsFromSeconds } from './polling-model.js';
  *
  * This is a routing object for host registry calls. It is not the same thing as
  * a host discovery descriptor.
+ *
+ * Step by step:
+ * - host routes always start with `/host/cds-{jurisdiction}/v1/{host-network}`
+ * - tenant routes start with `/{tenantId}/cds-{jurisdiction}/v1/{tenant-sector}`
+ * - some older callers reused the name `sector` for the host path segment
+ * - that naming is ambiguous because, for host routes, the segment represents
+ *   the host network/runtime scope, not the tenant business sector
+ *
+ * Use `hostNetworkOrTenantSector` as the didactic compatibility input when the
+ * caller only knows the raw path segment and wants the SDK to route it to the
+ * correct host slot. Prefer `hostNetwork` in new code.
  */
 export type HostRouteContext = {
   jurisdiction: string;
+  /**
+   * Didactic compatibility alias for the raw `{segment}` used after
+   * `/host/cds-{jurisdiction}/v1/`.
+   *
+   * For host routes this means `hostNetwork`.
+   * For tenant routes the analogous segment is usually called `sector`.
+   */
+  hostNetworkOrTenantSector?: string;
   hostNetwork?: string;
   /** @deprecated Use `hostNetwork`. */
   sector?: string;
@@ -26,6 +45,13 @@ export type HostRouteContext = {
 export type LegalOrganizationOrderInput = {
   offerId: string;
   jurisdiction?: string;
+  /**
+   * Didactic compatibility alias for callers that only know the raw path
+   * segment shared by:
+   * - host routes: `hostNetwork`
+   * - tenant routes: `sector`
+   */
+  hostNetworkOrTenantSector?: string;
   hostNetwork?: string;
   /** @deprecated Use `hostNetwork`. */
   sector?: string;

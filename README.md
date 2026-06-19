@@ -93,12 +93,23 @@ The SDK documentation must cover these families from the start:
 
 ### Organization bootstrap and activation
 
+- start legal-organization verification transaction
 - activate organization from ICA proof
 - confirm organization order / offer
 - prepare legal organization controller bootstrap payloads
 - always declare service capabilities during legal-organization activation
 - use `orgControllerDid` as the teaching name for the controller DID
 - prefer `organizationActivation` as the local activation builder/result name in examples
+
+Canonical shared onboarding order:
+
+1. prepare/submit host `Organization/_transaction`
+2. consume ICA result and submit host `Organization/_activate`
+3. confirm host `Order/_batch`
+
+The `_transaction` payload is runtime-neutral in this package; real `fetch`,
+polling, and JOSE/DIDComm transport execution remain runtime concerns of
+`gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
 
 Primary reusable examples:
 

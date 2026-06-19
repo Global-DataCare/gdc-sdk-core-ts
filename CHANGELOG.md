@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.4] - 2026-06-19
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^2.0.6`.
+
+## [2.0.3] - 2026-06-18
+
+### Added
+- Added a runtime-neutral host submission contract for the first
+  legal-organization onboarding step that sends signed PDF evidence,
+  controller binding material, and optional organization signing material to GW
+  CORE `Organization/_transaction` before the later `_activate` step:
+  - `src/legal-organization-verification-submission.ts`
+  - `tests/101-legal-organization-verification-transaction.test.mjs`
+
+### Changed
+- Bumped the package patch version from `2.0.2` to `2.0.3`.
+- Updated the shared dependency target to `gdc-common-utils-ts@^2.0.4`.
+- Exported the runtime-neutral legal-organization verification submission
+  helpers from the package entrypoint:
+  - `src/index.ts`
+- Clarified in the shared package guidance that:
+  - `Organization/_transaction` is the canonical first legal-organization step
+  - `_activate` is the later ICA-proof consumption step
+  - runtime communication keys remain distinct from controller business keys
+
+### Testing
+- `npm run type-check`
+- `npm test`
+
 ### Added
 - Added the first v2 runtime-neutral profile/job contract slice so frontend and
   node runtimes can converge on one actor-aware `loadProfile` shape before
