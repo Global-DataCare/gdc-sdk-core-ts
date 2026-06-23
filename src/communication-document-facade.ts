@@ -46,6 +46,17 @@ export type FhirDocumentResourceQuery = Readonly<{
   offset?: number;
 }>;
 
+export type FhirDocumentEntryQuery = Readonly<{
+  sections?: readonly string[];
+  resourceTypes?: readonly string[];
+  start?: string;
+  end?: string;
+  searchText?: string;
+  page?: number;
+  count?: number;
+  offset?: number;
+}>;
+
 export type FhirDocumentFamilyQuery = Readonly<{
   sections?: readonly string[];
   start?: string;
@@ -66,21 +77,41 @@ export type FhirDocumentSectionSummary = Readonly<{
   countsBySectionAndResourceType: Readonly<Record<string, Readonly<Record<string, number>>>>;
 }>;
 
+export type FhirDocumentSectionCounts = Readonly<{
+  sectionsRequested: readonly string[];
+  sectionsResolved: readonly string[];
+  totalEntries: number;
+  totalNarratives: number;
+  bySection: Readonly<Record<string, number>>;
+  byResourceType: Readonly<Record<string, number>>;
+  bySectionAndResourceType: Readonly<Record<string, Readonly<Record<string, number>>>>;
+}>;
+
+export type FhirBundleEntryLike = Readonly<Record<string, unknown> & {
+  fullUrl?: string;
+  resource?: FhirResourceLike;
+  request?: Record<string, unknown>;
+  response?: Record<string, unknown>;
+}>;
+
 export type FhirDocumentFacade = Readonly<{
   getBundle: () => FhirResourceLike | undefined;
   getSections: () => FhirDocumentSection[];
+  getSectionEntries: (sectionCode: string, resourceType?: string) => FhirBundleEntryLike[];
   getSectionResources: (sectionCode: string, resourceType?: string) => FhirResourceLike[];
+  getEntries: (input?: FhirDocumentEntryQuery) => FhirBundleEntryLike[];
   getResources: (resourceTypeOrQuery?: string | FhirDocumentResourceQuery) => FhirResourceLike[];
   getByDates: (resourceTypeOrQuery: string | FhirDocumentResourceQuery, start?: string, end?: string) => FhirResourceLike[];
   getContainingTextOrDisplay: (resourceType: string, searchText: string) => FhirResourceLike[];
+  getSectionCounts: (input?: { sections?: readonly string[] }) => FhirDocumentSectionCounts;
   getSectionSummary: (input?: { sections?: readonly string[] }) => FhirDocumentSectionSummary;
-  getLocalTextAndIntDisplay: (resource: FhirResourceLike) => LocalTextAndIntDisplay;
-  getXhtmlOrDerived: (resource: FhirResourceLike) => string | undefined;
-  getNarrative: (resource: FhirResourceLike) => NarrativeResult;
-  getAllergies: (query?: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; criticality?: readonly string[] }) => FhirResourceLike[];
-  getConditions: (query?: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; severity?: readonly string[] }) => FhirResourceLike[];
-  getMedications: (query?: FhirDocumentFamilyQuery & { status?: readonly string[] }) => FhirResourceLike[];
-  getVitalSigns: (query?: FhirDocumentFamilyQuery & { code?: readonly string[] }) => FhirResourceLike[];
+  getLocalTextAndIntDisplay: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => LocalTextAndIntDisplay;
+  getXhtmlOrDerived: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => string | undefined;
+  getNarrative: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => NarrativeResult;
+  getAllergies: (query?: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; criticality?: readonly string[] }) => FhirBundleEntryLike[];
+  getConditions: (query?: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; severity?: readonly string[] }) => FhirBundleEntryLike[];
+  getMedications: (query?: FhirDocumentFamilyQuery & { status?: readonly string[] }) => FhirBundleEntryLike[];
+  getVitalSigns: (query?: FhirDocumentFamilyQuery & { code?: readonly string[] }) => FhirBundleEntryLike[];
   vitalSigns: Readonly<{
     getAll: () => FhirResourceLike[];
     getHeartRate: () => FhirResourceLike[];
@@ -239,6 +270,93 @@ function dedupeResources(resources: FhirResourceLike[]): FhirResourceLike[] {
   return out;
 }
 
+function normalizeResourceInput(resourceOrEntry: FhirResourceLike | FhirBundleEntryLike): FhirResourceLike {
+  if (isPlainObject(resourceOrEntry) && isPlainObject(resourceOrEntry.resource)) {
+    return resourceOrEntry.resource as FhirResourceLike;
+  }
+  return resourceOrEntry as FhirResourceLike;
+}
+
+function dedupeEntries(entries: FhirBundleEntryLike[]): FhirBundleEntryLike[] {
+  const seen = new Set<string>();
+  const out: FhirBundleEntryLike[] = [];
+  for (const entry of entries) {
+    const resource = isPlainObject(entry.resource) ? entry.resource as FhirResourceLike : undefined;
+    const key = [
+      String(entry.fullUrl || ''),
+      String(resource?.resourceType || ''),
+      String(resource?.id || ''),
+    ].join('|');
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(entry);
+    }
+  }
+  return out;
+}
+
+function filterEntriesByQuery(
+  facade: Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
+  bundle: FhirResourceLike | undefined,
+  query?: FhirDocumentEntryQuery,
+): FhirBundleEntryLike[] {
+  const normalizedSections = normalizeTokenList(query?.sections);
+  const requestedTypes = normalizeTokenList(query?.resourceTypes);
+
+  const entries = normalizedSections.length > 0
+    ? dedupeEntries(
+      normalizedSections.flatMap((section) => requestedTypes.length > 0
+        ? requestedTypes.flatMap((resourceType) => facade.getSectionEntries(section, resourceType))
+        : facade.getSectionEntries(section)),
+    )
+    : Array.isArray(bundle?.entry)
+      ? bundle.entry.filter(isPlainObject) as FhirBundleEntryLike[]
+      : [];
+
+  const searched = typeof query?.searchText === 'string' && query.searchText.trim()
+    ? entries.filter((entry) => {
+      const resource = isPlainObject(entry.resource) ? entry.resource as FhirResourceLike : undefined;
+      return resource ? getTextIndex(resource).includes(query.searchText!.trim().toLowerCase()) : false;
+    })
+    : entries;
+
+  const typed = requestedTypes.length > 0
+    ? searched.filter((entry) => {
+      const resource = isPlainObject(entry.resource) ? entry.resource as FhirResourceLike : undefined;
+      return resource ? requestedTypes.includes(String(resource.resourceType || '')) : false;
+    })
+    : searched;
+
+  const dated = typed
+    .filter((entry) => {
+      const resource = isPlainObject(entry.resource) ? entry.resource as FhirResourceLike : undefined;
+      const date = resource ? getCanonicalDate(resource) : undefined;
+      if (query?.start && (!date || date < query.start)) return false;
+      if (query?.end && (!date || date > query.end)) return false;
+      return true;
+    })
+    .sort((left, right) => {
+      const leftResource = isPlainObject(left.resource) ? left.resource as FhirResourceLike : undefined;
+      const rightResource = isPlainObject(right.resource) ? right.resource as FhirResourceLike : undefined;
+      const leftDate = leftResource ? (getCanonicalDate(leftResource) || '') : '';
+      const rightDate = rightResource ? (getCanonicalDate(rightResource) || '') : '';
+      return rightDate.localeCompare(leftDate);
+    });
+
+  return dated;
+}
+
+function applyEntryPagination(entries: FhirBundleEntryLike[], query?: Pick<FhirDocumentEntryQuery, 'page' | 'count' | 'offset'>): FhirBundleEntryLike[] {
+  const count = normalizePositiveInteger(query?.count);
+  const page = normalizePositiveInteger(query?.page);
+  const explicitOffset = normalizeNonNegativeInteger(query?.offset);
+  const offset = explicitOffset ?? (count && page ? (page - 1) * count : 0);
+  if (!count && !offset) {
+    return entries;
+  }
+  return entries.slice(offset || 0, count ? (offset || 0) + count : undefined);
+}
+
 function splitClaimCsv(resource: FhirResourceLike, key: string): string[] {
   const claims = isPlainObject(resource.meta) && isPlainObject(resource.meta.claims)
     ? resource.meta.claims as Record<string, unknown>
@@ -373,7 +491,7 @@ export function createFhirDocumentFacade(
           });
       });
     },
-    getSectionResources: (sectionCode: string, resourceType?: string) => {
+    getSectionEntries: (sectionCode: string, resourceType?: string) => {
       const normalizedTarget = normalizeSectionCodeToken(sectionCode);
       if (!normalizedTarget || !Array.isArray(bundle?.entry)) return [];
 
@@ -396,10 +514,30 @@ export function createFhirDocumentFacade(
           return sectionRefs.has(String(id || ''))
             || sectionRefs.has(String(typedReference || ''))
             || sectionRefs.has(String(fullUrl || ''))
-            ? resource
+            ? entry as FhirBundleEntryLike
             : undefined;
         })
-        .filter((resource): resource is FhirResourceLike => Boolean(resource));
+        .filter((entry): entry is FhirBundleEntryLike => Boolean(entry));
+    },
+    getSectionResources: (sectionCode: string, resourceType?: string) => {
+      return facade.getSectionEntries(sectionCode, resourceType)
+        .map((entry) => normalizeResourceInput(entry))
+        .filter(Boolean);
+    },
+    getEntries: (input?: FhirDocumentEntryQuery) => {
+      if (!input) {
+        return Array.isArray(bundle?.entry)
+          ? bundle.entry.filter(isPlainObject) as FhirBundleEntryLike[]
+          : [];
+      }
+      return applyEntryPagination(
+        filterEntriesByQuery(
+          facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
+          bundle,
+          input,
+        ),
+        input,
+      );
     },
     getResources: (resourceTypeOrQuery?: string | FhirDocumentResourceQuery) => {
       if (!resourceTypeOrQuery) {
@@ -439,26 +577,27 @@ export function createFhirDocumentFacade(
       return getBundleDocumentResourcesByType(bundle, resourceType)
         .filter((resource) => getTextIndex(resource).includes(normalized));
     },
-    getSectionSummary: (input?: { sections?: readonly string[] }) => {
+    getSectionCounts: (input?: { sections?: readonly string[] }) => {
       const sectionsRequested = normalizeTokenList(input?.sections);
       const sectionsResolved = sectionsRequested.length > 0
         ? sectionsRequested
         : facade.getSections().map((section) => String(section.code || '').trim()).filter(Boolean);
 
-      const countsBySection: Record<string, number> = {};
-      const countsByResourceType: Record<string, number> = {};
-      const countsBySectionAndResourceType: Record<string, Record<string, number>> = {};
+      const bySection: Record<string, number> = {};
+      const byResourceType: Record<string, number> = {};
+      const bySectionAndResourceType: Record<string, Record<string, number>> = {};
       let totalNarratives = 0;
 
       for (const section of sectionsResolved) {
-        const sectionResources = facade.getSectionResources(section);
-        countsBySection[section] = sectionResources.length;
-        countsBySectionAndResourceType[section] = countsBySectionAndResourceType[section] || {};
+        const sectionEntries = facade.getSectionEntries(section);
+        bySection[section] = sectionEntries.length;
+        bySectionAndResourceType[section] = bySectionAndResourceType[section] || {};
 
-        for (const resource of sectionResources) {
+        for (const entry of sectionEntries) {
+          const resource = normalizeResourceInput(entry);
           const resourceType = String(resource.resourceType || 'Unknown');
-          countsByResourceType[resourceType] = (countsByResourceType[resourceType] || 0) + 1;
-          countsBySectionAndResourceType[section][resourceType] = (countsBySectionAndResourceType[section][resourceType] || 0) + 1;
+          byResourceType[resourceType] = (byResourceType[resourceType] || 0) + 1;
+          bySectionAndResourceType[section][resourceType] = (bySectionAndResourceType[section][resourceType] || 0) + 1;
           if (getXhtmlOrDerived(resource)) {
             totalNarratives += 1;
           }
@@ -468,49 +607,73 @@ export function createFhirDocumentFacade(
       return {
         sectionsRequested,
         sectionsResolved,
-        totalResources: Object.values(countsBySection).reduce((sum, value) => sum + value, 0),
+        totalEntries: Object.values(bySection).reduce((sum, value) => sum + value, 0),
         totalNarratives,
-        countsBySection,
-        countsByResourceType,
-        countsBySectionAndResourceType,
+        bySection,
+        byResourceType,
+        bySectionAndResourceType,
       };
     },
-    getLocalTextAndIntDisplay: (resource: FhirResourceLike) => getLocalTextAndIntDisplay(resource),
-    getXhtmlOrDerived: (resource: FhirResourceLike) => getXhtmlOrDerived(resource),
-    getNarrative: (resource: FhirResourceLike) => getNarrative(resource),
-    getAllergies: (query: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; criticality?: readonly string[] } = {}) => applyPagination(filterResourcesByQuery(
-      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionResources'>,
+    getSectionSummary: (input?: { sections?: readonly string[] }) => {
+      const counts = facade.getSectionCounts(input);
+      return {
+        sectionsRequested: counts.sectionsRequested,
+        sectionsResolved: counts.sectionsResolved,
+        totalResources: counts.totalEntries,
+        totalNarratives: counts.totalNarratives,
+        countsBySection: counts.bySection,
+        countsByResourceType: counts.byResourceType,
+        countsBySectionAndResourceType: counts.bySectionAndResourceType,
+      };
+    },
+    getLocalTextAndIntDisplay: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => getLocalTextAndIntDisplay(normalizeResourceInput(resourceOrEntry)),
+    getXhtmlOrDerived: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => getXhtmlOrDerived(normalizeResourceInput(resourceOrEntry)),
+    getNarrative: (resourceOrEntry: FhirResourceLike | FhirBundleEntryLike) => getNarrative(normalizeResourceInput(resourceOrEntry)),
+    getAllergies: (query: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; criticality?: readonly string[] } = {}) => applyEntryPagination(filterEntriesByQuery(
+      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
       bundle,
-      { ...query, resourceType: ResourceTypesFhirR4.AllergyIntolerance },
-    ).filter((resource) => (
+      { ...query, resourceTypes: [ResourceTypesFhirR4.AllergyIntolerance] },
+    ).filter((entry) => {
+      const resource = normalizeResourceInput(entry);
+      return (
       matchesAnyClaimValue(resource, ['AllergyIntolerance.clinical-status', 'org.hl7.fhir.api.AllergyIntolerance.clinical-status'], query?.clinicalStatus)
       && matchesAnyClaimValue(resource, ['AllergyIntolerance.verification-status', 'org.hl7.fhir.api.AllergyIntolerance.verification-status'], query?.verificationStatus)
       && matchesAnyClaimValue(resource, ['AllergyIntolerance.criticality', 'org.hl7.fhir.api.AllergyIntolerance.criticality'], query?.criticality)
-    )), query),
-    getConditions: (query: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; severity?: readonly string[] } = {}) => applyPagination(filterResourcesByQuery(
-      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionResources'>,
+      );
+    }), query),
+    getConditions: (query: FhirDocumentFamilyQuery & { clinicalStatus?: readonly string[]; verificationStatus?: readonly string[]; severity?: readonly string[] } = {}) => applyEntryPagination(filterEntriesByQuery(
+      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
       bundle,
-      { ...query, resourceType: ResourceTypesFhirR4.Condition },
-    ).filter((resource) => (
+      { ...query, resourceTypes: [ResourceTypesFhirR4.Condition] },
+    ).filter((entry) => {
+      const resource = normalizeResourceInput(entry);
+      return (
       matchesAnyClaimValue(resource, ['Condition.clinical-status', 'org.hl7.fhir.api.Condition.clinical-status'], query?.clinicalStatus)
       && matchesAnyClaimValue(resource, ['Condition.verification-status', 'org.hl7.fhir.api.Condition.verification-status'], query?.verificationStatus)
       && matchesAnyClaimValue(resource, ['Condition.severity', 'org.hl7.fhir.api.Condition.severity'], query?.severity)
-    )), query),
-    getMedications: (query: FhirDocumentFamilyQuery & { status?: readonly string[] } = {}) => applyPagination(filterResourcesByQuery(
-      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionResources'>,
+      );
+    }), query),
+    getMedications: (query: FhirDocumentFamilyQuery & { status?: readonly string[] } = {}) => applyEntryPagination(filterEntriesByQuery(
+      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
       bundle,
-      { ...query, resourceType: ResourceTypesFhirR4.MedicationStatement },
-    ).filter((resource) => (
+      { ...query, resourceTypes: [ResourceTypesFhirR4.MedicationStatement] },
+    ).filter((entry) => {
+      const resource = normalizeResourceInput(entry);
+      return (
       matchesAnyClaimValue(resource, ['MedicationStatement.status', 'org.hl7.fhir.api.MedicationStatement.status'], query?.status)
-    )), query),
-    getVitalSigns: (query: FhirDocumentFamilyQuery & { code?: readonly string[] } = {}) => applyPagination(filterResourcesByQuery(
-      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionResources'>,
+      );
+    }), query),
+    getVitalSigns: (query: FhirDocumentFamilyQuery & { code?: readonly string[] } = {}) => applyEntryPagination(filterEntriesByQuery(
+      facade as Pick<FhirDocumentFacade, 'getSections' | 'getSectionEntries'>,
       bundle,
-      { ...query, resourceType: ResourceTypesFhirR4.Observation },
-    ).filter((resource) => (
+      { ...query, resourceTypes: [ResourceTypesFhirR4.Observation] },
+    ).filter((entry) => {
+      const resource = normalizeResourceInput(entry);
+      return (
       matchesAnyClaimValue(resource, ['Observation.code', 'Observation.code-value'], query?.code)
         || normalizeTokenList(query?.code).length === 0
-    )), query),
+      );
+    }), query),
   });
   return Object.freeze({
     ...facade,

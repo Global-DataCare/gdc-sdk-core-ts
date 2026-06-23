@@ -205,14 +205,14 @@ test('101: IPS bundle facade reads sections, resources, dates, and resource clai
   // Step 9.
   // Higher-level section-aware summary and resource filtering can now stay on
   // the document facade.
-  const sectionSummary = fhirDocument.getSectionSummary();
-  assert.equal(sectionSummary.totalResources, 3);
-  assert.equal(sectionSummary.countsBySection[HealthcareBasicSections.ProblemList.claim], 1);
-  assert.equal(sectionSummary.countsBySection[HealthcareBasicSections.AllergiesAndIntolerances.claim], 1);
-  assert.equal(sectionSummary.countsBySection[HealthcareBasicSections.VitalSigns.claim], 1);
-  assert.equal(sectionSummary.countsByResourceType[ResourceTypesFhirR4.Condition], 1);
-  assert.equal(sectionSummary.countsByResourceType[ResourceTypesFhirR4.AllergyIntolerance], 1);
-  assert.equal(sectionSummary.countsByResourceType[ResourceTypesFhirR4.Observation], 1);
+  const sectionCounts = fhirDocument.getSectionCounts();
+  assert.equal(sectionCounts.totalEntries, 3);
+  assert.equal(sectionCounts.bySection[HealthcareBasicSections.ProblemList.claim], 1);
+  assert.equal(sectionCounts.bySection[HealthcareBasicSections.AllergiesAndIntolerances.claim], 1);
+  assert.equal(sectionCounts.bySection[HealthcareBasicSections.VitalSigns.claim], 1);
+  assert.equal(sectionCounts.byResourceType[ResourceTypesFhirR4.Condition], 1);
+  assert.equal(sectionCounts.byResourceType[ResourceTypesFhirR4.AllergyIntolerance], 1);
+  assert.equal(sectionCounts.byResourceType[ResourceTypesFhirR4.Observation], 1);
 
   // Step 10.
   // The same facade can return family-specific filtered lists, with section
@@ -236,11 +236,21 @@ test('101: IPS bundle facade reads sections, resources, dates, and resource clai
   });
 
   assert.equal(allergies.length, 1);
-  assert.equal(allergies[0].id, 'allergy-example-001');
+  assert.equal(allergies[0].fullUrl, 'urn:uuid:allergy-example-001');
+  assert.equal(allergies[0].resource?.id, 'allergy-example-001');
   assert.equal(conditions.length, 1);
-  assert.equal(conditions[0].id, EXAMPLE_CONDITION_IDENTIFIER);
+  assert.equal(conditions[0].resource?.id, EXAMPLE_CONDITION_IDENTIFIER);
   assert.equal(vitalSigns.length, 1);
-  assert.equal(vitalSigns[0].meta?.claims?.[ObservationClaim.Identifier], EXAMPLE_OBSERVATION_IDENTIFIER);
+  assert.equal(vitalSigns[0].resource?.meta?.claims?.[ObservationClaim.Identifier], EXAMPLE_OBSERVATION_IDENTIFIER);
+
+  const genericEntries = fhirDocument.getEntries({
+    sections: [HealthcareBasicSections.ProblemList.claim, HealthcareBasicSections.AllergiesAndIntolerances.claim],
+    resourceTypes: [ResourceTypesFhirR4.Condition, ResourceTypesFhirR4.AllergyIntolerance],
+    count: 2,
+    page: 1,
+  });
+  assert.equal(genericEntries.length, 2);
+  assert.equal(Boolean(genericEntries[0].resource), true);
 
   // Step 11.
   // Narrative and combined local/international labels can be resolved even when
