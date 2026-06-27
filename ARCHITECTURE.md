@@ -99,6 +99,20 @@ Important semantic split:
 
 Do not collapse these into one runtime-specific class name.
 
+Current intended usage across runtimes:
+
+- confidential frontend app: one active profile/session, local-first
+  `JobManager`, local `Vault...` adapter, and a frontend execution loop that
+  may be immediate or offline-first
+- BFF or server-side channel runtime: `JobManager` per loaded profile/runtime,
+  backend `Vault...` adapter for session cache or durable storage, and a queue
+  adapter that may be memory-backed for demos or durable for multi-user work
+- multi-session conversational/channel service: same neutral `ProfileManager` /
+  `JobManager` / `IWallet` model, but with channel-session state and runtime
+  queue/vault adapters supplied by that service's own repository
+- gateway/backend route layer: queue adapter and worker are backend details and
+  do not belong in `sdk-core`
+
 ## Naming Rules
 
 Keep method names consistent:

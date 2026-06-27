@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.0.9] - 2026-06-27
+
+- Added the runtime-neutral wallet contract to the sdk-core layer so app,
+  browser, and backend runtimes can share one canonical `IWallet` model
+  without placing it in `gdc-common-utils-ts`:
+  - `src/wallet-contract.ts`
+  - `src/index.ts`
+  - `tests/iwallet-unified-compat.test.mjs`
+- Added a runtime-neutral `UserProfileIndex` contract for local profile
+  selection before PIN unlock in voice, web, and app channels:
+  - `src/user-profile-index.ts`
+  - `tests/user-profile-index.test.mjs`
+- Restricted shared lookup keys to hashed contact tokens only:
+  - raw phone/email values are not modeled in the shared contract
+  - `sha256-salted` lookup tokens are the canonical storage form
 
 ## [2.0.8] - 2026-06-24
 

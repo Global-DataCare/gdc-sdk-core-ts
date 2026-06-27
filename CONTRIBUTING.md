@@ -41,6 +41,19 @@ Do not implement concrete runtime adapters here such as:
 - prefer names such as `prepareSearch...` and `prepareLifecycle...`
 - when specializing one common runtime concept, keep the common concept first
   and the specialization later, e.g. `createJobManagerInMemory(...)`
+- when specializing a concrete class or store, keep the shared concept as the
+  full prefix and append the specialization suffix, e.g.:
+  - `UserProfileIndexStoreInMemory`
+  - `UserProfileIndexStoreFirestore`
+  - `UserProfileVaultSecureStorage`
+  - `UserProfileVaultFirestore`
+- do not invert the order into names such as:
+  - `FirestoreUserProfileIndexStore`
+  - `SecureStorageUserProfileVault`
+  - `InMemoryJobManager`
+- the programming rule is:
+  - common concept first for autocomplete/discoverability
+  - specialization last for implementation choice
 
 ## Test Rule
 

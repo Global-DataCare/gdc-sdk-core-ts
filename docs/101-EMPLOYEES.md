@@ -114,8 +114,10 @@ Purge is a separate lifecycle operation, but it should still be modeled as a
 bundle operation in frontend and SDK code.
 
 Runtime layers call the explicit `Employee/_purge` flow and identify the
-employee by the canonical `identifier`. That is the only selector you normally
-need for purge.
+employee by one concrete profile row. In practice, prefer the current
+`resource.id` returned by create/search as the operational target, while
+keeping the canonical `identifier` as the exportable/interoperable identity
+value carried in claims.
 
 Only after that should you explain the lower-level building blocks:
 
@@ -161,6 +163,9 @@ Current lifecycle model is:
 
 Use:
 
+- `resourceId`
+  - when you need the current technical GW profile row for disable or purge
+  - this should stay one `urn:uuid:*` internal id
 - `identifier` when you need one specific historical or technical profile
 - `email` when you want to list employee roles for one person
 - `email + role` when you want the operational employee record

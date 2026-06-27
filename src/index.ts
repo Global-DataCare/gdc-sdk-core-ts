@@ -37,4 +37,6 @@ export * from './relationship-access.js';
 export * from './session-model.js';
 export * from './search-bundle.js';
 export * from './smart-endpoint-resolver.js';
+export * from './user-profile-index.js';
 export * from './vital-signs.js';
+export * from './wallet-contract.js';
