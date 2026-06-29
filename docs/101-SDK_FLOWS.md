@@ -127,6 +127,9 @@ Do not teach callers to hand-shape:
 - `controller.publicKeyJwk`
 - `controller.jwks`
 - nested `body.data[0].resource.meta.claims`
+  Use shared readers such as `getClaimsInFirstDataEntry(...)` or `getClaimsInBundleEntryAt(...)`,
+  `getActiveEntryClaims()`, or the lifecycle-specific readers exported by
+  `gdc-common-utils-ts`.
 
 unless the document is explicitly a low-level wire-format reference.
 
@@ -320,9 +323,11 @@ Main SDK entry:
 
 - [createBootstrapFacade(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/bootstrap-facade.ts)
 
-Node runtime entry:
+Public runtime surfaces:
 
-- [confirmLegalOrganizationOrderWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/host-onboarding.ts)
+- `profile.asHostOnboarding()` in
+  [gdc-sdk-front-ts/src/ProfileManager.ts](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ProfileManager.ts)
+- [HostOnboardingSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/host-onboarding-sdk.ts)
 
 Where the data comes from:
 
@@ -373,11 +378,11 @@ Open these files first:
 
 - [organization-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/organization-controller.ts)
 
-Node runtime entries:
+Public runtime surfaces:
 
-- [createOrganizationEmployeeWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
-- [activateEmployeeDeviceWithActivationCodeWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/device-activation.ts)
-- [activateEmployeeDeviceWithActivationRequestWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/device-activation.ts)
+- [OrganizationControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/organization-controller-sdk.ts)
+- [OrganizationEmployeeSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/organization-employee-sdk.ts)
+- [ProfessionalSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/professional-sdk.ts)
 
 Where the data comes from:
 
@@ -411,10 +416,11 @@ Open these files first:
 - [individual-controller.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/individual-controller.ts)
 - [shared.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/shared.ts)
 
-Node runtime entries:
+Public runtime surfaces:
 
-- [startIndividualOrganizationWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/individual-start.ts)
-- [confirmIndividualOrganizationOrderWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/individual-onboarding.ts)
+- `profile.asIndividualController()` in
+  [gdc-sdk-front-ts/src/ProfileManager.ts](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/src/ProfileManager.ts)
+- [IndividualControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-controller-sdk.ts)
 
 Where the data comes from:
 
@@ -453,9 +459,10 @@ Shared helpers:
 - [getMissingPermissions(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
 - [buildPermissionRequestCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
 
-Node runtime helper:
+Public runtime surfaces:
 
-- [grantProfessionalAccessWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
+- [IndividualControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-controller-sdk.ts)
+- [PersonalSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/personal-sdk.ts)
 
 Where the data comes from:
 
@@ -533,9 +540,10 @@ Shared helpers:
 - [buildCommunicationBatchMessage(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
 - [addFhirResourceToCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
 
-Node runtime entry:
+Public runtime surfaces:
 
-- [ingestCommunicationAndUpdateIndexWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
+- [IndividualControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-controller-sdk.ts)
+- [ProfessionalSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/professional-sdk.ts)
 
 Where the data comes from:
 
@@ -557,11 +565,10 @@ Open these files first:
 - [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)
 - [consent-access.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/consent-access.ts)
 
-Node runtime entries:
+Public runtime surfaces:
 
-- [requestSmartTokenWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/smart-token.ts)
-- [searchClinicalBundleWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
-- [searchLatestIpsWithDeps(...) ](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/resource-operations.ts)
+- [ProfessionalSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/professional-sdk.ts)
+- [IndividualMemberSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-member-sdk.ts)
 
 Where the data comes from:
 

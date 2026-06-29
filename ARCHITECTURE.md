@@ -15,6 +15,10 @@ This repository is the canonical place for:
 - SDK-level orchestration contracts
 - shared input/output types reused by multiple runtimes
 
+Canonical lifecycle note for actor/device recovery boundaries:
+
+- [docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md](./docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md)
+
 This repository is not the place for:
 
 - low-level reusable editors/readers that belong in `gdc-common-utils-ts`

@@ -42,7 +42,19 @@ export type LegalOrganizationVerificationGatewaySubmission = Readonly<{
     tokenType: 'id_token';
     token: string;
   }>;
+  /**
+   * Outer HTTP content type for the submit call.
+   *
+   * This descriptor represents plain HTTP JSON transport, not an outer
+   * DIDComm plaintext or encrypted envelope.
+   */
   contentType: 'application/json';
+  /**
+   * Business request bundle sent inside the HTTP request body.
+   *
+   * This is the GW request payload itself, not one DIDComm `body` field and
+   * not a signed/encrypted outbox envelope.
+   */
   body: BundleJsonApi;
 }>;
 
@@ -66,6 +78,17 @@ function normalizeBaseUrl(value: string): string {
  * - `{jurisdiction}` here is the host coverage/publication jurisdiction
  * - `{hostNetwork}` here is the host runtime/network segment
  * - neither value should be inferred from the tenant business sector
+ *
+ * Commercial contract:
+ * - this is the first-time legal organization onboarding flow
+ * - GW CORE is expected to mint the canonical commercial Offer claim in
+ *   `meta.claims['org.schema.Offer.identifier']`
+ * - callers are then expected to confirm that same value later through
+ *   `Order.acceptedOffer.identifier`
+ *
+ * Shared reference:
+ * - `gdc-common-utils-ts/utils/gw-core-commercial-contract`
+ * - `GwCoreCommercialFlow.LegalOrganizationTransaction`
  */
 export function resolveLegalOrganizationVerificationGatewayPath(
   input: LegalOrganizationVerificationGatewayRouteInput,
@@ -111,8 +134,14 @@ export function buildLegalOrganizationVerificationGatewayRequestBundle(
 }
 
 /**
- * Creates the HTTP submission descriptor that a node/frontend runtime can send
- * to GW CORE for the host-side legal-organization verification transaction.
+ * Creates one plain HTTP submission descriptor that a node/frontend runtime
+ * can send to GW CORE for the host-side legal-organization verification
+ * transaction.
+ *
+ * Envelope rule:
+ * - this helper does not wrap the payload into outer DIDComm plaintext
+ * - this helper does not encrypt/sign one outer envelope
+ * - it only resolves URL/path/auth/content-type for normal HTTP JSON submit
  */
 export function createLegalOrganizationVerificationGatewaySubmission(input: Readonly<{
   target: LegalOrganizationVerificationGatewayTarget;

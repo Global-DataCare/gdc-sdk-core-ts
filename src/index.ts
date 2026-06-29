@@ -13,6 +13,7 @@ export * from './medication-claim-helpers.js';
 export * from './resource-claims.js';
 export * from './consent-access.js';
 export * from './consent-communication-operations.js';
+export * from './controller-device-lifecycle-readers.js';
 export * from './communication-draft.js';
 export * from './communication-document-facade.js';
 export * from './communication-outbox.js';

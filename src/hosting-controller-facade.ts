@@ -93,6 +93,23 @@ export type HostLifecycleInput = HostedTenantLifecycleInput;
  * but the orchestration surface should remain stable.
  */
 export interface HostingControllerFacade {
+  /**
+   * Confirms the commercial Offer returned by a legal organization onboarding
+   * flow that actually minted one.
+   *
+   * Use this only after:
+   * - host `_transaction`, or
+   * - legacy legal `_activate`
+   *
+   * Do not call this after `_issue`, because `_issue` is an existing-tenant
+   * controller reissue flow and is not expected to mint a new Offer.
+   *
+   * Shared reference:
+   * - `gdc-common-utils-ts/utils/gw-core-commercial-contract`
+   * - `GwCoreCommercialFlow.LegalOrganizationTransaction`
+   * - `GwCoreCommercialFlow.LegalOrganizationActivateLegacy`
+   * - `GwCoreCommercialFlow.LegalOrganizationIssueReissue`
+   */
   confirmLegalOrganizationOrder(
     hostCtx: HostRouteContext,
     input: LegalOrganizationOrderInput,
@@ -128,6 +145,11 @@ type ConfirmLegalOrganizationOrderDeps = {
 /**
  * Builds the canonical legal-organization order-confirmation payload for the
  * host registry and submits it through the provided runtime transport hooks.
+ *
+ * Programming rule:
+ * - `offerId` here must come from a prior response that exposed
+ *   `meta.claims['org.schema.Offer.identifier']`
+ * - if the previous flow did not mint that claim, this helper must not be used
  */
 export async function confirmLegalOrganizationOrderWithDeps(
   deps: ConfirmLegalOrganizationOrderDeps,

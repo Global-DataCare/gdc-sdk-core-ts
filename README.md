@@ -47,6 +47,12 @@ open these documents in this order:
   `common-utils`, `sdk-core`, `sdk-node`, and `sdk-front` in v2.
 - [docs/101-SDK_FLOWS.md](./docs/101-SDK_FLOWS.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
+- [docs/101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md](./docs/101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md)
+  Copy/paste-oriented high-level snippets for legal controller recovery,
+  professional device bootstrap, and individual-controller recovery policy.
+- [docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md](./docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md)
+  Canonical shared lifecycle note for legal-organization controller recovery,
+  professional device replacement, and individual-controller recovery.
 - [docs/101-CONSENT_COMMUNICATION.md](./docs/101-CONSENT_COMMUNICATION.md)
   How an already-edited consent bundle `Communication` moves into draft and outbox.
 - [docs/101-IPS_COMMUNICATION_OUTBOX.md](./docs/101-IPS_COMMUNICATION_OUTBOX.md)

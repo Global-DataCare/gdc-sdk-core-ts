@@ -39,7 +39,18 @@ export type IndividualOnboardingGatewaySubmission = Readonly<{
     tokenType: 'id_token';
     token: string;
   }>;
+  /**
+   * Outer HTTP content type for this submit descriptor.
+   *
+   * This means plain HTTP JSON transport, not an outer DIDComm envelope.
+   */
   contentType: 'application/json';
+  /**
+   * Business request bundle sent inside the HTTP request body.
+   *
+   * This is the GW request payload itself, not a DIDComm `body` field and not
+   * an encrypted/signed outer confidential message envelope.
+   */
   body: BundleJsonApi;
 }>;
 
@@ -70,6 +81,18 @@ function normalizeBaseUrl(value: string): string {
  * Current supported operations:
  * - onboarding PDF draft generation
  * - final individual organization registration
+ *
+ * Commercial contract:
+ * - the SDK-core individual onboarding submission models the family/individual
+ *   commercial bootstrap route
+ * - callers are expected to read one Offer from the registration response and
+ *   later confirm it through `Order/_batch`
+ * - this is distinct from GW CORE embedded legacy subject registration helpers
+ *   that may persist an individual record without minting an Offer
+ *
+ * Shared reference:
+ * - `gdc-common-utils-ts/utils/gw-core-commercial-contract`
+ * - `GwCoreCommercialFlow.IndividualOrganizationCommercial`
  */
 export function resolveIndividualOnboardingGatewayPath(
   input: IndividualOnboardingGatewayRouteInput,
@@ -173,6 +196,15 @@ export function buildIndividualOrganizationRegistrationGatewayRequestBundle(
   } as BundleJsonApi;
 }
 
+/**
+ * Creates one plain HTTP submission descriptor for the current individual
+ * onboarding route.
+ *
+ * Envelope rule:
+ * - this helper does not create an outer DIDComm plaintext envelope
+ * - this helper does not create an outer encrypted DIDComm envelope
+ * - it only prepares URL/path/auth/content-type plus the HTTP JSON body
+ */
 export function createIndividualOnboardingGatewaySubmission(input: Readonly<{
   target: IndividualOnboardingGatewayTarget;
   route: IndividualOnboardingGatewayRouteInput;
