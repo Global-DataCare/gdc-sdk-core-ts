@@ -41,6 +41,10 @@ test('professional facade surface excludes employee lifecycle methods', () => {
   assert.equal(professionalSurface.includes(ActorFacadeMethods.createOrganizationEmployee), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.disableEmployee), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.purgeEmployee), false);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.getIdentitySameAs), true);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.getIdentityVC), true);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.buildIdentityVpPayload), true);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.buildUnsignedIdentityVpJwt), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.requestSmartToken), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.retrieveControllerCredentialsFromIca), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.ingestCommunicationAndUpdateIndex), true);

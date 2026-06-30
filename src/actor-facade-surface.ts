@@ -24,6 +24,8 @@ export const ActorFacadeMethods = Object.freeze({
   disableIndividualMember: 'disableIndividualMember',
   disableIndividualOrganization: 'disableIndividualOrganization',
   generateDigitalTwinFromSubjectData: 'generateDigitalTwinFromSubjectData',
+  getIdentitySameAs: 'getIdentitySameAs',
+  getIdentityVC: 'getIdentityVC',
   grantProfessionalAccess: 'grantProfessionalAccess',
   importIpsOrFhirAndUpdateIndex: 'importIpsOrFhirAndUpdateIndex',
   ingestCommunicationAndUpdateIndex: 'ingestCommunicationAndUpdateIndex',
@@ -45,6 +47,8 @@ export const ActorFacadeMethods = Object.freeze({
   searchOrganizationEmployees: 'searchOrganizationEmployees',
   startIndividualOrganization: 'startIndividualOrganization',
   submitAndPoll: 'submitAndPoll',
+  buildIdentityVpPayload: 'buildIdentityVpPayload',
+  buildUnsignedIdentityVpJwt: 'buildUnsignedIdentityVpJwt',
   upsertRelatedPersonAndPoll: 'upsertRelatedPersonAndPoll',
 } as const);
 
@@ -105,6 +109,10 @@ const actorFacadeSurfaceMatrix: Record<ActorKind, readonly ActorFacadeMethod[]> 
     ActorFacadeMethods.upsertRelatedPersonAndPoll,
   ],
   [ActorKinds.Professional]: [
+    ActorFacadeMethods.buildIdentityVpPayload,
+    ActorFacadeMethods.buildUnsignedIdentityVpJwt,
+    ActorFacadeMethods.getIdentitySameAs,
+    ActorFacadeMethods.getIdentityVC,
     ActorFacadeMethods.grantProfessionalAccess,
     ActorFacadeMethods.ingestCommunicationAndUpdateIndex,
     ActorFacadeMethods.requestSmartToken,
