@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-06-30
+
+### Added
+- Added one runtime-neutral SMART token request contract so Node and frontend
+  runtimes can share the portable fields of the current `smart/token` flow
+  without retyping the payload independently:
+  - `src/smart-token-contract.ts`
+  - `src/index.ts`
+
+### Changed
+- Expanded the shared professional facade vocabulary with identity-helper
+  methods that wrap the canonical common-utils VC/VP builders instead of
+  allowing Node and frontend facades to drift:
+  - `getIdentitySameAs(...)`
+  - `getIdentityVC(...)`
+  - `buildIdentityVpPayload(...)`
+  - `buildUnsignedIdentityVpJwt(...)`
+  in:
+  - `src/actor-facade-surface.ts`
+  - `tests/actor-facade-surface.test.mjs`
+- Updated the shared dependency target to `gdc-common-utils-ts@^2.1.2`.
+
 ## [2.1.0] - 2026-06-30
 
 ### Changed
