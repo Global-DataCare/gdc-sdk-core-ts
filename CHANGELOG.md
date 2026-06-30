@@ -4,21 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Added `docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md` as the canonical shared
-  lifecycle note for:
-  - legal organization controller recovery via `_issue`
-  - professional device activation/replacement
-  - individual controller recovery
-- Added `docs/101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md` with short
-  copy/paste-oriented snippets that use high-level builders and read helpers
-  instead of teaching raw GW payload parsing.
-- Linked the new lifecycle note from `README.md` and `ARCHITECTURE.md` so the
-  shared SDK layer exposes one neutral source of truth before runtime-specific
-  docs add route execution details.
-- Added `src/controller-device-lifecycle-readers.ts` so SDK callers can read
-  commercial offer ids and activation codes through shared
-  `getClaimsInFirstDataEntry(...)` / `getClaimsInBundleEntryAt(...)` helpers instead of repeating
-  `body.data[0].meta.claims` parsing in runtime code and docs.
+## [2.1.0] - 2026-06-30
+
+### Changed
+- Updated the shared dependency target to `gdc-common-utils-ts@^2.1.0`.
+- Removed the repository-local `TODO.md` backlog so roadmap tracking stays at
+  workspace level instead of inside the published package repo.
 
 ## [2.0.10] - 2026-06-29
 
