@@ -18,6 +18,27 @@ export {
 export type IndividualOrganizationLifecycleEditorInput =
   Partial<IndividualOrganizationLifecycleEditorState>;
 
+/**
+ * Canonical public lifecycle locator input for one hosted individual/family
+ * registration.
+ *
+ * Public naming intent:
+ * - prefer `individualEditor` because the business target is the individual or
+ *   family subject lifecycle
+ * - keep `organizationEditor` only as a deprecated alias while transport and
+ *   backend contracts still use the current `Organization` shape underneath
+ */
+export type IndividualOrganizationLifecycleInput = {
+  organizationClaims?: Record<string, unknown>;
+  individualEditor?: IndividualOrganizationLifecycleEditor;
+  /**
+   * @deprecated Use `individualEditor`.
+   */
+  organizationEditor?: IndividualOrganizationLifecycleEditor;
+  resourceId?: string;
+  dataType?: string;
+};
+
 export interface IndividualOrganizationLifecycleFacade {
   prepareLifecycleIndividualOrganization(initial?: IndividualOrganizationLifecycleEditorInput): IndividualOrganizationLifecycleEditor;
   prepareLifecycleIndividualOrganizationDisable(initial?: Omit<IndividualOrganizationLifecycleEditorInput, 'operation'>): IndividualOrganizationLifecycleEditor;
