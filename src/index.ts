@@ -2,6 +2,7 @@
 
 export * from './actor-model.js';
 export * from './actor-facade-surface.js';
+export * from './authority-resolver.js';
 export * from './app-identity.js';
 export * from './bootstrap-facade.js';
 export * from './communication-bundle-contracts.js';
