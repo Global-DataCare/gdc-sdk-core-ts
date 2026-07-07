@@ -1,3 +1,11 @@
+/**
+ * 101 note:
+ * - `gdc-common-utils-ts` owns the canonical profile authoring editors/readers.
+ * - This file starts after that shared authoring step and teaches the highest-level runtime-neutral `sdk-core` profile contract.
+ * - Do not make concrete wallet/profile transport or submit/poll runtime the main path here.
+ * - Read `docs/101-README.md` for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+ */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 

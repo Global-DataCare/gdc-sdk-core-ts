@@ -1,4 +1,12 @@
 // Employee 101: executable counterpart of `docs/101-EMPLOYEES.md`.
+/**
+ * 101 note:
+ * - `gdc-common-utils-ts` owns the canonical employee authoring editors/readers.
+ * - This file starts after that shared authoring step and teaches the highest-level runtime-neutral `sdk-core` employee surface.
+ * - Do not make concrete wallet/profile transport or submit/poll runtime the main path here.
+ * - Read `docs/101-README.md` for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+ */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -20,6 +28,22 @@ import {
 } from './support/employee-test-fixtures.mjs';
 
 test('101: employee draft and search semantics stay explicit', () => {
+  /**
+   * 101 boundary:
+   * - this test teaches the highest-level runtime-neutral employee contract
+   *   surface currently owned by `gdc-sdk-core-ts`
+   * - it intentionally stops before concrete profile/wallet transport and
+   *   before actor/runtime facades such as `OrganizationControllerSdk`
+   * - continue there after this file:
+   *   - `gdc-common-utils-ts/__tests__/101-employee-examples.test.ts`
+   *   - `gdc-sdk-node-ts/tests/101-organization-controller-lifecycle.test.mjs`
+   *   - `gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md`
+   *
+   * Teaching rule:
+   * - start from draft/editor/business intent
+   * - keep create, search, and purge explicit
+   * - do not teach raw wire payloads or controller/profile plumbing here
+   */
   const exactHistoricalSearch = buildEmployeeSearchBundle({
     claims: {
       [EmployeeClaimKeys.identifier]: ExampleEmployeeDirectory.doctorPurgedHistorical.identifier,

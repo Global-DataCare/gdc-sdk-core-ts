@@ -7,8 +7,10 @@ profile contracts, or high-level tests.
 Short rule:
 
 - `101` tests must be didactic and step by step
-- shared types and fixtures must come from `gdc-common-utils-ts` instead of
-  being re-invented locally as literals
+- `gdc-common-utils-ts` owns the canonical step-by-step editors/readers,
+  shared types, and fixtures
+- `gdc-sdk-core-ts` starts after that shared authoring step and exposes the
+  neutral business contracts and facades
 
 Runtime-neutral shared contracts and helpers for GDC SDK consumers.
 
@@ -80,7 +82,8 @@ Important:
 - Package-boundary guidance lives in
   [docs/101-SDK_PACKAGE_BOUNDARIES.md](./docs/101-SDK_PACKAGE_BOUNDARIES.md).
 - Onboarding rule across the repo family:
-  high-level surface first, lower-level builders second, raw wire payloads last.
+  common-utils authoring first, sdk-core contracts second, runtime-specific
+  wire payloads last.
 
 Shared example files to open while reading those guides:
 
@@ -251,7 +254,14 @@ What this package does not do:
 ### 3. Communication and document handling
 
 Use this when an app needs to build or read canonical `Communication` payloads
-and attached clinical documents.
+carrying an attached document bundle.
+
+The read path is:
+
+`document Bundle` with `Composition` first entry -> `Communication` -> `DIDComm/plain`
+
+Backend search remains a separate FHIR search-param story, for example with
+`Composition.section`.
 
 Main helpers:
 
@@ -559,9 +569,10 @@ Consent precedence in the shared model:
 
 ### IPS search through Communication
 
-For IPS document requests, the frontend/web app should create a FHIR
-`Communication` whose `Communication.content-reference` contains the relative
-FHIR search path for the index service.
+For IPS document requests, keep the search semantics separate from the
+transport envelope. The frontend/web app should still create a FHIR
+`Communication`, but the actual IPS search story is documented separately as
+FHIR search params such as `Composition.section`.
 
 ## Employee Contract
 
@@ -573,7 +584,7 @@ The shared bundle/editor mechanics for employee live in:
 - [gdc-common-utils-ts/docs/101-EMPLOYEE_ENTRY_EDITOR.md](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/docs/101-EMPLOYEE_ENTRY_EDITOR.md)
 
 - `Communication.content-reference`
-  stores what must be searched, for example the relative `Bundle` query path
+  stores the relative request reference used by the transport envelope
 - `Communication.recipient`
   is the logical/clinical conversation recipient, not the HTTP endpoint
 - DIDComm `to` / `aud`
@@ -588,6 +599,9 @@ Typical flow:
 4. place the `Communication` in a draft
 5. freeze the draft into an outbox job
 6. let the runtime/backend resolve the provider and send the envelope
+
+If you need the actual search semantics, read the common-utils 101 that
+documents the FHIR search-param story separately.
 
 See the executable example:
 

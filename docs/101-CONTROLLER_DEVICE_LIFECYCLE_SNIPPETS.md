@@ -1,5 +1,11 @@
 # Controller And Device Lifecycle Snippets
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This `101` is intentionally short and copy/paste oriented.
 
 Rule:

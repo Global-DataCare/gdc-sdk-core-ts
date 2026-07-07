@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Added one neutral cross-repo `101` user-story canon and linked the main
+  `101` reading path to it so shared/runtime docs keep the same
+  `ProfileRuntime -> LoadedProfileWorkspace -> actor facade -> business operation`
+  sequence:
+  - `docs/101-USER_STORY_CANON.md`
+  - `docs/101-README.md`
+  - `docs/101-SDK_FLOWS.md`
+- Clarified the employee `101` teaching boundary so `sdk-core` examples stay
+  focused on runtime-neutral drafts/semantics and explicitly link the
+  controller/runtime layer instead of drifting into transport/profile
+  explanations:
+  - `docs/101-EMPLOYEES.md`
+  - `tests/101-employees.test.mjs`
+- Expanded the shared actor-facade vocabulary so individual-side facades now
+  advertise the same identity-helper class of methods as the professional
+  facade, while keeping dependent-subject proof explicit on the controller
+  side only:
+  - `IndividualController`
+    - `getIdentitySameAs(...)`
+    - `getIdentityVC(...)`
+    - `getSubjectVC(...)`
+    - `buildIdentityVpPayload(...)`
+    - `buildUnsignedIdentityVpJwt(...)`
+  - `IndividualMember`
+    - `getIdentitySameAs(...)`
+    - `getIdentityVC(...)`
+    - `buildIdentityVpPayload(...)`
+    - `buildUnsignedIdentityVpJwt(...)`
+  in:
+  - `src/actor-facade-surface.ts`
+  - `tests/actor-facade-surface.test.mjs`
+
 ## [2.1.1] - 2026-06-30
 
 ### Added

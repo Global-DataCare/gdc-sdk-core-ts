@@ -1,5 +1,11 @@
 # Consent Communication 101
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This guide is only about the `sdk-core` step that comes after consent editing.
 
 Teaching rule for this `101`:
@@ -56,6 +62,10 @@ import {
   setSectionList,
 } from 'gdc-common-utils-ts/utils/consent-claim-helpers';
 import {
+  BundleEntryClaimsContext,
+  CommunicationClaimsContext,
+} from 'gdc-common-utils-ts/models/communication-attached-bundle-session';
+import {
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_CONSENT_IDENTIFIER,
   EXAMPLE_SUBJECT_DID,
@@ -68,11 +78,11 @@ import { ConsentDecisions } from 'gdc-common-utils-ts/models/consent-rule';
 
 const consentAccessEditor = createConsentAccessEditor({
   communicationClaims: {
-    '@context': 'org.hl7.fhir.r4',
+    '@context': CommunicationClaimsContext,
   },
 });
 
-let consentClaims = { '@context': 'org.hl7.fhir.api' };
+let consentClaims = { '@context': BundleEntryClaimsContext };
 consentClaims = setConsentIdentifier(consentClaims, EXAMPLE_CONSENT_IDENTIFIER);
 consentClaims = setConsentSubject(consentClaims, EXAMPLE_SUBJECT_DID);
 consentClaims = setConsentDecision(consentClaims, ConsentDecisions.Permit);
@@ -103,7 +113,7 @@ If you want the executable source for this editing step, open:
 
 Alternative low-level note:
 
-- the same `bundleEditor` can also use
+- the same `consentBundleEditor` can also use
   `getActiveEntryClaim(...)` / `setActiveEntryClaim(...)`
 - use that only when you need direct control over one claim in the selected
   active `Consent` entry
@@ -128,7 +138,7 @@ import {
 } from 'gdc-common-utils-ts/examples/shared';
 
 // Step 1.
-// communicationClaims already comes from common-utils bundleEditor.
+// communicationClaims already comes from common-utils consentBundleEditor.
 const draft = addClaimsResourceToDraft(
   createCommunicationDraft({
     subject: EXAMPLE_SUBJECT_DID,
@@ -172,7 +182,7 @@ already-authored `Communication` and queues it for transport.
 and communication resources. They are not the preferred 101 path for developers
 who only need:
 
-- `bundleEditor`
+- `consentBundleEditor`
 - consent claim setters/getters
 - `createCommunicationDraft(...)`
 - `createOutboxJobFromDraft(...)`

@@ -1,5 +1,11 @@
 # Employees 101
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This is the canonical employee-contract note for the SDK family.
 
 This `101` is the canonical functional note for employee semantics in
@@ -20,6 +26,40 @@ using:
 For the shortest executable reference, open:
 
 - [gdc-sdk-core-ts/tests/101-employees.test.mjs](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/tests/101-employees.test.mjs)
+
+## What This 101 Teaches
+
+This `101` teaches the highest-level runtime-neutral employee semantics owned
+by `sdk-core`:
+
+- employee draft authoring
+- create/search/purge bundle intent
+- canonical employee lifecycle semantics
+- how `sdk-core` wraps the shared employee editors without becoming a runtime
+
+## What This 101 Does Not Teach
+
+This file does not teach:
+
+- profile/wallet composition
+- DIDComm transport
+- controller/session/runtime submit-poll orchestration
+
+Those belong in adjacent layers:
+
+- editor/session mechanics:
+  [gdc-common-utils-ts/__tests__/101-employee-examples.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-employee-examples.test.ts)
+- controller/runtime facade:
+  [gdc-sdk-node-ts/tests/101-organization-controller-lifecycle.test.mjs](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/tests/101-organization-controller-lifecycle.test.mjs)
+- runtime map:
+  [gdc-sdk-node-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_INTEGRATION.md)
+
+Current canonical role note:
+
+- organization/subject controller examples should use the responsible-person
+  role token `RESPRSN` as the canonical current teaching value
+- do not revive older `ISCO-11xx` executive-director examples as the default
+  beginner narrative
 
 That `101` stays intentionally small. Broader coverage lives in:
 

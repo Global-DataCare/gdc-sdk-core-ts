@@ -52,9 +52,21 @@ test('professional facade surface excludes employee lifecycle methods', () => {
 });
 
 test('individual-side facade surface owns related-person management and not organization employee lifecycle', () => {
+  const individualControllerSurface = getActorFacadeMethods(ActorKinds.IndividualController);
+  const individualMemberSurface = getActorFacadeMethods(ActorKinds.IndividualMember);
   assert.equal(actorKindCanManageRelatedPersons(ActorKinds.IndividualController), true);
   assert.equal(actorKindCanManageRelatedPersons(ActorKinds.IndividualMember), true);
   assert.equal(actorKindCanManageRelatedPersons(ActorKinds.OrganizationEmployee), false);
+  assert.equal(individualControllerSurface.includes(ActorFacadeMethods.getIdentitySameAs), true);
+  assert.equal(individualControllerSurface.includes(ActorFacadeMethods.getIdentityVC), true);
+  assert.equal(individualControllerSurface.includes(ActorFacadeMethods.getSubjectVC), true);
+  assert.equal(individualControllerSurface.includes(ActorFacadeMethods.buildIdentityVpPayload), true);
+  assert.equal(individualControllerSurface.includes(ActorFacadeMethods.buildUnsignedIdentityVpJwt), true);
+  assert.equal(individualMemberSurface.includes(ActorFacadeMethods.getIdentitySameAs), true);
+  assert.equal(individualMemberSurface.includes(ActorFacadeMethods.getIdentityVC), true);
+  assert.equal(individualMemberSurface.includes(ActorFacadeMethods.buildIdentityVpPayload), true);
+  assert.equal(individualMemberSurface.includes(ActorFacadeMethods.buildUnsignedIdentityVpJwt), true);
+  assert.equal(individualMemberSurface.includes(ActorFacadeMethods.getSubjectVC), false);
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.IndividualController,
     ActorFacadeMethods.upsertRelatedPersonAndPoll,

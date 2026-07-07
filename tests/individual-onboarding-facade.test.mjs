@@ -98,7 +98,7 @@ test('individual onboarding facade builds merged draft claims from KYC plus form
   assert.equal(result.claims['org.schema.Organization.owner.telephone'], EXAMPLE_KYC_CONTROLLER_TELEPHONE);
 });
 
-test('individual onboarding facade emits claims-first DocumentReference draft output for onboarding PDFs', () => {
+test('individual onboarding facade emits DocumentReference draft output for onboarding PDFs', () => {
   const result = facade.buildDraft({
     kyc: EXAMPLE_KYC_PAYLOAD,
     formFields: {

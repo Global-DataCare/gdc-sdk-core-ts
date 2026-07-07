@@ -1,3 +1,10 @@
+/**
+ * 101 note:
+ * - Teach the highest-level runtime-neutral `sdk-core` surface for this topic.
+ * - Do not make concrete wallet/profile transport or submit/poll runtime the main path here.
+ * - Read `docs/101-README.md` for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+ */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -27,6 +34,7 @@ import {
   MedicationStatementClaim,
   MedicationStatementClaimsFhirApiExtended,
 } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/medication-statement-claims.js';
+import { BundleEntryClaimsContext } from '../../gdc-common-utils-ts/dist/models/communication-attached-bundle-session.js';
 
 import {
   CommunicationClaims,
@@ -186,7 +194,7 @@ test('101: sdk-core resource claim classes stay thin and discoverable', () => {
       removeActorRoleList(
         removeActorIdentifierList(
           {
-            '@context': 'org.hl7.fhir.api',
+            '@context': BundleEntryClaimsContext,
             [ClaimConsent.actorIdentifier]: [
               EXAMPLE_EMAIL_PROFESSIONAL,
               EXAMPLE_PROVIDER_ORGANIZATION_DID,

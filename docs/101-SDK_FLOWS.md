@@ -1,5 +1,11 @@
 # SDK Flows 101
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface after shared authoring in `gdc-common-utils-ts`.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This guide explains the main GW/GDC flows through SDK usage, step by step, with
 links to the shared example files that define the actual payload data.
 
@@ -10,7 +16,7 @@ Teaching rule for this `101`:
 - separate create/search/lifecycle when describing employee flows
 - use lower-level wire details only after the main journey is clear
 
-Use this when you are new to the SDK family and need to answer:
+Use this when you already have the common-utils authoring shape and need to answer:
 
 - which flow starts first
 - which function/method/class is used at each step
@@ -55,6 +61,13 @@ The most important real initialization steps are:
 - frontend session bootstrap:
   [`initializeSession(...)` in gdc-sdk-front-ts/docs/101-SDK_INTEGRATION.md](https://github.com/Global-DataCare/gdc-sdk-front-ts/blob/main/docs/101-SDK_INTEGRATION.md)
 
+Canonical runtime reminder:
+
+- the unlocked end-user profile entrypoint is `ProfileRuntime`
+- this document starts after that runtime entrypoint
+- `sdk-core` should not be taught as if business payloads were the first step
+  before profile load/unlock
+
 This file is the business-flow map. Those two files are the runtime
 initialization manuals.
 
@@ -69,6 +82,22 @@ Initialization split to keep explicit:
   identifies the local device/channel/runtime that owns transport keys
 - actor DIDs
   identify human/domain actors
+
+Artifact anchoring split to keep explicit:
+
+- `DocumentReference.contenthash`
+  is the canonical CID/hash for attachment-style artifacts
+- `DocumentReference.identifier`
+  stays as the business identifier and does not become the hash key
+- sector/jurisdiction routing belongs to the runtime context that calls the
+  backend, not to the claim helpers themselves
+- when a provider resolver exists upstream, it should derive
+  `countryAddress`/`makesOffer.category` first and only then call the SDK;
+  if that resolution fails, the caller should fall back to the existing
+  provider/index sector and jurisdiction context
+
+The common-utils layer can build the artifact payload, but it does not decide
+which blockchain channel receives it.
 
 ## Documentation And SDK Usage Rules
 
@@ -113,9 +142,9 @@ For communication/index flows, also keep this explicit:
 - `Communication.contentdata` is the canonical claim for embedded payload data
 - versioned FHIR shapes are optional projections or compatibility inputs
 
-### 2. Prefer builders/helpers over hand-shaped nested objects
+### 2. Prefer shared builders/readers over hand-shaped nested objects
 
-If a value can be built by a helper, show the helper:
+If a value can be built by a shared authoring helper, show that helper:
 
 - `buildControllerBindingInput(...)`
 - `buildOrganizationActivationRequest(...)`

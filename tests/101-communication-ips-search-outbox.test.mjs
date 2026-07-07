@@ -1,3 +1,11 @@
+/**
+ * 101 note:
+ * - `gdc-common-utils-ts` owns the canonical communication/search authoring editors/readers.
+ * - This file starts after that shared authoring step and teaches the highest-level runtime-neutral `sdk-core` outbox surface.
+ * - Do not make concrete wallet/profile transport or submit/poll runtime the main path here.
+ * - Read `docs/101-README.md` for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+ */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -28,6 +36,14 @@ import {
 } from '../dist/index.js';
 
 test('101: IPS search Communication becomes a draft and outbox job', () => {
+  // Canonical boundary:
+  // - health-document authoring itself is taught in common-utils:
+  //   `101-communication-medication-document.test.ts`
+  // - DIDComm/plain readback is taught in:
+  //   `101-communication-profile-wallet-e2e.test.ts`
+  // - this file starts later, once one business Communication already exists
+  //   and must be staged into one runtime-neutral draft/outbox job.
+
   // Step 1.
   // The requester already knows which individual summary is being requested.
   const summaryOperationRequestParameters =
@@ -41,9 +57,10 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     createSummaryOperationRequestParametersResource(summaryOperationRequestParameters);
 
   // Step 3.
-  // current Communication flows flatten the same semantic parameters into the
-  // relative Bundle search path that will later live in
-  // Communication.content-reference.
+  // current Communication flows keep the search reference separate from the
+  // document bundle story. The relative path later lives in
+  // Communication.content-reference, while the search semantics stay in the
+  // FHIR search-param story.
   const summaryOperationRequestReferencePath =
     createSummaryOperationRequestReferencePath(summaryOperationRequestParameters);
 
@@ -58,7 +75,7 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
 
   // Step 5.
   // common-utils builds the auditable Communication claims that carry the IPS
-  // search request in Communication.content-reference.
+  // request envelope.
   const communicationClaims = communication.newIpsSummarySearchCommunication({
     subjectId: EXAMPLE_SUBJECT_DID,
     requesterId: EXAMPLE_PROFESSIONAL_DID,

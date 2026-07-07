@@ -1,11 +1,17 @@
 # IPS Communication Outbox 101
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This guide covers only the `sdk-core` layer for IPS requests.
 
 Teaching rule for this `101`:
 
 - start from the highest-level request object first
-- separate semantic request building from transport/container rendering
+- keep the FHIR search-param story separate from the transport/container render
 - explain lower-level search/container details only after the main flow is clear
 - do not start from raw wire payloads
 
@@ -88,7 +94,8 @@ Why `Communication` still uses a relative `_search?...` reference:
 So for new developers, the safe mental model is:
 
 - `Communication` = auditable request envelope with a search reference
-- `Bundle` = actual FHIR search operation payload
+- `Bundle` = actual FHIR search operation payload, with the search semantics
+  still described by FHIR search params such as `Composition.section`
 
 ## Step By Step
 

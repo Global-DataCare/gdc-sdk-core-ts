@@ -1,5 +1,11 @@
 # Resource Claims 101
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This guide shows the simple `sdk-core` facade layer for flat project-specific
 claims carried by FHIR-like resources.
 
@@ -18,6 +24,16 @@ Use these classes when developers or AI agents want:
 
 The classes below are thin wrappers over the canonical helpers in
 `gdc-common-utils-ts`.
+
+For attachment-heavy flows, the shared helpers can also prepare a
+blockchain-ready `DocumentReference` projection:
+
+- `DocumentReference.contenthash` carries the content CID/hash
+- `DocumentReference.identifier` remains the business identifier
+- the runtime decides where that artifact is written on-chain
+- upstream provider metadata should resolve sector and jurisdiction before the
+  SDK call, with fallback to the provider/index context when that resolution
+  cannot be computed
 
 Executable reference:
 
@@ -127,5 +143,5 @@ These classes do not replace `common-utils`.
   is still the source of truth for claim semantics
 - `gdc-sdk-core-ts`
   provides a thinner, more discoverable facade for apps, portals, and AI agents
-- `bundleEditor`
+- `clinicalBundleEditor`
   can consume the resulting `toClaims()` output directly

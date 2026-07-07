@@ -1,5 +1,11 @@
 # SDK Package Boundaries
 
+> 101 note
+> - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
+> - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.
+> - Read [101-README.md](./101-README.md) for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+
+
 This document explains why the SDK family is split across `gdc-sdk-core-ts`,
 `gdc-sdk-node-ts`, and `gdc-sdk-front-ts`, what each package owns, and why the
 actor-scoped facades exist.
