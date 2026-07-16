@@ -14,14 +14,15 @@ import {
   buildIndividualOrganizationRegistrationGatewayRequestBundle,
   createIndividualOnboardingEditor,
   createIndividualOnboardingGatewaySubmission,
-  createRelationshipChannelOtpChallengeSummary,
-  createRelationshipChannelOtpConfirmInput,
-  createRelationshipChannelOtpStartInput,
   IndividualOnboardingGatewayOperation,
   resolveIndividualOnboardingGatewayPath,
 } from '../dist/index.js';
 import {
+  buildIndividualOnboardingAcceptanceCredential,
+} from 'gdc-common-utils-ts/utils/individual-onboarding-acceptance-credential';
+import {
   EXAMPLE_DEMO_PORTAL_ID_TOKEN,
+  EXAMPLE_CONTROLLER_DID,
   EXAMPLE_FORM_CONTROLLER_PHONE,
   EXAMPLE_FORM_SUBJECT_IDENTIFIER_VALUE,
   EXAMPLE_FORM_SUBJECT_PHONE,
@@ -31,9 +32,7 @@ import {
   EXAMPLE_KYC_CONTROLLER_GIVEN_NAME,
   EXAMPLE_KYC_CONTROLLER_IDENTIFIER,
   EXAMPLE_KYC_CONTROLLER_TELEPHONE,
-  EXAMPLE_OTP_CHALLENGE_ID,
-  EXAMPLE_OTP_CODE,
-  EXAMPLE_OTP_INVITATION_ID,
+  EXAMPLE_LEGAL_ORGANIZATION_TAX_ID,
   EXAMPLE_PDF_CONSENT_DATE,
   EXAMPLE_SERVICE_PROVIDER_DOMAIN,
   EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME,
@@ -44,7 +43,11 @@ import {
   EXAMPLE_TENANT_SERVICE_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 import {
+  EXAMPLE_ORG_CONTROLLER_SIGNING_KEY_ID,
+} from 'gdc-common-utils-ts/examples/ica-activation-proof';
+import {
   ClaimsOrganizationSchemaorg,
+  ClaimsServiceSchemaorg,
 } from 'gdc-common-utils-ts/constants/schemaorg';
 
 const EXAMPLE_KYC_PAYLOAD = Object.freeze({
@@ -61,10 +64,10 @@ const EXAMPLE_KYC_PAYLOAD = Object.freeze({
   controllerEmail: EXAMPLE_SELF_REGISTERED_INDIVIDUAL_EMAIL_NORMALIZED,
 });
 
-test('101: portal onboarding demo flow uses OTP outside GW CORE and then submits PDF draft + registration bundles with id_token', () => {
+test('101: portal onboarding demo flow submits a signed VC attachment plus minimal claims with id_token', () => {
   // Step 1.
-  // The portal already authenticated the controller and owns the Firebase-like
-  // id_token used for both GW CORE requests.
+  // The portal already authenticated the controller and owns the id_token used
+  // for both GW CORE requests.
   const idToken = EXAMPLE_DEMO_PORTAL_ID_TOKEN;
 
   // Step 2.
@@ -92,6 +95,19 @@ test('101: portal onboarding demo flow uses OTP outside GW CORE and then submits
   const draftClaims = onboardingEditor.buildClaims();
 
   // Step 4.
+  // The frontend/BFF builds the canonical onboarding VC from common-utils and
+  // keeps the profile signing material outside the GW request body.
+  const onboardingCredential = buildIndividualOnboardingAcceptanceCredential({
+    issuerDid: EXAMPLE_CONTROLLER_DID,
+    subjectDid: EXAMPLE_CONTROLLER_DID,
+    organizationTaxId: EXAMPLE_LEGAL_ORGANIZATION_TAX_ID,
+    profileKeyMaterial: EXAMPLE_ORG_CONTROLLER_SIGNING_KEY_ID,
+    validFrom: '2026-07-07T00:00:00Z',
+    representativeIdentifier: EXAMPLE_FORM_SUBJECT_IDENTIFIER_VALUE,
+    representativeRoleCode: 'RESPRSN',
+  });
+
+  // Step 5.
   // The front/BFF asks GW CORE to generate the fillable PDF draft.
   const pdfDraftBundle = buildIndividualOnboardingPdfDraftGatewayRequestBundle({
     subjectDid: EXAMPLE_SUBJECT_DID,
@@ -118,36 +134,16 @@ test('101: portal onboarding demo flow uses OTP outside GW CORE and then submits
     body: pdfDraftBundle,
   });
 
-  // Step 5.
-  // Demo mode: OTP is handled by the portal/backend, not by GW CORE.
-  // The backend starts the challenge and already knows the demo OTP that would
-  // normally be delivered by email or SMS.
-  const otpStart = createRelationshipChannelOtpStartInput({
-    invitationId: EXAMPLE_OTP_INVITATION_ID,
-    deliveryChannel: 'sms',
-    locale: 'es-ES',
-  });
-  const otpChallenge = createRelationshipChannelOtpChallengeSummary({
-    invitationId: EXAMPLE_OTP_INVITATION_ID,
-    challengeId: EXAMPLE_OTP_CHALLENGE_ID,
-    deliveryChannel: 'sms',
-    status: 'pending',
-    attemptsRemaining: 3,
-  });
-  const otpConfirm = createRelationshipChannelOtpConfirmInput({
-    invitationId: EXAMPLE_OTP_INVITATION_ID,
-    challengeId: EXAMPLE_OTP_CHALLENGE_ID,
-    code: EXAMPLE_OTP_CODE,
-  });
-
   // Step 6.
-  // After OTP confirmation, the portal backend submits the final
-  // IndividualOrganization registration bundle to GW CORE using the same
-  // controller session id_token. Demo mode does not require a real PDF
-  // signature here; the claim set is already complete and OTP was validated
-  // outside GW CORE.
+  // The final Organization/_transaction request carries the signed VC as the
+  // authoritative attachment and only minimal routing hints in the claims.
   const registrationBundle = buildIndividualOrganizationRegistrationGatewayRequestBundle({
-    claims: draftClaims,
+    claims: {
+      '@context': 'org.schema',
+      [ClaimsOrganizationSchemaorg.alternateName]: EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME,
+      [ClaimsServiceSchemaorg.category]: 'health-care',
+    },
+    verifiableCredential: onboardingCredential,
   });
   const registrationSubmission = createIndividualOnboardingGatewaySubmission({
     target: { providerDidWeb: EXAMPLE_TENANT_SERVICE_DID },
@@ -180,12 +176,13 @@ test('101: portal onboarding demo flow uses OTP outside GW CORE and then submits
     pdfDraftSubmission.body.data[0]?.resource?.meta?.formFields?.controllerAlternateName,
     EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME,
   );
-  assert.equal(otpStart.locale, 'es-ES');
-  assert.equal(otpChallenge.challengeId, EXAMPLE_OTP_CHALLENGE_ID);
-  assert.equal(otpConfirm.code, EXAMPLE_OTP_CODE);
   assert.equal(registrationSubmission.endpointUrl, `https://provider.example.org/${EXAMPLE_TENANT_IDENTIFIER}/cds-es/v1/health-care/individual/org.schema/Organization/_transaction`);
   assert.equal(
     registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsOrganizationSchemaorg.ownerEmail],
-    EXAMPLE_SELF_REGISTERED_INDIVIDUAL_EMAIL_NORMALIZED,
+    undefined,
   );
+  assert.equal(registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsOrganizationSchemaorg.alternateName], EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME);
+  assert.equal(registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsServiceSchemaorg.category], 'health-care');
+  assert.equal(registrationSubmission.body.attachments?.[0]?.credentialSubject?.hasOccupation?.identifier?.value, 'RESPRSN');
+  assert.equal(registrationSubmission.body.attachments?.[0]?.credentialSubject?.hasCredential?.material, EXAMPLE_ORG_CONTROLLER_SIGNING_KEY_ID);
 });

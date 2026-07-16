@@ -44,9 +44,10 @@ export type {
 export {
   buildEmployeeBatchEntry,
 } from 'gdc-common-utils-ts/utils/employee';
-export { BundleEditor } from 'gdc-common-utils-ts/utils/bundle-editor';
+export { BundleEditor } from 'gdc-common-utils-ts/utils/bundle-editor-core';
 export { BundleReader } from 'gdc-common-utils-ts/utils/bundle-reader';
-export { BundleEntryEditor, EmployeeEntryEditor } from 'gdc-common-utils-ts/utils/bundle-editor';
+export { BundleEntryEditor } from 'gdc-common-utils-ts/utils/bundle-entry-editor';
+export { EmployeeEntryEditor } from 'gdc-common-utils-ts/utils/employee-entry-editor';
 
 function normalizeEmployeeSearchClaims(
   claims?: EmployeeSearchBundleInput['claims'],

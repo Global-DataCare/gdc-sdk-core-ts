@@ -3,7 +3,7 @@
 > 101 note
 > - This is the neutral cross-repo user-story canon for the GDC SDK family.
 > - Use it to keep docs, tests, and examples aligned across `common-utils`, `sdk-core`, `sdk-front`, `sdk-node`, and GW docs.
-> - This document is runtime- and product-neutral. It does not assume UHC, UNID, voice, chat, or one specific frontend.
+> - This document is runtime- and product-neutral. It does not assume specific frontend.
 
 ## Canonical Story
 
@@ -65,7 +65,7 @@ They may add concepts such as:
 
 - channel backend port
 - reminder orchestration
-- voice/chat UX flow
+- UX flow
 - product-specific permission overlays
 
 But those layers must sit on top of the same base sequence:

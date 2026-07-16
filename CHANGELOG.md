@@ -2,9 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.2.2] - 2026-07-13
 
 ### Changed
+- Bumped the core runtime-neutral package for the hosted `did:web` routing
+  compatibility release and updated the shared utility dependency to
+  `gdc-common-utils-ts@^2.2.2`.
+
+## [Unreleased]
+
+### Added
+- Added deterministic transport rendering for one canonical
+  `CommunicationOutboxJob`, including FHIR JSON, DIDComm plaintext,
+  `request=<JWE>` submit/poll and `response=<JWE>` decoding contracts.
+
+### Changed
+- Aligned the canonical actor facade matrix so consent-scoped individual
+  members and professionals expose clinical Bundle/IPS reads, while members
+  may submit the shared Communication outbox when GW authorization permits it.
 - Added one neutral cross-repo `101` user-story canon and linked the main
   `101` reading path to it so shared/runtime docs keep the same
   `ProfileRuntime -> LoadedProfileWorkspace -> actor facade -> business operation`
@@ -94,7 +109,7 @@ All notable changes to this project will be documented in this file.
   - `src/index.ts`
   - `tests/iwallet-unified-compat.test.mjs`
 - Added a runtime-neutral `UserProfileIndex` contract for local profile
-  selection before PIN unlock in voice, web, and app channels:
+  selection before PIN unlock in web and app channels:
   - `src/user-profile-index.ts`
   - `tests/user-profile-index.test.mjs`
 - Restricted shared lookup keys to hashed contact tokens only:

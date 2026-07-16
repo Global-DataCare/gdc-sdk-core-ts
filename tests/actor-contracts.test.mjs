@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  EXAMPLE_PROFILE_ORGANIZATION_DID,
+  EXAMPLE_PROFILE_SESSION_INPUT,
+} from 'gdc-common-utils-ts/examples';
+import {
   ActorCapabilities,
   ActorKinds,
   expandActorSessionDescriptorToFacades,
@@ -20,8 +24,8 @@ test('expandActorSessionDescriptorToFacades splits a family session into scoped 
       ActorCapabilities.ConsentGrantProfessionalAccess,
     ],
     appType: 'Family',
-    profileId: 'profile-family-1',
-    profileDid: 'did:web:family:controller',
+    profileId: EXAMPLE_PROFILE_SESSION_INPUT.profileId.trim(),
+    profileDid: EXAMPLE_PROFILE_ORGANIZATION_DID,
     role: 'controller',
   });
 
@@ -37,8 +41,8 @@ test('expandActorSessionDescriptorToFacades splits a family session into scoped 
         ActorCapabilities.ConsentGrantProfessionalAccess,
       ],
       appType: 'Family',
-      profileId: 'profile-family-1',
-      profileDid: 'did:web:family:controller',
+      profileId: EXAMPLE_PROFILE_SESSION_INPUT.profileId.trim(),
+      profileDid: EXAMPLE_PROFILE_ORGANIZATION_DID,
       role: 'controller',
     },
     {
@@ -49,8 +53,8 @@ test('expandActorSessionDescriptorToFacades splits a family session into scoped 
         ActorCapabilities.IndividualGenerateDigitalTwin,
       ],
       appType: 'Family',
-      profileId: 'profile-family-1',
-      profileDid: 'did:web:family:controller',
+      profileId: EXAMPLE_PROFILE_SESSION_INPUT.profileId.trim(),
+      profileDid: EXAMPLE_PROFILE_ORGANIZATION_DID,
       role: 'controller',
     },
   ]);

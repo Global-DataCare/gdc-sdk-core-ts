@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { EXAMPLE_SERVICE_PUBLIC_DID } from 'gdc-common-utils-ts/examples';
 import { createStaticDiscoveryFacade } from '../dist/index.js';
 
 test('static discovery facade returns seeded did documents and provider entries', async () => {
-  const providerDid = 'did:web:public.acme.org';
+  const providerDid = EXAMPLE_SERVICE_PUBLIC_DID;
   const facade = createStaticDiscoveryFacade({
     didDocuments: {
       [providerDid]: { id: providerDid },

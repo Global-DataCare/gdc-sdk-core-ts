@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { EXAMPLE_CONTROLLER_DID } from 'gdc-common-utils-ts/examples';
 import { createBootstrapFacade, ServiceCapability } from '../dist/index.js';
 import { serializeServiceCapabilityTokens } from 'gdc-common-utils-ts/constants/service-capabilities';
 
@@ -10,7 +11,7 @@ test('bootstrap facade builds canonical activation payload and warns on deprecat
   const payload = facade.buildOrganizationActivationRequest({
     vpToken: 'header.payload.signature',
     controller: {
-      did: 'did:web:people.example.org:controllers:primary',
+      did: EXAMPLE_CONTROLLER_DID,
       publicKeyJwk: { kid: 'controller-sig-001' },
     },
     organizationCredential: { id: 'legacy-org' },
@@ -18,7 +19,7 @@ test('bootstrap facade builds canonical activation payload and warns on deprecat
   const validation = facade.validateActivationRequest(payload);
 
   assert.equal(payload.vp_token, 'header.payload.signature');
-  assert.equal(payload.controller?.did, 'did:web:people.example.org:controllers:primary');
+  assert.equal(payload.controller?.did, EXAMPLE_CONTROLLER_DID);
   assert.equal(validation.ok, true);
   assert.deepEqual(validation.warnings.map((issue) => issue.code), ['deprecated-organization-credential']);
 });

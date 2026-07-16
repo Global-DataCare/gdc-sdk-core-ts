@@ -1,6 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import type { BundleJsonApi } from 'gdc-common-utils-ts/models/bundle';
+import type { VerifiableCredentialV2 } from 'gdc-common-utils-ts/models/verifiable-credential';
 import type {
   IndividualFormTemplateFields,
   IndividualOnboardingPdfTemplateInput,
@@ -63,7 +64,8 @@ export type IndividualOnboardingPdfDraftGatewayRequestInput = Readonly<{
 }>;
 
 export type IndividualOrganizationRegistrationGatewayRequestInput = Readonly<{
-  claims: Record<string, unknown>;
+  claims?: Record<string, unknown>;
+  verifiableCredential?: VerifiableCredentialV2;
   attachments?: unknown[];
 }>;
 
@@ -180,6 +182,11 @@ export function buildIndividualOnboardingPdfDraftGatewayRequestBundle(
 export function buildIndividualOrganizationRegistrationGatewayRequestBundle(
   input: IndividualOrganizationRegistrationGatewayRequestInput,
 ): BundleJsonApi {
+  const attachments = [
+    ...(input.verifiableCredential ? [input.verifiableCredential] : []),
+    ...(Array.isArray(input.attachments) ? input.attachments : []),
+  ];
+
   return {
     resourceType: 'Bundle',
     type: 'collection',
@@ -187,12 +194,10 @@ export function buildIndividualOrganizationRegistrationGatewayRequestBundle(
     data: [{
       type: 'Family-registration-form-v1.0',
       meta: {
-        claims: input.claims,
+        ...(input.claims ? { claims: input.claims } : {}),
       },
     }],
-    ...(Array.isArray(input.attachments) && input.attachments.length > 0
-      ? { attachments: input.attachments }
-      : {}),
+    ...(attachments.length > 0 ? { attachments } : {}),
   } as BundleJsonApi;
 }
 

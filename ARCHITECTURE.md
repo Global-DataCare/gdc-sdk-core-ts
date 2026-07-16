@@ -15,6 +15,14 @@ This repository is the canonical place for:
 - SDK-level orchestration contracts
 - shared input/output types reused by multiple runtimes
 
+Atomicity rule for batch-based clinical flows:
+
+- one day-level vital-sign batch is one atomic `Communication` payload unit
+- several day batches for the same actor are a collection of atomic batch
+  artifacts, comparable to consent or appointment bundles
+- keep the assistant flow at batch granularity; do not flatten it into one
+  write per observation
+
 Canonical lifecycle note for actor/device recovery boundaries:
 
 - [docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md](./docs/ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md)

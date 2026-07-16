@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  EXAMPLE_CONTROLLER_DID,
+  EXAMPLE_GENERIC_SUBJECT_DID,
+  EXAMPLE_TENANT_IDENTIFIER,
+} from 'gdc-common-utils-ts/examples';
+
+import {
   createRelationshipChannelInvitationInput,
   createRelationshipChannelInvitationSummary,
   createRelationshipChannelOtpChallengeSummary,
@@ -15,10 +21,10 @@ import {
 
 test('relationship access builders normalize shared invitation and OTP payloads', () => {
   const invitation = createRelationshipChannelInvitationInput({
-    tenantId: ' acme ',
+    tenantId: ` ${EXAMPLE_TENANT_IDENTIFIER} `,
     jurisdiction: 'es',
     sector: 'health-care',
-    subjectId: ' did:web:subject:001 ',
+    subjectId: ` ${EXAMPLE_GENERIC_SUBJECT_DID} `,
     actorKind: 'related-person',
     actorIdentifier: ' tel:+34600000111 ',
     deliveryChannel: 'phone',
@@ -28,11 +34,11 @@ test('relationship access builders normalize shared invitation and OTP payloads'
 
   const summary = createRelationshipChannelInvitationSummary({
     invitationId: ' inv-001 ',
-    tenantId: 'acme',
-    subjectId: 'did:web:subject:001',
+    tenantId: EXAMPLE_TENANT_IDENTIFIER,
+    subjectId: EXAMPLE_GENERIC_SUBJECT_DID,
     subjectKind: 'animal',
     actorKind: 'professional',
-    actorIdentifier: ' did:web:vet:001 ',
+    actorIdentifier: ` ${EXAMPLE_CONTROLLER_DID} `,
     deliveryChannel: 'app',
     status: 'otp_pending',
   });
@@ -57,7 +63,7 @@ test('relationship access builders normalize shared invitation and OTP payloads'
     attemptsRemaining: 3.7,
   });
 
-  assert.equal(invitation.tenantId, 'acme');
+  assert.equal(invitation.tenantId, EXAMPLE_TENANT_IDENTIFIER);
   assert.equal(invitation.jurisdiction, 'ES');
   assert.equal(invitation.actorIdentifier, 'tel:+34600000111');
   assert.equal(summary.subjectKind, 'animal');
@@ -90,8 +96,8 @@ test('relationship access builders normalize PIN and local-key payloads', () => 
 
   const localKey = createRelationshipLocalKeyEnvelope({
     relationshipId: ' rel-001 ',
-    actorIdentifier: ' did:web:actor:001 ',
-    subjectId: ' did:web:subject:001 ',
+    actorIdentifier: ` ${EXAMPLE_CONTROLLER_DID} `,
+    subjectId: ` ${EXAMPLE_GENERIC_SUBJECT_DID} `,
     subjectKind: 'person',
     channel: 'app',
     wrappedLocalAccessKey: ' wrapped ',

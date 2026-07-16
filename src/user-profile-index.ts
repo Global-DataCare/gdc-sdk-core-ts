@@ -1,7 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 /**
- * Ordered local profile index used by voice, web, or app channels before a
+ * Ordered local profile index used by web or app channels before a
  * profile is unlocked.
  *
  * This contract is runtime-neutral and intentionally limited to profile lookup
@@ -38,8 +38,8 @@ export interface UserProfileIndex {
   /**
    * Timestamp of the last change applied to this ordered list.
    *
-   * The update may come from backend synchronization, portal reordering, voice
-   * onboarding, or local repair.
+   * The update may come from backend synchronization, portal reordering, or
+   * local repair.
    */
   updatedAt?: string;
 }
