@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-07-17
+
+### Changed
+- Updated the runtime-neutral SDK to consume `gdc-common-utils-ts@^2.3.1`,
+  including the canonical colon-delimited hosted-provider DID correction.
+
 ## [2.3.0] - 2026-07-16
 
 ### Added
