@@ -105,9 +105,8 @@ Executable reference:
 
 ```ts
 import {
-  addClaimsResourceToDraft,
-  createCommunicationDraft,
-  createOutboxJobFromDraft,
+  createCommMsgExtendedDraft,
+  createCommunicationOutboxJobFromCommMsgExtendedDraft,
 } from 'gdc-sdk-core-ts';
 import {
   communication,
@@ -127,22 +126,21 @@ const communicationClaims = communication.newIpsSummarySearchCommunication({
 
 // Step 2.
 // sdk-core stages it into a draft.
-const draft = addClaimsResourceToDraft(
-  createCommunicationDraft({
-    subject: EXAMPLE_SUBJECT_DID,
-    sender: EXAMPLE_PROFESSIONAL_DID,
-    recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
-  }),
-  'Communication',
-  communicationClaims,
-);
+const communicationDraft = createCommMsgExtendedDraft({
+  subject: EXAMPLE_SUBJECT_DID,
+  sender: EXAMPLE_PROFESSIONAL_DID,
+  recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
+  claims: communicationClaims,
+});
 
 // Step 3.
 // sdk-core freezes that draft into the outbox job used by runtime layers.
-const outboxJob = createOutboxJobFromDraft(draft);
+const communicationJob =
+  createCommunicationOutboxJobFromCommMsgExtendedDraft(communicationDraft);
 ```
 
-`outboxJob` is the main result developers should care about in this 101.
+`communicationJob` preserves `CommMsgExtended.body.data[].resource.meta.claims`.
+It contains no prebuilt FHIR or DIDComm envelope.
 
 ## Mental Model
 

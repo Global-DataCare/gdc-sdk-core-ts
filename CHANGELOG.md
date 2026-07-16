@@ -11,12 +11,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-07-16
+
 ### Added
+- Added a claims-first `CommMsgExtended` Communication draft/outbox contract,
+  explicit FHIR-resource attachment helper, built-in API/R4 projection and a
+  sector format-renderer extension point.
 - Added deterministic transport rendering for one canonical
   `CommunicationOutboxJob`, including FHIR JSON, DIDComm plaintext,
   `request=<JWE>` submit/poll and `response=<JWE>` decoding contracts.
 
 ### Changed
+- Communication transport now creates a DIDComm envelope only for DIDComm
+  plaintext or protected JWE profiles; `application/fhir+json` sends the
+  selected clinical body directly.
 - Aligned the canonical actor facade matrix so consent-scoped individual
   members and professionals expose clinical Bundle/IPS reads, while members
   may submit the shared Communication outbox when GW authorization permits it.

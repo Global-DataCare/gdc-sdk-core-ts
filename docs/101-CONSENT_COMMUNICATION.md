@@ -1,5 +1,10 @@
 # Consent Communication 101
 
+> Compatibility note: this consent-specific tutorial still exercises the
+> legacy FHIR-first draft adapter. New clinical document/IPS writes use the
+> claims-first `CommMsgExtended` flow in
+> [COMMUNICATION_INGESTION_LAYERS.md](./COMMUNICATION_INGESTION_LAYERS.md).
+
 > 101 note
 > - Teach here: the highest-level runtime-neutral `sdk-core` surface for this topic.
 > - Do not present concrete wallet/profile transport or submit/poll runtime as the main path here.

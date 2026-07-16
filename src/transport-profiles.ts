@@ -1,4 +1,12 @@
 import type { CommunicationOutboxJob } from './communication-draft.js';
+import {
+  isCommMsgExtendedCommunicationOutboxJob,
+  renderCommMsgExtendedClinicalBody,
+} from './comm-msg-extended-draft.js';
+import type {
+  CommMsgExtendedCommunicationOutboxJob,
+  CommunicationClinicalFormatRenderers,
+} from './comm-msg-extended-draft.js';
 
 /** Canonical wire profiles selected by a channel facade for one outbox entry. */
 export const TransportProfiles = Object.freeze({
@@ -32,6 +40,13 @@ export type RenderedTransportRequest = Readonly<{
   thid: string;
 }>;
 
+export type CommunicationOutboxRenderOptions = Readonly<{
+  /** `api` and `r4` are built in; product packages may register other formats. */
+  clinicalFormat?: string;
+  /** Sector-owned clinical projection renderers keyed by normalized format. */
+  formatRenderers?: CommunicationClinicalFormatRenderers;
+}>;
+
 /** Resolves the business thread id without inventing a second FHIR thread. */
 export function resolveTransportThreadId(profile: TransportProfile, payload: Record<string, unknown>): string | undefined {
   if (profile === TransportProfiles.FhirJson) {
@@ -43,27 +58,44 @@ export function resolveTransportThreadId(profile: TransportProfile, payload: Rec
 /**
  * Renders one canonical clinical outbox job for the selected HTTP wire profile.
  *
- * The application owns the semantic `CommunicationOutboxJob`; this function
- * owns the transport representation. Callers must not hand-build GW
- * `body.entry`, `request=<JWE>` or profile-specific content types.
+ * New applications own a claims-first `CommMsgExtended` outbox job; legacy
+ * FHIR-Communication jobs remain accepted temporarily. This function first
+ * renders `data[]` or `Bundle.entry[]`, then adds a DIDComm envelope only for
+ * DIDComm profiles. Callers must not hand-build either representation or JWE.
  */
 export async function renderCommunicationOutboxRequest(
-  job: CommunicationOutboxJob,
+  job: CommunicationOutboxJob | CommMsgExtendedCommunicationOutboxJob,
   profile: TransportProfile,
   secureAdapter?: SecureDidcommTransportAdapter,
+  options: CommunicationOutboxRenderOptions = {},
 ): Promise<RenderedTransportRequest> {
-  requireReadyCommunicationJob(job);
+  const canonicalMessageJob = isCommMsgExtendedCommunicationOutboxJob(job);
+  if (canonicalMessageJob) {
+    requireReadyCommMsgExtendedJob(job);
+  } else {
+    requireReadyCommunicationJob(job);
+  }
+  const clinicalBody = canonicalMessageJob
+    ? renderCommMsgExtendedClinicalBody(
+        job.payload,
+        options.clinicalFormat || 'api',
+        options.formatRenderers,
+      )
+    : requireEnvelopeBundle(job.envelope);
+  const didcommMessage = canonicalMessageJob
+    ? { ...job.payload, body: clinicalBody, thid: job.thid }
+    : { ...job.envelope, thid: job.thid };
 
   if (profile === TransportProfiles.FhirJson) {
-    const body = requireEnvelopeBundle(job.envelope);
+    const isFhirBundle = clinicalBody.resourceType === 'Bundle';
     return {
       profile,
       contentType: TransportProfiles.FhirJson,
       accept: 'application/fhir+json, application/json',
       body: {
-        ...body,
-        id: typeof body.id === 'string' && body.id.trim() ? body.id : job.thid,
-        thid: job.thid,
+        ...clinicalBody,
+        id: typeof clinicalBody.id === 'string' && clinicalBody.id.trim() ? clinicalBody.id : job.thid,
+        ...(isFhirBundle ? {} : { thid: job.thid }),
       },
       thid: job.thid,
     };
@@ -74,7 +106,7 @@ export async function renderCommunicationOutboxRequest(
       profile,
       contentType: TransportProfiles.DidcommPlainJson,
       accept: 'application/didcomm-plain+json, application/json',
-      body: { ...job.envelope, thid: job.thid },
+      body: didcommMessage,
       thid: job.thid,
     };
   }
@@ -83,7 +115,7 @@ export async function renderCommunicationOutboxRequest(
     if (!secureAdapter) {
       throw new Error('DidcommEncryptedForm transport requires a secure adapter.');
     }
-    const compactJwe = await secureAdapter.pack({ ...job.envelope, thid: job.thid });
+    const compactJwe = await secureAdapter.pack(didcommMessage);
     if (!String(compactJwe || '').trim()) {
       throw new Error('Secure DIDComm adapter returned an empty request JWE.');
     }
@@ -97,6 +129,13 @@ export async function renderCommunicationOutboxRequest(
   }
 
   throw new Error(`Unsupported transport profile '${String(profile)}'.`);
+}
+
+function requireReadyCommMsgExtendedJob(job: CommMsgExtendedCommunicationOutboxJob): void {
+  if (!String(job.thid || '').trim()) throw new Error('Communication outbox job requires thid.');
+  if (!Array.isArray(job.payload?.body?.data) || job.payload.body.data.length === 0) {
+    throw new Error('Communication outbox job requires CommMsgExtended body.data[].');
+  }
 }
 
 /**

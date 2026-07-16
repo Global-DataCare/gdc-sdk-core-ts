@@ -16,6 +16,7 @@ export * from './consent-access.js';
 export * from './consent-communication-operations.js';
 export * from './controller-device-lifecycle-readers.js';
 export * from './communication-draft.js';
+export * from './comm-msg-extended-draft.js';
 export * from './communication-document-facade.js';
 export * from './communication-outbox.js';
 export * from './communication-resource-helpers.js';

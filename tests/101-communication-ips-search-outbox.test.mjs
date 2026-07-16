@@ -9,9 +9,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  ResourceTypesFhirR4,
-} from '../../gdc-common-utils-ts/dist/constants/fhir-resource-types.js';
 import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
 import {
   communication,
@@ -29,10 +26,8 @@ import {
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
 import {
   CommunicationOutboxStatuses,
-  addClaimsResourceToDraft,
-  createCommunicationDraft,
-  createOutboxJobFromDraft,
-  isCommunicationDraftReady,
+  createCommMsgExtendedDraft,
+  createCommunicationOutboxJobFromCommMsgExtendedDraft,
 } from '../dist/index.js';
 
 test('101: IPS search Communication becomes a draft and outbox job', () => {
@@ -84,20 +79,18 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
   // Step 6.
   // sdk-core receives that already-built Communication and stages it in a
   // draft for transport/runtime layers.
-  const draft = addClaimsResourceToDraft(
-    createCommunicationDraft({
-      subject: EXAMPLE_SUBJECT_DID,
-      sender: EXAMPLE_PROFESSIONAL_DID,
-      recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
-    }),
-    ResourceTypesFhirR4.Communication,
-    communicationClaims,
-  );
+  const communicationDraft = createCommMsgExtendedDraft({
+    subject: EXAMPLE_SUBJECT_DID,
+    sender: EXAMPLE_PROFESSIONAL_DID,
+    recipient: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
+    claims: communicationClaims,
+  });
 
   // Step 7.
   // sdk-core freezes the draft into the outbox job that runtime layers will
   // actually send.
-  const job = createOutboxJobFromDraft(draft);
+  const communicationJob =
+    createCommunicationOutboxJobFromCommMsgExtendedDraft(communicationDraft);
 
   // Step 8.
   // Assertions:
@@ -112,15 +105,10 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     communicationClaims[CommunicationClaim.ContentReference],
     EXAMPLE_IPS_BUNDLE_REFERENCE_URL,
   );
-  assert.equal(isCommunicationDraftReady(draft), true);
-  assert.equal(job.status, CommunicationOutboxStatuses.Ready);
-  assert.equal(job.payload.resourceType, ResourceTypesFhirR4.Communication);
+  assert.equal(communicationJob.status, CommunicationOutboxStatuses.Ready);
   assert.equal(
-    typeof job.payload.payload?.[0]?.contentAttachment?.data === 'string',
-    true,
+    communicationJob.payload.body.data[0].resource.meta.claims[CommunicationClaim.ContentReference],
+    EXAMPLE_IPS_BUNDLE_REFERENCE_URL,
   );
-  assert.equal(
-    job.envelope?.body?.entry?.[0]?.request?.url,
-    `individual/org.hl7.fhir.r4/${ResourceTypesFhirR4.Communication}`,
-  );
+  assert.equal(communicationJob.envelope, undefined);
 });

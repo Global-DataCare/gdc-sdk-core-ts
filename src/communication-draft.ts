@@ -95,6 +95,8 @@ function resolveDraftNoteText(communication: CommunicationResourceLike): string 
  * queueing, or polling until converted into an outbox job.
  *
  * @param options Draft metadata plus the base `Communication` creation fields.
+ * @deprecated FHIR-first compatibility builder. New clinical writes should
+ * use `createCommMsgExtendedDraft(...)` and render the target format later.
  */
 export function createCommunicationDraft(
   options: CommunicationDraftCreationOptions,
@@ -135,6 +137,8 @@ export function isCommunicationDraftReady(draft: CommunicationDraft): boolean {
  * @param draft Communication draft being edited.
  * @param resource FHIR resource to attach.
  * @param options Attachment/document wrapping options.
+ * @deprecated The name hides attachment semantics and the FHIR-first target.
+ * Use `attachFhirResourceAsAttachmentToCommMsgExtendedDraft(...)`.
  */
 export function addFhirResourceToDraft(
   draft: CommunicationDraft,
@@ -182,6 +186,8 @@ export function addClaimsResourceToDraft(
  *
  * @param draft Draft to freeze.
  * @param options Optional job id, timestamps, initial status, and batch options.
+ * @deprecated This freezes a prebuilt batch envelope. Use
+ * `createCommunicationOutboxJobFromCommMsgExtendedDraft(...)` for new writes.
  */
 export function createOutboxJobFromDraft(
   draft: CommunicationDraft,
