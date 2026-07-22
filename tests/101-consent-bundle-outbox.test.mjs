@@ -1,64 +1,51 @@
 /**
- * 101 note:
- * - `gdc-common-utils-ts` owns the canonical consent authoring editors/readers.
- * - This file starts after that shared authoring step and teaches the highest-level runtime-neutral `sdk-core` consent/outbox surface.
- * - Do not make concrete wallet/profile transport or submit/poll runtime the main path here.
- * - Read `docs/101-README.md` for the ordered path, then continue upward into `gdc-sdk-node-ts` or `gdc-sdk-front-ts`.
+ * Teaching goal:
+ * - common-utils authors one permission Bundle with typed Consent entries
+ * - sdk-core attaches the completed Bundle to one claims-first Communication
+ * - the outbox freezes intent without choosing FHIR/DIDComm transport yet
+ *
+ * Fixtures come from common-utils. Runtime submit/poll is taught in Node/Front,
+ * and low-level `upsert*` compatibility helpers are outside this 101.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CommunicationCategoryCodes } from '../../gdc-common-utils-ts/dist/constants/communication.js';
-import { ResourceTypesFhirR4 } from '../../gdc-common-utils-ts/dist/constants/fhir-resource-types.js';
 import {
-  HealthcareActorRoles,
-  HealthcareBasicSections,
-  HealthcareConsentPurposes,
-  HealthcareKindOfDocumentSections,
-} from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
+  BundleEditableResourceTypes,
+  BundleEditor,
+  BundleOperations,
+  BundleTypes,
+  ConsentDecisions,
+} from '../../gdc-common-utils-ts/dist/index.js';
+import { HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
 import {
-  EXAMPLE_COMMUNICATION_UUID,
   EXAMPLE_CONSENT_DATE,
-  EXAMPLE_CONSENT_UUID,
   EXAMPLE_CONSENT_PERIOD_END,
   EXAMPLE_CONSENT_PERIOD_START,
+  EXAMPLE_CONSENT_UUID,
   EXAMPLE_EMAIL_PROFESSIONAL,
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
+  EXAMPLE_TENANT_SERVICE_DID,
 } from '../../gdc-common-utils-ts/dist/examples/shared.js';
-import { ConsentDecisions } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
-import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
-import { CommunicationAttachedBundleSession } from '../../gdc-common-utils-ts/dist/utils/communication-attached-bundle-session.js';
 
 import {
-  CommunicationClaims,
-  ConsentClaims,
   CommunicationOutboxStatuses,
-  addClaimsResourceToDraft,
-  createCommunicationDraft,
-  createOutboxJobFromDraft,
-  isCommunicationDraftReady,
+  attachBundleToCommMsgExtendedDraft,
+  createCommMsgExtendedDraft,
+  createCommunicationOutboxJobFromCommMsgExtendedDraft,
 } from '../dist/index.js';
 
-const CONSENT_COMMUNICATION_TOPIC = HealthcareKindOfDocumentSections['LP173394-0'].attributeValue;
+test('101: a completed permission Bundle becomes one claims-first Communication outbox job', () => {
+  // Step 1. The permission screen edits semantic Consent entries in one Bundle.
+  const permissionBundleEditor = new BundleEditor()
+    .setBundleOperation(BundleOperations.create)
+    .setBundleType(BundleTypes.batch)
+    .setAllowedResourceType(BundleEditableResourceTypes.consent);
 
-test('101: consent bundle Communication goes into draft and outbox step by step', () => {
-  // Step 1.
-  // Build the Communication wrapper and the Consent claims through the sdk-core
-  // fluent facade classes.
-  const communicationClaimsBase = CommunicationClaims.create()
-    .setIdentifier(EXAMPLE_COMMUNICATION_UUID)
-    .setSubject(EXAMPLE_SUBJECT_DID)
-    .setCategoryList([CommunicationCategoryCodes.Notification.attributeValue])
-    .setTopic(CONSENT_COMMUNICATION_TOPIC)
-    .toClaims();
-
-  const consentBundleEditor = new CommunicationAttachedBundleSession({
-    communicationClaims: communicationClaimsBase,
-  });
-
-  const consentClaims = ConsentClaims.create()
+  permissionBundleEditor
+    .newEntryAs(BundleEditableResourceTypes.consent)
     .setIdentifier(EXAMPLE_CONSENT_UUID)
     .setSubject(EXAMPLE_SUBJECT_DID)
     .setDecision(ConsentDecisions.Permit)
@@ -67,40 +54,30 @@ test('101: consent bundle Communication goes into draft and outbox step by step'
     .setPeriodEnd(EXAMPLE_CONSENT_PERIOD_END)
     .setPurposeList([HealthcareConsentPurposes.Treatment])
     .setActorIdentifierList([EXAMPLE_EMAIL_PROFESSIONAL])
-    .setActorRoleList([HealthcareActorRoles.GeneralistMedicalPractitioner])
-    .setSectionList([HealthcareBasicSections.HistoryOfMedicationUse.attributeValue])
-    .addSectionList([HealthcareBasicSections.Results.attributeValue])
-    .toClaims();
+    .setSectionList([
+      HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+      HealthcareBasicSections.Results.attributeValue,
+    ])
+    .doneEntry();
 
-  consentBundleEditor.upsertActiveConsentEntry({
-    claims: consentClaims,
-    fullUrl: `urn:uuid:${EXAMPLE_CONSENT_UUID}`,
+  const permissionBundle = permissionBundleEditor.buildJsonApi();
+
+  // Step 2. sdk-core creates the delivery Communication after authoring ends.
+  let draft = createCommMsgExtendedDraft({
+    subject: EXAMPLE_SUBJECT_DID,
+    sender: EXAMPLE_PROFESSIONAL_DID,
+    recipient: EXAMPLE_TENANT_SERVICE_DID,
   });
-  consentBundleEditor.saveAndReleaseActiveEntry();
+  draft = attachBundleToCommMsgExtendedDraft(draft, permissionBundle, {
+    attachmentTitle: 'permissions.json',
+  });
 
-  // Step 2.
-  // sdk-core receives that already-authored Communication and places it in a draft.
-  const communicationClaims = consentBundleEditor.getCommunicationClaims();
-  const draft = addClaimsResourceToDraft(
-    createCommunicationDraft({
-      subject: EXAMPLE_SUBJECT_DID,
-      sender: EXAMPLE_PROFESSIONAL_DID,
-      claims: communicationClaims,
-    }),
-    ResourceTypesFhirR4.Communication,
-    communicationClaims,
-  );
+  // Step 3. Freeze one transport-neutral outbox job.
+  const job = createCommunicationOutboxJobFromCommMsgExtendedDraft(draft);
 
-  // Step 3.
-  // Freeze the draft into the outbox job that runtime layers will actually use.
-  const job = createOutboxJobFromDraft(draft);
-
-  // Step 4.
-  // Assertions: sdk-core does not reinterpret the consent model. It just carries
-  // the already-built Communication into the outbox job.
-  assert.equal(isCommunicationDraftReady(draft), true);
+  // Step 4. The canonical payload stays claims-first and has no envelope.
+  assert.equal(permissionBundle.data.length, 1);
   assert.equal(job.status, CommunicationOutboxStatuses.Ready);
-  assert.equal(job.payload.resourceType, ResourceTypesFhirR4.Communication);
-  assert.equal(job.payload.meta?.claims?.[CommunicationClaim.Topic], CONSENT_COMMUNICATION_TOPIC);
-  assert.equal(job.payload.meta?.claims?.[CommunicationClaim.ContentAttachmentData] !== undefined, true);
+  assert.equal(job.payload.body.data.length, 1);
+  assert.equal(job.envelope, undefined);
 });

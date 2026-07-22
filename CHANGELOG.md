@@ -11,6 +11,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added `attachBundleToCommMsgExtendedDraft(...)` and executable contact and
+  permission 101s. One completed Bundle, whether it contains one or several
+  edits, is preserved as one claims-first Communication attachment before
+  clinical-format and transport rendering.
+- Added the runtime-neutral `ConfidentialStorageProfile` policy names. Core
+  defines the contract while sector products decide whether PQ storage is
+  mandatory; browsers cannot select a weaker server policy.
+- Added an interchangeable durable Communication outbox repository contract
+  and isolated memory reference adapter with idempotent enqueue, shared
+  emergency/high/normal/low priority, FIFO ordering, compare-and-swap updates,
+  retry scheduling, and honest pending/submitting/accepted/reconciling/
+  confirmed/terminal states. Remote acceptance is no longer conflated with
+  authoritative readback confirmation.
+
 ## [2.3.1] - 2026-07-17
 
 ### Changed

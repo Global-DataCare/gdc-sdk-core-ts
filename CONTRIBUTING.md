@@ -77,3 +77,18 @@ TDD rule:
 2. implement the minimum change to pass
 3. add the compatibility case if the API supports legacy inputs
 4. refactor without changing behavior
+# Contract literals and reusable evidence
+
+- Do not repeat protocol, domain, claim, status, priority, media-type,
+  cryptographic-profile or operation-kind string literals in consumers.
+  Export one typed constant and its derived union from the package that owns
+  the contract.
+- Tests must reuse exported examples/fixtures from the owning common or
+  product-core package when the value represents a shared contract. A test may
+  keep a local literal only when that value is deliberately unique to the
+  scenario and is not production vocabulary.
+- Keep contracts/interfaces, implementations/classes and pure builders or
+  projectors in separate modules. Public barrels may compose those modules;
+  product adapters must not duplicate them.
+- A behavior change is incomplete until a test proves consumers use the
+  exported contract and collision/unknown-value paths fail explicitly.

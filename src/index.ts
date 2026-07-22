@@ -19,6 +19,7 @@ export * from './communication-draft.js';
 export * from './comm-msg-extended-draft.js';
 export * from './communication-document-facade.js';
 export * from './communication-outbox.js';
+export * from './communication-outbox-utils.js';
 export * from './communication-resource-helpers.js';
 export * from './did-resolution-session.js';
 export * from './discovery/index.js';

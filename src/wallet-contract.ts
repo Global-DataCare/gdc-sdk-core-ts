@@ -160,6 +160,15 @@ export type WalletAlgorithm =
   | 'RSA-OAEP-256';
 
 /**
+ * Versioned confidential-storage policies understood by product adapters.
+ * Core defines the portable names; a product or tenant policy decides which
+ * one is mandatory and must never accept a downgrade from browser input.
+ */
+export type ConfidentialStorageProfile =
+  | 'confidential-basic-v1'
+  | 'confidential-pqc-v1';
+
+/**
  * Public description of one managed key in the wallet keyring.
  */
 export type WalletKeyDescriptor = {

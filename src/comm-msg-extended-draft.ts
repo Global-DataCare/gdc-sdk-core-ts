@@ -210,6 +210,26 @@ export function attachFhirResourceAsAttachmentToCommMsgExtendedDraft(
   return Object.freeze({ ...draft, message, updatedAt: new Date().toISOString() });
 }
 
+/**
+ * Attaches one completed Bundle as the single semantic payload of a delivery
+ * Communication draft.
+ *
+ * The Bundle may contain one immediate edit or several edits committed
+ * together. Its internal entries are not expanded into separate
+ * Communications. Clinical projection and transport are selected only after
+ * the draft is frozen into an outbox job.
+ */
+export function attachBundleToCommMsgExtendedDraft(
+  draft: CommMsgExtendedDraft,
+  bundle: Record<string, unknown>,
+  options: CommMsgExtendedAttachmentOptions = {},
+): CommMsgExtendedDraft {
+  if (bundle?.resourceType !== 'Bundle') {
+    throw new TypeError('Communication Bundle attachment requires resourceType=Bundle.');
+  }
+  return attachFhirResourceAsAttachmentToCommMsgExtendedDraft(draft, bundle, options);
+}
+
 /** Freezes one canonical `CommMsgExtended` draft into a local outbox job. */
 export function createCommunicationOutboxJobFromCommMsgExtendedDraft(
   draft: CommMsgExtendedDraft,

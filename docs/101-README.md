@@ -37,6 +37,8 @@ After that runtime entry, this repo is the place for:
   [tests/101-employees.test.mjs](../tests/101-employees.test.mjs)
 - communication outbox/runtime-neutral staging:
   [tests/101-communication-ips-search-outbox.test.mjs](../tests/101-communication-ips-search-outbox.test.mjs)
+- durable outbox scheduling, idempotency, and honest confirmation:
+  [tests/101-durable-communication-outbox.test.mjs](../tests/101-durable-communication-outbox.test.mjs)
 - profile runtime contracts:
   [tests/101-profile-runtime.test.mjs](../tests/101-profile-runtime.test.mjs)
 
@@ -76,6 +78,7 @@ Lower-layer canonical references:
 
 - [tests/101-employees.test.mjs](../tests/101-employees.test.mjs)
 - [tests/101-communication-ips-search-outbox.test.mjs](../tests/101-communication-ips-search-outbox.test.mjs)
+- [tests/101-durable-communication-outbox.test.mjs](../tests/101-durable-communication-outbox.test.mjs)
 - [tests/101-consent-bundle-outbox.test.mjs](../tests/101-consent-bundle-outbox.test.mjs)
 - [tests/101-profile-runtime.test.mjs](../tests/101-profile-runtime.test.mjs)
 

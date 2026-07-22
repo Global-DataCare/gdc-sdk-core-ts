@@ -38,11 +38,10 @@ Use this together with:
 Keep the split simple:
 
 - `common-utils`
-  builds the canonical claims model for the consent communication, including
-  the consent payload carried semantically inside `resource.meta.claims`
+  edits one permission `Bundle` containing one or several `Consent` resources
 - `sdk-core`
-  takes that already-built `Communication` and turns it into a draft and then
-  into an outbox job
+  attaches that completed Bundle to a claims-first `Communication` draft and
+  freezes one transport-neutral outbox job
 
 If a developer only needs to edit one consent, they should stop at
 `common-utils`.
@@ -52,77 +51,60 @@ layer.
 
 ## Step 1. Consent Editing In `common-utils`
 
-Before the `sdk-core` draft/outbox step, the consent `Communication` is edited
-at the higher level in `gdc-common-utils-ts`.
+Before the `sdk-core` draft/outbox step, the permission `Bundle` is edited at
+the higher level in `gdc-common-utils-ts`.
 
 Minimal example:
 
 ```ts
-import { createConsentAccessEditor } from 'gdc-common-utils-ts/utils/communication-attached-bundle-session';
 import {
-  setConsentDecision,
-  setConsentIdentifier,
-  setConsentSubject,
-  setPurposeList,
-  setSectionList,
-} from 'gdc-common-utils-ts/utils/consent-claim-helpers';
-import {
-  BundleEntryClaimsContext,
-  CommunicationClaimsContext,
-} from 'gdc-common-utils-ts/models/communication-attached-bundle-session';
-import {
-  EXAMPLE_PROFESSIONAL_DID,
-  EXAMPLE_CONSENT_IDENTIFIER,
-  EXAMPLE_SUBJECT_DID,
-} from 'gdc-common-utils-ts/examples/shared';
+  BundleEditableResourceTypes,
+  BundleEditor,
+  BundleOperations,
+  BundleTypes,
+} from 'gdc-common-utils-ts';
+import { EXAMPLE_CONSENT_IDENTIFIER, EXAMPLE_SUBJECT_DID }
+  from 'gdc-common-utils-ts/examples/shared';
 import {
   HealthcareBasicSections,
   HealthcareConsentPurposes,
 } from 'gdc-common-utils-ts/constants/healthcare';
 import { ConsentDecisions } from 'gdc-common-utils-ts/models/consent-rule';
 
-const consentAccessEditor = createConsentAccessEditor({
-  communicationClaims: {
-    '@context': CommunicationClaimsContext,
-  },
-});
+const permissionBundleEditor = new BundleEditor()
+  .setBundleOperation(BundleOperations.create)
+  .setBundleType(BundleTypes.batch)
+  .setAllowedResourceType(BundleEditableResourceTypes.consent);
 
-let consentClaims = { '@context': BundleEntryClaimsContext };
-consentClaims = setConsentIdentifier(consentClaims, EXAMPLE_CONSENT_IDENTIFIER);
-consentClaims = setConsentSubject(consentClaims, EXAMPLE_SUBJECT_DID);
-consentClaims = setConsentDecision(consentClaims, ConsentDecisions.Permit);
-consentClaims = setPurposeList(consentClaims, [HealthcareConsentPurposes.Treatment]);
-consentClaims = setSectionList(consentClaims, [
-  HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
-]);
+permissionBundleEditor
+  .newEntryAs(BundleEditableResourceTypes.consent)
+  .setIdentifier(EXAMPLE_CONSENT_IDENTIFIER)
+  .setSubject(EXAMPLE_SUBJECT_DID)
+  .setDecision(ConsentDecisions.Permit)
+  .setPurposeList([HealthcareConsentPurposes.Treatment])
+  .setSectionList([
+    HealthcareBasicSections.HistoryOfMedicationUse.attributeValue,
+  ])
+  .doneEntry();
 
-consentAccessEditor.upsertActiveConsentEntry({
-  claims: consentClaims,
-  fullUrl: `urn:uuid:${EXAMPLE_CONSENT_IDENTIFIER}`,
-});
-consentAccessEditor.saveAndReleaseActiveEntry();
-
-const communicationClaims = consentAccessEditor.getCommunicationClaims();
+const permissionBundle = permissionBundleEditor.buildJsonApi();
 ```
 
 What a new developer should understand at this step:
 
 - `common-utils` owns the high-level consent editing surface
 - the developer edits consent meaning, not transport/runtime details
-- the result of this step is `communicationClaims`
-- that result is what `sdk-core` stages into draft/outbox next
+- the result of this step is one `permissionBundle`
+- that complete Bundle is what `sdk-core` attaches to a Communication draft
+  and freezes into an outbox next
 
 If you want the executable source for this editing step, open:
 
 - [101-consent-bundle-editor.test.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/__tests__/101-consent-bundle-editor.test.ts)
 
-Alternative low-level note:
-
-- the same `consentBundleEditor` can also use
-  `getActiveEntryClaim(...)` / `setActiveEntryClaim(...)`
-- use that only when you need direct control over one claim in the selected
-  active `Consent` entry
-- keep the higher-level consent helpers as the first teaching path
+`ConsentAccessEditor` remains useful when a returned permission Bundle must be
+projected into classified UI ViewModels. Its claim-level methods are an
+advanced editing escape hatch, not the initial authoring path.
 
 ## Step 2. Draft And Outbox In `sdk-core`
 
@@ -133,49 +115,43 @@ Executable references:
 
 ```ts
 import {
-  addClaimsResourceToDraft,
-  createCommunicationDraft,
-  createOutboxJobFromDraft,
+  attachBundleToCommMsgExtendedDraft,
+  createCommMsgExtendedDraft,
+  createCommunicationOutboxJobFromCommMsgExtendedDraft,
 } from 'gdc-sdk-core-ts';
 import {
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
+  EXAMPLE_TENANT_SERVICE_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 
 // Step 1.
-// communicationClaims already comes from common-utils consentBundleEditor.
-const draft = addClaimsResourceToDraft(
-  createCommunicationDraft({
-    subject: EXAMPLE_SUBJECT_DID,
-    sender: EXAMPLE_PROFESSIONAL_DID,
-    claims: communicationClaims,
-  }),
-  'Communication',
-  communicationClaims,
-);
+// permissionBundle already comes from common-utils BundleEditor.
+let draft = createCommMsgExtendedDraft({
+  subject: EXAMPLE_SUBJECT_DID,
+  sender: EXAMPLE_PROFESSIONAL_DID,
+  recipient: EXAMPLE_TENANT_SERVICE_DID,
+});
+draft = attachBundleToCommMsgExtendedDraft(draft, permissionBundle);
 
 // Step 2.
 // sdk-core freezes that draft into the outbox job that runtime layers will send.
-const outboxJob = createOutboxJobFromDraft(draft);
+const outboxJob = createCommunicationOutboxJobFromCommMsgExtendedDraft(draft);
 ```
 
 `outboxJob` is the main result developers should care about in this 101.
 
-`sdk-core` does not redefine the consent model here. It only preserves the
-already-authored `Communication` and queues it for transport.
+`sdk-core` does not reinterpret the Consent entries here. It preserves the
+completed Bundle as one Communication attachment and queues that intent.
 
 ## Mental Model
 
+- `Bundle`
+  is the editable unit and may contain one or several Consent resources
 - `Communication`
-  is the auditable envelope
-- `resource.meta.claims`
-  is the canonical semantic contract
-- `Communication.contentdata`
-  is the canonical claim for embedded payload data when the communication
-  carries the consent artifact
-- versioned FHIR attachment fields
-  are optional projection or compatibility shapes; backend normalization can
-  extract claims from them
+  is the auditable delivery message created after Bundle editing ends
+- `CommMsgExtended.body.data[].resource.meta.claims`
+  is the canonical transport-neutral Communication contract
 - `draft`
   is the local staged object
 - `outboxJob`
@@ -183,14 +159,12 @@ already-authored `Communication` and queues it for transport.
 
 ## Advanced Legacy APIs
 
-`sdk-core` still contains older mutation-style helpers for consent operations
-and communication resources. They are not the preferred 101 path for developers
-who only need:
+`sdk-core` and common-utils still contain mutation/upsert compatibility helpers.
+They are not the preferred 101 path for developers who only need:
 
-- `consentBundleEditor`
-- consent claim setters/getters
-- `createCommunicationDraft(...)`
-- `createOutboxJobFromDraft(...)`
+- typed `BundleEditor` entries
+- `attachBundleToCommMsgExtendedDraft(...)`
+- `createCommunicationOutboxJobFromCommMsgExtendedDraft(...)`
 
 Use the simpler flow first.
 - `tests/communication-consent-mutation-contract.test.mjs`

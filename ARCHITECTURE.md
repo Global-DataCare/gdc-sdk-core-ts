@@ -188,3 +188,10 @@ Every exported facade or profile contract should explain:
 
 When the facade is role/sector-oriented, its JSDoc should also state that it
 describes capabilities, not one concrete frontend or node runtime.
+# Ownership of typed vocabulary
+
+GDC Core owns runtime-neutral protocol vocabulary and repository contracts.
+Sector packages own their extension vocabulary. Applications import those
+typed constants and derived unions; they do not recreate string unions or
+status maps. Shared executable examples live beside the owning contract and
+are reused by downstream tests.
