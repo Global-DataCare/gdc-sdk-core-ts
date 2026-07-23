@@ -12,7 +12,6 @@ import {
   getBundleDocumentResourcesByType,
   getFirstBundleDocumentFromCommunication,
   resolveCommunicationPayloads,
-  sortFhirResourcesByDateDescending,
 } from './communication-resource-helpers.js';
 
 export type ResolvedCommunicationDocument = Readonly<{
@@ -54,11 +53,6 @@ export type FhirDocumentFacade = Readonly<{
   getResourcesByFilter: (filter?: BundleResourceFilter) => FhirResourceLike[];
   /** Returns the number of resources matching one combined clinical filter. */
   getResourceCount: (filter?: BundleResourceFilter) => number;
-  /**
-   * Returns resources of one type inside a clinical date range.
-   * @deprecated Use `filterByTypes(...).filterByClinicalDateRange(...).getResources()`.
-   */
-  getByDates: (resourceType: string, start?: string, end?: string) => FhirResourceLike[];
   getContainingTextOrDisplay: (resourceType: string, searchText: string) => FhirResourceLike[];
   vitalSigns: Readonly<{
     getAll: () => FhirResourceLike[];
@@ -252,16 +246,6 @@ function createScopedFhirDocumentFacade(
       bundle ? getBundleResources(bundle, mergeResourceFilters(scope, filter)) : [],
     getResourceCount: (filter: BundleResourceFilter = {}) =>
       bundle ? getBundleResources(bundle, mergeResourceFilters(scope, filter)).length : 0,
-    getByDates: (resourceType: string, start?: string, end?: string) => {
-      const period = validateFilterDateRange(start, end);
-      const resources = bundle
-        ? getBundleResources(bundle, mergeResourceFilters(scope, {
-          types: [resourceType],
-          ...(period ? { date: period } : {}),
-        }))
-        : [];
-      return sortFhirResourcesByDateDescending(resources);
-    },
     getContainingTextOrDisplay: (resourceType: string, searchText: string) => {
       const normalized = searchText.trim().toLowerCase();
       if (!normalized) return [];

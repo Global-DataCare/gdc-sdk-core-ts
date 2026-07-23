@@ -79,9 +79,6 @@ test('communication facade resolves a FHIR document from embedded DocumentRefere
   const meds = fhirDocument.getResources(ResourceTypesFhirR4.MedicationStatement);
   assert.equal(meds.length, 1);
 
-  const filteredByDate = fhirDocument.getByDates(ResourceTypesFhirR4.Observation, '2026-05-19', '2026-05-21');
-  assert.equal(filteredByDate.length, 1);
-
   const sectionView = fhirDocument
     .filterBySections([`${FhirCodeSystems.Loinc}|10160-0`])
     .filterByTypes([ResourceTypesFhirR4.Observation])
