@@ -75,6 +75,22 @@ So for new developers, the safe mental model is:
 - `BundleReader` = structural section navigation
 - `FhirDocumentFacade` = resource counts and section/type/date filtering
 
+The facade stays the high-level read surface. Scope it immutably instead of
+building a transport-shaped filter object:
+
+```ts
+const allergyView = result.document
+  .filterBySections([allergySection])
+  .filterByTypes([ResourceTypesFhirR4.AllergyIntolerance])
+  .filterByClinicalDateRange('2026-01-01', '2026-12-31');
+
+const allergies = allergyView.getResources();
+const allergyCount = allergyView.getResourceCount();
+```
+
+The clinical date range is representation-neutral: point-valued FHIR dates
+match by containment and FHIR `Period` values match by interval overlap.
+
 The native FHIR R4 representation, and the UHC-owned R5 representation, keep
 the request together in one Communication:
 

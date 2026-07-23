@@ -64,6 +64,44 @@ test('getResources filters by section/type/date', () => {
   assert.equal(byDate.length, 1);
 });
 
+test('date range filtering includes point dates and overlapping FHIR Period values', () => {
+  const bundle = buildBundleFixture();
+  bundle.entry.push(
+    {
+      resource: {
+        resourceType: ResourceTypesFhirR4.Procedure,
+        id: 'procedure-overlap',
+        performedPeriod: {
+          start: '2026-05-20',
+          end: '2026-06-10',
+        },
+      },
+    },
+    {
+      resource: {
+        resourceType: ResourceTypesFhirR4.Procedure,
+        id: 'procedure-before',
+        performedPeriod: {
+          start: '2026-04-01',
+          end: '2026-04-30',
+        },
+      },
+    },
+  );
+
+  const pointOnSelectedDay = getResources(bundle, {
+    types: [ResourceTypesFhirR4.Observation],
+    date: { start: '2026-06-01', end: '2026-06-01' },
+  });
+  const overlappingPeriod = getResources(bundle, {
+    types: [ResourceTypesFhirR4.Procedure],
+    date: { start: '2026-06-01', end: '2026-06-30' },
+  });
+
+  assert.deepEqual(pointOnSelectedDay.map((resource) => resource.id), ['obs-1']);
+  assert.deepEqual(overlappingPeriod.map((resource) => resource.id), ['procedure-overlap']);
+});
+
 test('addResources appends entries and links them to composition sections', () => {
   const bundle = buildBundleFixture();
 

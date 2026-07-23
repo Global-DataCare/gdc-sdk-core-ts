@@ -2,14 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.2.2] - 2026-07-13
-
-### Changed
-- Bumped the core runtime-neutral package for the hosted `did:web` routing
-  compatibility release and updated the shared utility dependency to
-  `gdc-common-utils-ts@^2.2.2`.
-
 ## [Unreleased]
+
+## [2.3.3] - 2026-07-23
 
 - Clarified the two-payload single-Communication `$summary` representation and
   documented every `ClinicalSummaryReadResult` reader/evidence field.
@@ -19,6 +14,15 @@ All notable changes to this project will be documented in this file.
   read lifecycle.
 - Extended `FhirDocumentFacade` with combined section/type/date resource
   filtering and counts; `LifecycleResultReader` remains outcome-only.
+- Added immutable `filterBySections(...)`, `filterByTypes(...)` and
+  `filterByClinicalDateRange(...)` facade methods so high-level readers use one
+  date-range vocabulary instead of raw filter objects or separate date/period
+  setters.
+- Deprecated the low-level `getResourcesByFilter(...)` and legacy
+  `getByDates(...)` facade reads in favor of the immutable chain.
+- Clinical date-range filtering now includes point-valued FHIR dates that fall
+  inside the range and FHIR `Period` values that overlap it; date-only upper
+  bounds include the complete selected day.
 - Added `attachBundleToCommMsgExtendedDraft(...)` and executable contact and
   permission 101s. One completed Bundle, whether it contains one or several
   edits, is preserved as one claims-first Communication attachment before
@@ -87,6 +91,13 @@ All notable changes to this project will be documented in this file.
   in:
   - `src/actor-facade-surface.ts`
   - `tests/actor-facade-surface.test.mjs`
+
+## [2.2.2] - 2026-07-13
+
+### Changed
+- Bumped the core runtime-neutral package for the hosted `did:web` routing
+  compatibility release and updated the shared utility dependency to
+  `gdc-common-utils-ts@^2.2.2`.
 
 ## [2.1.1] - 2026-06-30
 
