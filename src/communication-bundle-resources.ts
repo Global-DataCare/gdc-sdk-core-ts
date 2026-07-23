@@ -96,6 +96,9 @@ function buildSectionReferenceSet(bundle: FhirResourceLike, sections: string[]):
         if (!value) continue;
         ids.add(value);
         if (value.includes('/')) ids.add(value.split('/').pop() || value);
+        if (value.toLowerCase().startsWith('urn:uuid:')) {
+          ids.add(value.slice('urn:uuid:'.length));
+        }
       }
     }
   }

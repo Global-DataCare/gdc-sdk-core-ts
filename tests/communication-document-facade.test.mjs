@@ -28,7 +28,10 @@ test('communication facade resolves a FHIR document from embedded DocumentRefere
               code: {
                 coding: [{ system: FhirCodeSystems.Loinc, code: '10160-0' }],
               },
-              entry: [{ reference: 'urn:uuid:med-001' }],
+              entry: [
+                { reference: 'urn:uuid:med-001' },
+                { reference: 'urn:uuid:obs-001' },
+              ],
             },
           ],
         },
@@ -78,6 +81,17 @@ test('communication facade resolves a FHIR document from embedded DocumentRefere
 
   const filteredByDate = fhirDocument.getByDates(ResourceTypesFhirR4.Observation, '2026-05-19', '2026-05-21');
   assert.equal(filteredByDate.length, 1);
+
+  const sectionResources = fhirDocument.getResourcesByFilter({
+    sections: [`${FhirCodeSystems.Loinc}|10160-0`],
+    types: [ResourceTypesFhirR4.Observation],
+    date: { start: '2026-05-19', end: '2026-05-21' },
+  });
+  assert.equal(sectionResources.length, 1);
+  assert.equal(sectionResources[0].id, 'obs-001');
+  assert.equal(fhirDocument.getResourceCount({
+    sections: [`${FhirCodeSystems.Loinc}|10160-0`],
+  }), 2);
 
   const containing = fhirDocument.getContainingTextOrDisplay(ResourceTypesFhirR4.MedicationStatement, 'paracetamol');
   assert.equal(containing.length, 1);

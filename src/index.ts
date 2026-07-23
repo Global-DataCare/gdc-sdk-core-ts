@@ -5,6 +5,7 @@ export * from './actor-facade-surface.js';
 export * from './authority-resolver.js';
 export * from './app-identity.js';
 export * from './bootstrap-facade.js';
+export * from './clinical-summary.js';
 export * from './communication-bundle-contracts.js';
 export * from './communication-bundle-resources.js';
 export * from './communication-claim-helpers.js';
