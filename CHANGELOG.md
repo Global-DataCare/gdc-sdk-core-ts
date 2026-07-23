@@ -18,8 +18,10 @@ All notable changes to this project will be documented in this file.
   `filterByClinicalDateRange(...)` facade methods so high-level readers use one
   date-range vocabulary instead of raw filter objects or separate date/period
   setters.
-- Deprecated the low-level `getResourcesByFilter(...)` and legacy
-  `getByDates(...)` facade reads in favor of the immutable chain.
+- Removed the legacy `getByDates(...)` facade shortcut so the public temporal
+  read flow uses only `filterByClinicalDateRange(...).getResources()`.
+- Deprecated the low-level `getResourcesByFilter(...)` facade read in favor of
+  the immutable chain.
 - Clinical date-range filtering now includes point-valued FHIR dates that fall
   inside the range and FHIR `Period` values that overlap it; date-only upper
   bounds include the complete selected day.
