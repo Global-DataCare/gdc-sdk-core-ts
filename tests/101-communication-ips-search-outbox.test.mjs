@@ -16,6 +16,7 @@ import {
   createSummaryOperationRequestParametersResource,
   createSummaryOperationRequestReferencePath,
   createSummaryOperationRequestReferenceUrl,
+  SummaryOperationCommunicationDefaults,
 } from '../../gdc-common-utils-ts/dist/utils/communication-bundle-document-request.js';
 import {
   EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
@@ -71,7 +72,7 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
   // Step 5.
   // common-utils builds the auditable Communication claims that carry the IPS
   // request envelope.
-  const communicationClaims = communication.newIpsSummarySearchCommunication({
+  const communicationClaims = communication.setRequestSummaryOperation({
     subjectId: EXAMPLE_SUBJECT_DID,
     requesterId: EXAMPLE_PROFESSIONAL_DID,
   });
@@ -95,20 +96,27 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
   // Step 8.
   // Assertions:
   // - the semantic request can be rendered as FHIR Parameters
-  // - the current Communication flow still carries a relative `_search?...`
-  //   reference
+  // - the canonical Communication targets Subject/$summary
+  // - its attachment carries the exact FHIR Parameters resource
   // - sdk-core preserves that request envelope unchanged in the outbox
   assert.equal(summaryOperationRequestReferencePath, EXAMPLE_IPS_BUNDLE_REFERENCE_URL);
   assert.equal(summaryOperationRequestReferenceUrl, EXAMPLE_IPS_BUNDLE_REFERENCE_ABSOLUTE_URL);
   assert.equal(summaryOperationRequestParametersResource.resourceType, 'Parameters');
   assert.equal(
     communicationClaims[CommunicationClaim.ContentReference],
-    EXAMPLE_IPS_BUNDLE_REFERENCE_URL,
+    SummaryOperationCommunicationDefaults.OperationPath,
+  );
+  assert.deepEqual(
+    JSON.parse(Buffer.from(
+      String(communicationClaims[CommunicationClaim.ContentAttachmentData]),
+      'base64',
+    ).toString('utf8')),
+    summaryOperationRequestParametersResource,
   );
   assert.equal(communicationJob.status, CommunicationOutboxStatuses.Ready);
   assert.equal(
     communicationJob.payload.body.data[0].resource.meta.claims[CommunicationClaim.ContentReference],
-    EXAMPLE_IPS_BUNDLE_REFERENCE_URL,
+    SummaryOperationCommunicationDefaults.OperationPath,
   );
   assert.equal(communicationJob.envelope, undefined);
 });

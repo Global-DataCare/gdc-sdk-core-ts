@@ -2,6 +2,10 @@
 
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import { createVitalSignsFacade } from './vital-signs.js';
+import {
+  getResources as getBundleResources,
+  type BundleResourceFilter,
+} from './communication-bundle-resources.js';
 import type { FhirResourceLike } from './communication-resource-helpers.js';
 import {
   getBundleDocumentEntries,
@@ -31,6 +35,10 @@ export type FhirDocumentFacade = Readonly<{
   getBundle: () => FhirResourceLike | undefined;
   getSections: () => FhirDocumentSection[];
   getResources: (resourceType?: string) => FhirResourceLike[];
+  /** Returns resources matching section, type and canonical clinical date filters together. */
+  getResourcesByFilter: (filter?: BundleResourceFilter) => FhirResourceLike[];
+  /** Returns the number of resources matching one combined clinical filter. */
+  getResourceCount: (filter?: BundleResourceFilter) => number;
   getByDates: (resourceType: string, start?: string, end?: string) => FhirResourceLike[];
   getContainingTextOrDisplay: (resourceType: string, searchText: string) => FhirResourceLike[];
   vitalSigns: Readonly<{
@@ -208,6 +216,10 @@ export function createFhirDocumentFacade(
       if (!resourceType) return getBundleDocumentEntries(bundle);
       return getBundleDocumentResourcesByType(bundle, resourceType);
     },
+    getResourcesByFilter: (filter: BundleResourceFilter = {}) =>
+      bundle ? getBundleResources(bundle, filter) : [],
+    getResourceCount: (filter: BundleResourceFilter = {}) =>
+      bundle ? getBundleResources(bundle, filter).length : 0,
     getByDates: (resourceType: string, start?: string, end?: string) => {
       return sortFhirResourcesByDateDescending(getBundleDocumentResourcesByType(bundle, resourceType))
         .filter((resource) => {

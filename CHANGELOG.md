@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added transport-neutral clinical summary builders/readers for the canonical
+  `Communication -> Subject/$summary -> FHIR Parameters -> Bundle document`
+  read lifecycle.
+- Extended `FhirDocumentFacade` with combined section/type/date resource
+  filtering and counts; `LifecycleResultReader` remains outcome-only.
 - Added `attachBundleToCommMsgExtendedDraft(...)` and executable contact and
   permission 101s. One completed Bundle, whether it contains one or several
   edits, is preserved as one claims-first Communication attachment before

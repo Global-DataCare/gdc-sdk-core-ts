@@ -81,6 +81,7 @@ const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
     ActorCapabilities.IndividualDisable,
     ActorCapabilities.IndividualPurge,
     ActorCapabilities.IndividualIngestCommunication,
+    ActorCapabilities.IndividualReadClinicalSummary,
     ActorCapabilities.IndividualUpsertRelatedPerson,
     ActorCapabilities.IndividualMemberDisable,
     ActorCapabilities.IndividualMemberPurge,
@@ -91,9 +92,11 @@ const actorCapabilityMatrix: Record<ActorKind, Capability[]> = {
   [ActorKinds.IndividualMember]: [
     ActorCapabilities.IndividualImportIps,
     ActorCapabilities.IndividualGenerateDigitalTwin,
+    ActorCapabilities.IndividualReadClinicalSummary,
     ActorCapabilities.IndividualUpsertRelatedPerson,
   ],
   [ActorKinds.Professional]: [
+    ActorCapabilities.IndividualReadClinicalSummary,
     ActorCapabilities.ProfessionalMedication,
     ActorCapabilities.ProfessionalAppointment,
     ActorCapabilities.ProfessionalRequestSmartToken,

@@ -46,6 +46,7 @@ test('professional facade surface excludes employee lifecycle methods', () => {
   assert.equal(professionalSurface.includes(ActorFacadeMethods.buildIdentityVpPayload), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.buildUnsignedIdentityVpJwt), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.requestSmartToken), true);
+  assert.equal(professionalSurface.includes(ActorFacadeMethods.requestClinicalSummary), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.retrieveControllerCredentialsFromIca), false);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.ingestCommunicationAndUpdateIndex), true);
   assert.equal(professionalSurface.includes(ActorFacadeMethods.searchCommunicationParticipants), true);
@@ -70,6 +71,10 @@ test('individual-side facade surface owns related-person management and not orga
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.IndividualController,
     ActorFacadeMethods.upsertRelatedPersonAndPoll,
+  ), true);
+  assert.equal(actorKindSupportsFacadeMethod(
+    ActorKinds.IndividualController,
+    ActorFacadeMethods.requestClinicalSummary,
   ), true);
   assert.equal(actorKindSupportsFacadeMethod(
     ActorKinds.IndividualController,
