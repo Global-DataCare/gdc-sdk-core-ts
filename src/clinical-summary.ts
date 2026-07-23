@@ -51,13 +51,21 @@ export type ClinicalSummaryRequestInput = Omit<
  *   outcomes, not the contents of a clinical document.
  */
 export type ClinicalSummaryReadResult = Readonly<{
+  /** Submit/poll evidence for the completed read operation. */
   operation: SubmitAndPollResult;
+  /** Authoritative FHIR Bundle document returned by GW. */
   bundle: Record<string, unknown>;
+  /** Generic Bundle structure, section counts, references and entry navigation. */
   reader: BundleReader;
+  /** Clinical resource retrieval and combined section/type/date filters. */
   document: FhirDocumentFacade;
 }>;
 
-/** Builds the transport-neutral Communication outbox job for one `$summary` read. */
+/**
+ * Builds the transport-neutral Communication outbox job for one `$summary`
+ * read. Native FHIR rendering produces one Communication with two
+ * `payload[]` elements: the operation reference and its attached Parameters.
+ */
 export function buildClinicalSummaryCommunicationJob(
   input: ClinicalSummaryRequestInput,
 ): CommMsgExtendedCommunicationOutboxJob {

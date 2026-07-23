@@ -75,6 +75,30 @@ So for new developers, the safe mental model is:
 - `BundleReader` = structural section navigation
 - `FhirDocumentFacade` = resource counts and section/type/date filtering
 
+The native FHIR R4 representation, and the UHC-owned R5 representation, keep
+the request together in one Communication:
+
+```ts
+Communication.payload = [
+  { contentReference: { reference: 'Subject/$summary' } },
+  { contentAttachment: { contentType: 'application/fhir+json', data: parametersBase64 } },
+];
+```
+
+The first payload selects the read operation. The second supplies its
+Parameters. It is not a clinical attachment for ingestion.
+
+The actor facade returns:
+
+```ts
+type ClinicalSummaryReadResult = {
+  operation: SubmitAndPollResult; // transport and polling evidence
+  bundle: Record<string, unknown>; // authoritative Bundle document
+  reader: BundleReader;            // sections, counts and references
+  document: FhirDocumentFacade;    // resources and section/type/date filters
+};
+```
+
 ## Step By Step
 
 Executable reference:

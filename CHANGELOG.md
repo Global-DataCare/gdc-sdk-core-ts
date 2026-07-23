@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Clarified the two-payload single-Communication `$summary` representation and
+  documented every `ClinicalSummaryReadResult` reader/evidence field.
 ### Added
 - Added transport-neutral clinical summary builders/readers for the canonical
   `Communication -> Subject/$summary -> FHIR Parameters -> Bundle document`
