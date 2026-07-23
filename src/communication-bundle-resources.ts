@@ -45,20 +45,74 @@ function ensureBundle(input: FhirResourceLike): FhirResourceLike {
   };
 }
 
-function getCanonicalDate(resource: FhirResourceLike): string | undefined {
-  const candidates = [
-    resource.effectiveDateTime,
-    resource.issued,
-    resource.authoredOn,
-    resource.performedDateTime,
-    resource.recordedDate,
-    resource.date,
-    resource.sent,
+type ClinicalTemporalRange = Readonly<{
+  start?: string;
+  end?: string;
+}>;
+
+function getCanonicalClinicalTemporalRange(
+  resource: FhirResourceLike,
+): ClinicalTemporalRange | undefined {
+  const choiceGroups: ReadonlyArray<Readonly<{
+    points: readonly string[];
+    period: string;
+  }>> = [
+    { points: ['effectiveDateTime', 'effectiveInstant'], period: 'effectivePeriod' },
+    { points: ['performedDateTime'], period: 'performedPeriod' },
+    { points: ['occurrenceDateTime'], period: 'occurrencePeriod' },
+    { points: ['onsetDateTime'], period: 'onsetPeriod' },
   ];
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+
+  for (const choice of choiceGroups) {
+    const point = readFirstStringProperty(resource, choice.points);
+    if (point) return { start: point, end: point };
+    const period = readPeriodProperty(resource, choice.period);
+    if (period) return period;
+  }
+
+  const standalonePeriod = readPeriodProperty(resource, 'period')
+    || readPeriodProperty(resource, 'timingPeriod');
+  if (standalonePeriod) return standalonePeriod;
+
+  const fallbackPoint = readFirstStringProperty(resource, [
+    'issued',
+    'recordedDate',
+    'recorded',
+    'authoredOn',
+    'date',
+    'sent',
+    'created',
+  ]);
+  return fallbackPoint ? { start: fallbackPoint, end: fallbackPoint } : undefined;
+}
+
+function readFirstStringProperty(
+  resource: FhirResourceLike,
+  keys: readonly string[],
+): string | undefined {
+  for (const key of keys) {
+    const value = resource[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
   }
   return undefined;
+}
+
+function readPeriodProperty(
+  resource: FhirResourceLike,
+  key: string,
+): ClinicalTemporalRange | undefined {
+  const candidate = resource[key];
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+    return undefined;
+  }
+  const period = candidate as Record<string, unknown>;
+  const start = typeof period.start === 'string' ? period.start.trim() : '';
+  const end = typeof period.end === 'string' ? period.end.trim() : '';
+  if (!start && !end) return undefined;
+  return {
+    ...(start ? { start } : {}),
+    ...(end ? { end } : {}),
+  };
 }
 
 function normalizeSectionToken(value: string): string {
@@ -154,11 +208,41 @@ function matchesType(resource: FhirResourceLike, types: string[]): boolean {
 
 function matchesDate(resource: FhirResourceLike, date?: BundleResourceDateFilter): boolean {
   if (!date?.start && !date?.end) return true;
-  const value = getCanonicalDate(resource);
-  if (!value) return false;
-  if (date.start && value < date.start) return false;
-  if (date.end && value > date.end) return false;
-  return true;
+  const resourceRange = getCanonicalClinicalTemporalRange(resource);
+  if (!resourceRange) return false;
+
+  const queryStart = parseTemporalBoundary(date.start, false);
+  const queryEnd = parseTemporalBoundary(date.end, true);
+  const resourceStart = parseTemporalBoundary(resourceRange.start, false);
+  const resourceEnd = parseTemporalBoundary(resourceRange.end, true);
+
+  if (date.start && queryStart === undefined) return false;
+  if (date.end && queryEnd === undefined) return false;
+  if (resourceRange.start && resourceStart === undefined) return false;
+  if (resourceRange.end && resourceEnd === undefined) return false;
+
+  const normalizedQueryStart = queryStart ?? Number.NEGATIVE_INFINITY;
+  const normalizedQueryEnd = queryEnd ?? Number.POSITIVE_INFINITY;
+  const normalizedResourceStart = resourceStart ?? Number.NEGATIVE_INFINITY;
+  const normalizedResourceEnd = resourceEnd ?? Number.POSITIVE_INFINITY;
+
+  return normalizedResourceEnd >= normalizedQueryStart
+    && normalizedResourceStart <= normalizedQueryEnd;
+}
+
+function parseTemporalBoundary(
+  value: string | undefined,
+  endOfDay: boolean,
+): number | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim();
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(normalized);
+  const timestamp = Date.parse(
+    dateOnly
+      ? `${normalized}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`
+      : normalized,
+  );
+  return Number.isFinite(timestamp) ? timestamp : undefined;
 }
 
 /**

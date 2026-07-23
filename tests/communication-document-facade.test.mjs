@@ -82,13 +82,27 @@ test('communication facade resolves a FHIR document from embedded DocumentRefere
   const filteredByDate = fhirDocument.getByDates(ResourceTypesFhirR4.Observation, '2026-05-19', '2026-05-21');
   assert.equal(filteredByDate.length, 1);
 
-  const sectionResources = fhirDocument.getResourcesByFilter({
-    sections: [`${FhirCodeSystems.Loinc}|10160-0`],
-    types: [ResourceTypesFhirR4.Observation],
-    date: { start: '2026-05-19', end: '2026-05-21' },
-  });
+  const sectionView = fhirDocument
+    .filterBySections([`${FhirCodeSystems.Loinc}|10160-0`])
+    .filterByTypes([ResourceTypesFhirR4.Observation])
+    .filterByClinicalDateRange('2026-05-19', '2026-05-21');
+  const sectionResources = sectionView.getResources();
   assert.equal(sectionResources.length, 1);
   assert.equal(sectionResources[0].id, 'obs-001');
+  assert.equal(sectionView.getResourceCount(), 1);
+  assert.equal(
+    fhirDocument
+      .filterByTypes([ResourceTypesFhirR4.Observation])
+      .filterByClinicalDateRange('2026-05-20', '2026-05-20')
+      .getResourceCount(),
+    1,
+  );
+  assert.equal(fhirDocument.getResources().length, 3);
+  assert.equal(sectionView.clearFilters().getResources().length, 3);
+  assert.throws(
+    () => fhirDocument.filterByClinicalDateRange('2026-05-21', '2026-05-19'),
+    /date from must not be after to/i,
+  );
   assert.equal(fhirDocument.getResourceCount({
     sections: [`${FhirCodeSystems.Loinc}|10160-0`],
   }), 2);

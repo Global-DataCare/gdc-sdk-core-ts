@@ -57,7 +57,11 @@ export type ClinicalSummaryReadResult = Readonly<{
   bundle: Record<string, unknown>;
   /** Generic Bundle structure, section counts, references and entry navigation. */
   reader: BundleReader;
-  /** Clinical resource retrieval and combined section/type/date filters. */
+  /**
+   * Clinical resource retrieval and immutable high-level section/type/period
+   * filtering through `filterBySections(...)`, `filterByTypes(...)` and
+   * `filterByClinicalDate*(...)`.
+   */
   document: FhirDocumentFacade;
 }>;
 

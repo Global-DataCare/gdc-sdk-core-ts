@@ -35,10 +35,29 @@ export type FhirDocumentFacade = Readonly<{
   getBundle: () => FhirResourceLike | undefined;
   getSections: () => FhirDocumentSection[];
   getResources: (resourceType?: string) => FhirResourceLike[];
-  /** Returns resources matching section, type and canonical clinical date filters together. */
+  /** Returns a new facade limited to the selected Composition sections. */
+  filterBySections: (sections: string | string[]) => FhirDocumentFacade;
+  /** Returns a new facade limited to the selected FHIR resource types. */
+  filterByTypes: (types: string | string[]) => FhirDocumentFacade;
+  /**
+   * Returns a new facade limited to one clinical date range. Point-valued FHIR
+   * dates must fall inside it; FHIR Period values must overlap it.
+   */
+  filterByClinicalDateRange: (from?: string, to?: string) => FhirDocumentFacade;
+  /** Returns a new facade over the same document without accumulated filters. */
+  clearFilters: () => FhirDocumentFacade;
+  /**
+   * Returns resources matching a low-level combined filter.
+   * @deprecated Scope the facade with `filterBySections`,
+   * `filterByTypes` and `filterByClinicalDateRange`, then call `getResources`.
+   */
   getResourcesByFilter: (filter?: BundleResourceFilter) => FhirResourceLike[];
   /** Returns the number of resources matching one combined clinical filter. */
   getResourceCount: (filter?: BundleResourceFilter) => number;
+  /**
+   * Returns resources of one type inside a clinical date range.
+   * @deprecated Use `filterByTypes(...).filterByClinicalDateRange(...).getResources()`.
+   */
   getByDates: (resourceType: string, start?: string, end?: string) => FhirResourceLike[];
   getContainingTextOrDisplay: (resourceType: string, searchText: string) => FhirResourceLike[];
   vitalSigns: Readonly<{
@@ -51,22 +70,6 @@ export type FhirDocumentFacade = Readonly<{
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function getCanonicalDate(resource: FhirResourceLike): string | undefined {
-  const candidates = [
-    resource.effectiveDateTime,
-    resource.issued,
-    resource.authoredOn,
-    resource.performedDateTime,
-    resource.recordedDate,
-    resource.date,
-    resource.sent,
-  ];
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
-  }
-  return undefined;
 }
 
 function getAttachmentMetadata(payload: Record<string, unknown>): {
@@ -183,9 +186,31 @@ export function createFhirDocumentFacade(
   const bundle = communicationOrBundle.resourceType === ResourceTypesFhirR4.Bundle
     ? communicationOrBundle
     : getFirstBundleDocumentFromCommunication(communicationOrBundle);
+  return createScopedFhirDocumentFacade(bundle);
+}
 
+function createScopedFhirDocumentFacade(
+  bundle: FhirResourceLike | undefined,
+  scope: BundleResourceFilter = {},
+): FhirDocumentFacade {
   const facade = Object.freeze({
     getBundle: () => bundle,
+    filterBySections: (sections: string | string[]) =>
+      createScopedFhirDocumentFacade(bundle, {
+        ...scope,
+        sections: cloneFilterTokens(sections),
+      }),
+    filterByTypes: (types: string | string[]) =>
+      createScopedFhirDocumentFacade(bundle, {
+        ...scope,
+        types: cloneFilterTokens(types),
+      }),
+    filterByClinicalDateRange: (from?: string, to?: string) =>
+      createScopedFhirDocumentFacade(bundle, {
+        ...scope,
+        date: validateFilterDateRange(from, to),
+      }),
+    clearFilters: () => createScopedFhirDocumentFacade(bundle),
     getSections: () => {
       const compositions = getBundleDocumentResourcesByType(bundle, ResourceTypesFhirR4.Composition);
       return compositions.flatMap((composition) => {
@@ -213,27 +238,39 @@ export function createFhirDocumentFacade(
       });
     },
     getResources: (resourceType?: string) => {
-      if (!resourceType) return getBundleDocumentEntries(bundle);
-      return getBundleDocumentResourcesByType(bundle, resourceType);
+      if (!resourceType && !hasResourceFilter(scope)) {
+        return getBundleDocumentEntries(bundle);
+      }
+      return bundle
+        ? getBundleResources(bundle, mergeResourceFilters(
+          scope,
+          resourceType ? { types: [resourceType] } : {},
+        ))
+        : [];
     },
     getResourcesByFilter: (filter: BundleResourceFilter = {}) =>
-      bundle ? getBundleResources(bundle, filter) : [],
+      bundle ? getBundleResources(bundle, mergeResourceFilters(scope, filter)) : [],
     getResourceCount: (filter: BundleResourceFilter = {}) =>
-      bundle ? getBundleResources(bundle, filter).length : 0,
+      bundle ? getBundleResources(bundle, mergeResourceFilters(scope, filter)).length : 0,
     getByDates: (resourceType: string, start?: string, end?: string) => {
-      return sortFhirResourcesByDateDescending(getBundleDocumentResourcesByType(bundle, resourceType))
-        .filter((resource) => {
-          const date = getCanonicalDate(resource);
-          if (!date) return false;
-          if (start && date < start) return false;
-          if (end && date > end) return false;
-          return true;
-        });
+      const period = validateFilterDateRange(start, end);
+      const resources = bundle
+        ? getBundleResources(bundle, mergeResourceFilters(scope, {
+          types: [resourceType],
+          ...(period ? { date: period } : {}),
+        }))
+        : [];
+      return sortFhirResourcesByDateDescending(resources);
     },
     getContainingTextOrDisplay: (resourceType: string, searchText: string) => {
       const normalized = searchText.trim().toLowerCase();
       if (!normalized) return [];
-      return getBundleDocumentResourcesByType(bundle, resourceType)
+      const resources = bundle
+        ? getBundleResources(bundle, mergeResourceFilters(scope, {
+          types: [resourceType],
+        }))
+        : [];
+      return resources
         .filter((resource) => getTextIndex(resource).includes(normalized));
     },
   });
@@ -241,6 +278,60 @@ export function createFhirDocumentFacade(
     ...facade,
     vitalSigns: createVitalSignsFacade(facade),
   });
+}
+
+function cloneFilterTokens(value: string | string[]): string[] {
+  return (Array.isArray(value) ? value : [value])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+}
+
+function validateFilterDateRange(
+  start?: string,
+  end?: string,
+): BundleResourceFilter['date'] | undefined {
+  const normalizedStart = String(start || '').trim() || undefined;
+  const normalizedEnd = String(end || '').trim() || undefined;
+  if (normalizedStart && !Number.isFinite(Date.parse(normalizedStart))) {
+    throw new TypeError('FHIR document filter date from must be a valid date.');
+  }
+  if (normalizedEnd && !Number.isFinite(Date.parse(normalizedEnd))) {
+    throw new TypeError('FHIR document filter date to must be a valid date.');
+  }
+  if (
+    normalizedStart
+    && normalizedEnd
+    && Date.parse(normalizedStart) > Date.parse(normalizedEnd)
+  ) {
+    throw new RangeError('FHIR document filter date from must not be after to.');
+  }
+  if (!normalizedStart && !normalizedEnd) return undefined;
+  return {
+    ...(normalizedStart ? { start: normalizedStart } : {}),
+    ...(normalizedEnd ? { end: normalizedEnd } : {}),
+  };
+}
+
+function hasResourceFilter(filter: BundleResourceFilter): boolean {
+  const sections = Array.isArray(filter.sections) ? filter.sections : [filter.sections];
+  const types = Array.isArray(filter.types) ? filter.types : [filter.types];
+  return sections.some(Boolean)
+    || types.some(Boolean)
+    || Boolean(filter.date?.start || filter.date?.end);
+}
+
+function mergeResourceFilters(
+  base: BundleResourceFilter,
+  override: BundleResourceFilter,
+): BundleResourceFilter {
+  return {
+    ...(base.sections !== undefined ? { sections: base.sections } : {}),
+    ...(base.types !== undefined ? { types: base.types } : {}),
+    ...(base.date !== undefined ? { date: base.date } : {}),
+    ...(override.sections !== undefined ? { sections: override.sections } : {}),
+    ...(override.types !== undefined ? { types: override.types } : {}),
+    ...(override.date !== undefined ? { date: override.date } : {}),
+  };
 }
 
 /**
