@@ -1,12 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  attachClinicalDocumentToCommMsgExtendedDraft,
   attachFhirResourceAsAttachmentToCommMsgExtendedDraft,
+  attachSectionBundleToCommMsgExtendedDraft,
   createCommunicationOutboxJobFromCommMsgExtendedDraft,
   createCommMsgExtendedDraft,
   renderCommunicationOutboxRequest,
   TransportProfiles,
 } from '../dist/index.js';
+
+const clinicalDocument = {
+  resourceType: 'Bundle',
+  type: 'document',
+  entry: [{
+    resource: {
+      resourceType: 'Composition',
+      status: 'final',
+      section: [{
+        code: { coding: [{ system: 'http://loinc.org', code: '48765-2' }] },
+        entry: [{ reference: 'AllergyIntolerance/allergy-1' }],
+      }],
+    },
+  }, {
+    resource: { resourceType: 'AllergyIntolerance', id: 'allergy-1' },
+  }],
+};
 
 function createIpsJob() {
   let communicationDraft = createCommMsgExtendedDraft({
@@ -144,5 +163,57 @@ test('explicit draft subject cannot be overridden by caller-supplied claims', ()
   assert.equal(
     draft.message.body.data[0].resource.meta.claims['Communication.subject'],
     'did:web:trusted-subject.example',
+  );
+});
+
+test('clinical document attachment requires Composition first and rejects an unscoped batch', () => {
+  const draft = createCommMsgExtendedDraft({ subject: 'did:web:subject.example' });
+  const attached = attachClinicalDocumentToCommMsgExtendedDraft(draft, clinicalDocument);
+  const claims = attached.message.body.data[0].resource.meta.claims;
+  assert.equal(claims['Communication.content-attachment-type'], 'application/fhir+json');
+
+  assert.throws(
+    () => attachClinicalDocumentToCommMsgExtendedDraft(draft, {
+      resourceType: 'Bundle',
+      type: 'batch',
+      data: [{ resource: { resourceType: 'AllergyIntolerance', id: 'allergy-1' } }],
+    }),
+    /Bundle\.type=document.*Composition/i,
+  );
+});
+
+test('section batch attachment carries the one section explicitly on Communication', () => {
+  const draft = createCommMsgExtendedDraft({ subject: 'did:web:subject.example' });
+  const attached = attachSectionBundleToCommMsgExtendedDraft(
+    draft,
+    {
+      resourceType: 'Bundle',
+      type: 'collection',
+      data: [{ resource: { resourceType: 'Observation', id: 'heart-rate-1' } }],
+    },
+    { section: 'LOINC|8716-3' },
+  );
+  const claims = attached.message.body.data[0].resource.meta.claims;
+  assert.equal(claims['Composition.section'], 'LOINC|8716-3');
+
+  assert.throws(
+    () => attachSectionBundleToCommMsgExtendedDraft(
+      draft,
+      { resourceType: 'Bundle', type: 'document', entry: clinicalDocument.entry },
+      { section: 'LOINC|8716-3' },
+    ),
+    /batch or collection/i,
+  );
+  assert.throws(
+    () => attachSectionBundleToCommMsgExtendedDraft(
+      draft,
+      {
+        resourceType: 'Bundle',
+        type: 'batch',
+        data: [{ resource: { resourceType: 'Observation', id: 'heart-rate-1' } }],
+      },
+      { section: '' },
+    ),
+    /exactly one section/i,
   );
 });

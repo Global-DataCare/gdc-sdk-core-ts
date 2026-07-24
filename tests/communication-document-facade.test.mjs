@@ -95,6 +95,7 @@ test('communication facade resolves a FHIR document from embedded DocumentRefere
     1,
   );
   assert.equal(fhirDocument.getResources().length, 3);
+  assert.equal(sectionView.resetFilters().getResources().length, 3);
   assert.equal(sectionView.clearFilters().getResources().length, 3);
   assert.throws(
     () => fhirDocument.filterByClinicalDateRange('2026-05-21', '2026-05-19'),

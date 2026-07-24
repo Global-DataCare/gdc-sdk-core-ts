@@ -2,6 +2,7 @@
 
 import type { CommMsgExtended, DataEntry } from 'gdc-common-utils-ts/models/comm';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
+import { CompositionClaim } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
 import type { CommunicationOutboxStatus } from './communication-draft.js';
@@ -32,7 +33,12 @@ export type CommMsgExtendedAttachmentOptions = Readonly<{
   noteText?: string;
   attachmentTitle?: string;
   attachmentContentType?: string;
+  /** Exact clinical section for a section-scoped batch/collection attachment. */
+  section?: string;
 }>;
+
+export type CommMsgExtendedSectionBundleAttachmentOptions =
+  CommMsgExtendedAttachmentOptions & Readonly<{ section: string }>;
 
 export type CommMsgExtendedCommunicationOutboxJob = Readonly<{
   id: string;
@@ -51,6 +57,20 @@ export type CommMsgExtendedOutboxJobOptions = Readonly<{
   createdAt?: string;
   status?: CommunicationOutboxStatus;
 }>;
+
+export type ClinicalUpdateCommunicationInput = Readonly<{
+  subject: string;
+  sender?: string;
+  recipient?: string | string[];
+  bundle: Record<string, unknown>;
+  thid?: string;
+  sent?: string;
+  noteText?: string;
+  attachmentTitle?: string;
+}>;
+
+export type ClinicalSectionUpdateCommunicationInput =
+  ClinicalUpdateCommunicationInput & Readonly<{ section: string }>;
 
 export type CommunicationClinicalFormatRenderer = (
   message: CommMsgExtended,
@@ -203,6 +223,13 @@ export function attachFhirResourceAsAttachmentToCommMsgExtendedDraft(
   claims[CommunicationClaim.ContentAttachmentType] = options.attachmentContentType || 'application/fhir+json';
   claims[CommunicationClaim.ContentAttachmentTitle] = options.attachmentTitle
     || `${String(resource.resourceType || 'resource').toLowerCase()}.json`;
+  if (options.section !== undefined) {
+    const section = String(options.section).trim();
+    if (!section || section.includes(',')) {
+      throw new TypeError('Section-scoped Communication attachment requires exactly one section.');
+    }
+    claims[CompositionClaim.Section] = section;
+  }
   if (options.noteText) {
     claims[CommunicationClaim.NoteText] = options.noteText;
     claims[CommunicationClaim.Text] = options.noteText;
@@ -228,6 +255,100 @@ export function attachBundleToCommMsgExtendedDraft(
     throw new TypeError('Communication Bundle attachment requires resourceType=Bundle.');
   }
   return attachFhirResourceAsAttachmentToCommMsgExtendedDraft(draft, bundle, options);
+}
+
+/**
+ * Attaches a complete clinical document.
+ *
+ * Clinical history writes use `Bundle.type=document`, with `Composition` as
+ * the first entry and its `section[].entry[]` references identifying every
+ * resource updated by the document.
+ */
+export function attachClinicalDocumentToCommMsgExtendedDraft(
+  draft: CommMsgExtendedDraft,
+  bundle: Record<string, unknown>,
+  options: Omit<CommMsgExtendedAttachmentOptions, 'section'> = {},
+): CommMsgExtendedDraft {
+  const entries = Array.isArray(bundle?.entry) ? bundle.entry as Array<Record<string, unknown>> : [];
+  const firstResource = entries[0]?.resource as Record<string, unknown> | undefined;
+  if (
+    bundle?.resourceType !== 'Bundle'
+    || bundle?.type !== 'document'
+    || firstResource?.resourceType !== 'Composition'
+  ) {
+    throw new TypeError(
+      'Clinical document attachment requires Bundle.type=document with Composition as entry[0].',
+    );
+  }
+  return attachFhirResourceAsAttachmentToCommMsgExtendedDraft(draft, bundle, options);
+}
+
+/**
+ * Attaches one non-document clinical batch/collection scoped to one section.
+ *
+ * This is the dedicated measurement/update flow used by vital signs. It is not
+ * a replacement for a Composition-first multi-section clinical document.
+ */
+export function attachSectionBundleToCommMsgExtendedDraft(
+  draft: CommMsgExtendedDraft,
+  bundle: Record<string, unknown>,
+  options: CommMsgExtendedSectionBundleAttachmentOptions,
+): CommMsgExtendedDraft {
+  const bundleType = String(bundle?.type || '').trim();
+  const entries = Array.isArray(bundle?.data)
+    ? bundle.data
+    : Array.isArray(bundle?.entry) ? bundle.entry : [];
+  if (
+    bundle?.resourceType !== 'Bundle'
+    || !['batch', 'collection'].includes(bundleType)
+    || entries.length === 0
+  ) {
+    throw new TypeError(
+      'Section-scoped Communication attachment requires a non-empty Bundle.type=batch or collection.',
+    );
+  }
+  return attachFhirResourceAsAttachmentToCommMsgExtendedDraft(draft, bundle, options);
+}
+
+/** Builds one outbox job that updates several clinical sections as one document. */
+export function createClinicalSummaryUpdateOutboxJob(
+  input: ClinicalUpdateCommunicationInput,
+): CommMsgExtendedCommunicationOutboxJob {
+  const draft = createCommMsgExtendedDraft({
+    subject: input.subject,
+    sender: input.sender,
+    recipient: input.recipient,
+    thid: input.thid,
+    sent: input.sent,
+    noteText: input.noteText,
+  });
+  return createCommunicationOutboxJobFromCommMsgExtendedDraft(
+    attachClinicalDocumentToCommMsgExtendedDraft(draft, input.bundle, {
+      attachmentTitle: input.attachmentTitle || 'clinical-summary-document.json',
+      noteText: input.noteText,
+    }),
+  );
+}
+
+/** Builds one outbox job restricted to exactly one clinical section. */
+export function createClinicalSectionUpdateOutboxJob(
+  input: ClinicalSectionUpdateCommunicationInput,
+): CommMsgExtendedCommunicationOutboxJob {
+  const draft = createCommMsgExtendedDraft({
+    subject: input.subject,
+    sender: input.sender,
+    recipient: input.recipient,
+    thid: input.thid,
+    sent: input.sent,
+    noteText: input.noteText,
+  });
+  return createCommunicationOutboxJobFromCommMsgExtendedDraft(
+    attachSectionBundleToCommMsgExtendedDraft(draft, input.bundle, {
+      section: input.section,
+      attachmentTitle: input.attachmentTitle || 'clinical-section-update.json',
+      noteText: input.noteText,
+    }),
+  );
 }
 
 /** Freezes one canonical `CommMsgExtended` draft into a local outbox job. */
