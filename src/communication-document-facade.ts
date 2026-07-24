@@ -44,6 +44,8 @@ export type FhirDocumentFacade = Readonly<{
    */
   filterByClinicalDateRange: (from?: string, to?: string) => FhirDocumentFacade;
   /** Returns a new facade over the same document without accumulated filters. */
+  resetFilters: () => FhirDocumentFacade;
+  /** @deprecated Compatibility alias; use `resetFilters()` for UI reset actions. */
   clearFilters: () => FhirDocumentFacade;
   /**
    * Returns resources matching a low-level combined filter.
@@ -204,6 +206,7 @@ function createScopedFhirDocumentFacade(
         ...scope,
         date: validateFilterDateRange(from, to),
       }),
+    resetFilters: () => createScopedFhirDocumentFacade(bundle),
     clearFilters: () => createScopedFhirDocumentFacade(bundle),
     getSections: () => {
       const compositions = getBundleDocumentResourcesByType(bundle, ResourceTypesFhirR4.Composition);

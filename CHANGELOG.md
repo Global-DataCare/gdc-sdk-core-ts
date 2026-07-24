@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-07-24
+
+- Added explicit clinical write builders for one-section
+  `batch|collection + Communication Composition.section` updates and
+  multi-section Composition-first document updates.
+- Added `FhirDocumentFacade.resetFilters()` as the UI-oriented name for
+  returning an unfiltered immutable view; `clearFilters()` remains as a
+  compatibility alias.
+- Raised the supported `gdc-common-utils-ts` baseline to `^2.3.6`.
+
 ## [2.3.3] - 2026-07-23
 
 - Clarified the two-payload single-Communication `$summary` representation and
