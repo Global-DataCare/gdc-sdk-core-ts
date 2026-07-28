@@ -1,3 +1,8 @@
+/**
+ * Flow contract: subject-scoped discovery first derives the hosting provider
+ * DID, then resolves the provider's published SMART endpoint. A subject suffix
+ * must never become part of the provider identity or an invented audience.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -13,6 +18,14 @@ test('provider did is derived from subject did without inventing urls manually',
   assert.equal(
     getProviderDidFromSubjectDid(subjectDid),
     'did:web:host.example.org:acme:cds-es:v1:health-care',
+  );
+});
+
+test('provider did is derived from the canonical hosted individual DID form', async () => {
+  const subjectDid = 'did:web:host.example.org:health-care:organization:taxid:VATES-B00112233:individual:multibase:zSubject001';
+  assert.equal(
+    getProviderDidFromSubjectDid(subjectDid),
+    'did:web:host.example.org:health-care:organization:taxid:VATES-B00112233',
   );
 });
 

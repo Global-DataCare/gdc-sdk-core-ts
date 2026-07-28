@@ -38,7 +38,13 @@ export type SmartTokenRequestContract = {
    */
   issuer?: string;
   /**
-   * Request/JWT audience.
+   * Compatibility override for the request/JWT audience.
+   *
+   * High-level consumers should omit this value. The runtime should resolve the
+   * provider SMART endpoint from the subject identity, or fall back to the
+   * exact configured SMART token endpoint used for transport. This field
+   * remains available for low-level integrations that already own endpoint
+   * discovery.
    */
   audience?: string;
   /**

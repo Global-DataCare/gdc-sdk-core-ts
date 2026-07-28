@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.5] - 2026-07-28
+
+### Fixed
+
+- Resolve canonical hosted `:individual:` subject DIDs back to their provider
+  DID before selecting `#identity:openid:smart:token`.
+- Clarify that high-level SMART callers omit the compatibility `audience`
+  override and let the runtime resolve the provider endpoint.
+
 ## [2.3.4] - 2026-07-24
 
 - Added explicit clinical write builders for one-section
