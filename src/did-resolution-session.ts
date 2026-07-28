@@ -9,7 +9,7 @@ import { IdentityStore } from './identity-store.js';
  * without inventing network URLs.
  */
 export function getProviderDidFromSubjectDid(subjectDid: string): string {
-  const markers = [':family:', ':employee:', ':member:'];
+  const markers = [':individual:', ':family:', ':employee:', ':member:'];
   for (const marker of markers) {
     const index = subjectDid.indexOf(marker);
     if (index > -1) {
