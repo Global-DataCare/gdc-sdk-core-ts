@@ -15,7 +15,7 @@ import {
 function createClinicalJob() {
   const draft = addFhirResourceToDraft(
     createCommunicationDraft({
-      subject: 'did:web:unid.online:card:uhc:personal:subject-1',
+      subject: 'did:web:example.test:card:personal:subject-1',
       sender: 'did:web:professional.example:doctor-1',
     }),
     {

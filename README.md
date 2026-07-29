@@ -16,7 +16,7 @@ Runtime-neutral shared contracts and helpers for GDC SDK consumers.
 
 This package is for code that needs to understand and build GDC business flows
 without caring about gateway routes, `host/...` vs `:tenantId/...`, transport
-adapters, or UNID-specific runtime details.
+adapters, or application-specific runtime details.
 
 ## Actor Split
 
@@ -249,7 +249,7 @@ What this package does not do:
 - call GW endpoints
 - manage OTP providers
 - store PIN hashes
-- know anything about UNID reminder `Task` runtime
+- know anything about an application's reminder `Task` runtime
 
 ### 3. Communication and document handling
 

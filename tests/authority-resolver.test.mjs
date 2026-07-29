@@ -46,7 +46,7 @@ test('StaticAuthorityResolver falls back to legacy authority derivation from bas
     tenantId: EXAMPLE_TENANT_IDENTIFIER,
     jurisdiction: EXAMPLE_JURISDICTION,
     sector: EXAMPLE_SECTOR,
-    subjectSameAs: 'UHC-724-0000-111-222-333-444',
+    subjectSameAs: 'CARD-724-0000-111-222-333-444',
   });
 
   assert.equal(resolved.source, 'legacy');

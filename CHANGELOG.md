@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.9] - 2026-07-30
+
+- Raise the Common Utils baseline to 2.3.12.
+- Enforce product-neutral shared SDK source, tests and documentation before
+  publication.
+- Clarify that product applications extend Core's existing generic durable
+  Communication outbox contracts rather than moving product-specific job
+  vocabularies into shared FHIR utilities.
+
 ## [2.3.8] - 2026-07-30
 
 - Complete the root clinical authoring surface with `BundleTypes`,
