@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.7] - 2026-07-29
+
+- Export locale-aware complete IPS section/card projection from Common Utils
+  2.3.10.
+- Clarify that Communication ingestion and index updates are backend/BFF
+  execution; browser UI owns only in-memory authoring and rendering.
+
 ## [2.3.6] - 2026-07-29
 
 - Export the canonical `BundleEditor` coded-clinical authoring and localized
