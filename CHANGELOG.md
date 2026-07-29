@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.8] - 2026-07-30
+
+- Complete the root clinical authoring surface with `BundleTypes`,
+  `HealthcareDocumentTypes` and `HealthcareIpsSectionResourceProfiles`, so an
+  IPS document and its section commands require no internal-package imports.
+- Raise the Common Utils baseline to 2.3.11 for explicit
+  `setSectionList(...)` Composition placement.
+
 ## [2.3.7] - 2026-07-29
 
 - Export locale-aware complete IPS section/card projection from Common Utils
