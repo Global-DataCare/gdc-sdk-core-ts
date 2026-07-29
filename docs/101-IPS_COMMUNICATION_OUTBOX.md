@@ -91,7 +91,7 @@ const allergyCount = allergyView.getResourceCount();
 The clinical date range is representation-neutral: point-valued FHIR dates
 match by containment and FHIR `Period` values match by interval overlap.
 
-The native FHIR R4 representation, and the UHC-owned R5 representation, keep
+Native FHIR R4 and application-owned alternative representations keep
 the request together in one Communication:
 
 ```ts

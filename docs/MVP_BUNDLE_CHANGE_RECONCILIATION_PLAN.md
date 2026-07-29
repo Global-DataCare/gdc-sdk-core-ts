@@ -2,7 +2,7 @@
 
 ## Goal
 
-Ship the UHC MVP without replacing working portal flows or confusing the
+Ship an application MVP without replacing working client flows or confusing the
 frontend display copy with the Bundle sent to GW.
 
 Four values must remain separate:
@@ -24,7 +24,7 @@ merged into it by a shared SDK helper.
 - Keep every currently published API and portal adapter working.
 - Do not publish or adopt the current merge-oriented frontend working-copy
   helper as the canonical contract.
-- Characterize UHC web, VetChain and telephone behavior before moving code.
+- Characterize every adopting web, native and assisted channel before moving code.
 - Do not rename packages, endpoints or persisted outbox records.
 
 ### P1: additive Core helpers
@@ -44,9 +44,9 @@ merged into it by a shared SDK helper.
   composition without owning UI state.
 - `gdc-sdk-front-ts`: consume the Core analysis helper from browser and Expo;
   keep a compatibility export for any previous working-copy helper.
-- UHC web and telephone: adopt one operation at a time behind existing API
+- Application web and assisted channels: adopt one operation at a time behind existing API
   responses and tests.
-- VetChain: consume the published helper only when its first real mutation
+- Other applications: consume the published helper only when their first real mutation
   flow exists; do not block its current contract work.
 
 ### P3: durable coordinator, not required to ship the MVP UI
@@ -62,7 +62,7 @@ merged into it by a shared SDK helper.
 - No shared helper merges `changesBundle` into `displayBundle`.
 - Partial failures are correlated by stable resource identifier.
 - Missing results remain pending until search/readback.
-- UHC web tests cover clinical, Consent, RelatedPerson and care resources.
+- Application web tests cover clinical, Consent, RelatedPerson and care resources.
 - Telephone tests distinguish human confirmation from technical GW readback.
-- VetChain remains buildable without adopting unreleased SDK APIs.
+- Every application remains buildable without adopting unreleased SDK APIs.
 - Publish shared packages before changing portal registry dependencies.
