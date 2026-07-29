@@ -6,6 +6,7 @@ import {
   BundleEditor,
   BundleOperations,
   toClinicalResourceCardView,
+  toClinicalSectionViews,
 } from '../dist/index.js';
 
 test('SDK root keeps manual CodeableConcept text separate from system|code', () => {
@@ -31,4 +32,38 @@ test('SDK root keeps manual CodeableConcept text separate from system|code', () 
   assert.equal(claims['AllergyIntolerance.language'], 'es');
   assert.equal(toClinicalResourceCardView(entry, { locale: 'es-ES' }).title, 'Penicilina');
   assert.notEqual(toClinicalResourceCardView(entry, { locale: 'es-ES' }).title, token);
+});
+
+test('SDK root returns every Composition section with locale-aware cards', () => {
+  const bundle = {
+    resourceType: 'Bundle',
+    type: 'document',
+    entry: [{
+      resource: {
+        resourceType: 'Composition',
+        section: [{
+          title: 'Allergies',
+          entry: [{ reference: 'AllergyIntolerance/penicillin' }],
+        }],
+      },
+    }, {
+      fullUrl: 'AllergyIntolerance/penicillin',
+      resource: {
+        resourceType: 'AllergyIntolerance',
+        language: 'es',
+        code: {
+          text: 'Penicilina',
+          coding: [{
+            system: 'http://snomed.info/sct',
+            code: '373270004',
+            display: 'Penicillin',
+          }],
+        },
+      },
+    }],
+  };
+
+  const sections = toClinicalSectionViews(bundle, { locale: 'en' });
+  assert.equal(sections.length, 1);
+  assert.equal(sections[0].resources[0].title, 'Penicillin');
 });

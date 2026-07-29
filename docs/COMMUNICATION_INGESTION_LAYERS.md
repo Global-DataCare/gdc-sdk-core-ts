@@ -53,7 +53,11 @@ Encrypted polling uses `response=<JWE>`. JAR/JARM, PKCE and
 `client_assertion` are OAuth/FAPI authorization artifacts; they do not rename
 the clinical DIDComm message.
 
-## Public write flow
+## Backend/BFF write flow
+
+This flow executes persistence and index updates. Browser UI components do not
+call it; they author/render an in-memory Bundle and submit that command to their
+authenticated application BFF.
 
 ```ts
 let communicationDraft = createCommMsgExtendedDraft({ subject, sender });
@@ -64,12 +68,13 @@ communicationDraft = attachFhirResourceAsAttachmentToCommMsgExtendedDraft(
 const communicationJob =
   createCommunicationOutboxJobFromCommMsgExtendedDraft(communicationDraft);
 
-await actorSdk.ingestCommunicationAndUpdateIndex(ctx, {
+await backendActorSdk.ingestCommunicationAndUpdateIndex(ctx, {
   communicationJob,
   clinicalFormat: 'r4',
 });
 ```
 
-The runtime derives the endpoint route from `clinicalFormat`, renders the
+The backend runtime derives the endpoint route from `clinicalFormat`, renders the
 clinical body, applies the configured transport, submits and polls. Application
-code must not build `data[]`, `entry[]`, DIDComm or JWE envelopes manually.
+backend code must not build `data[]`, `entry[]`, DIDComm or JWE envelopes
+manually.
