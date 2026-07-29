@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.6] - 2026-07-29
+
+- Export the canonical `BundleEditor` coded-clinical authoring and localized
+  card projection surface from the SDK root. Manual/local text,
+  English/international display and `system|code` terminology identity remain
+  separate through save/read/display flows.
+
 ## [2.3.5] - 2026-07-28
 
 ### Fixed
