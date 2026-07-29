@@ -10,7 +10,12 @@ export { BundleEditor } from 'gdc-common-utils-ts/utils/bundle-editor-core';
 export {
   BundleEditableResourceTypes,
   BundleOperations,
+  BundleTypes,
 } from 'gdc-common-utils-ts/models/bundle-editor-types';
+export {
+  HealthcareDocumentTypes,
+  HealthcareIpsSectionResourceProfiles,
+} from 'gdc-common-utils-ts/constants/healthcare';
 export {
   AllergyIntoleranceClaim,
 } from 'gdc-common-utils-ts/models/interoperable-claims/allergy-intolerance-claims';
