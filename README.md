@@ -263,6 +263,12 @@ The read path is:
 Backend search remains a separate FHIR search-param story, for example with
 `Composition.section`.
 
+For an attached `batch` or `collection`, the exact clinical section belongs in
+the outer `Communication.topic` claim and its native FHIR `topic`
+CodeableConcept. `Composition.section` remains inside a document Bundle; do not
+place it on the outer Communication and do not infer the section from
+`payload.contentCodeableConcept`.
+
 Main helpers:
 
 - `createCommunicationResource(...)`

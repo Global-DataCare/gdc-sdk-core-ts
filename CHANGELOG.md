@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.10] - 2026-07-30
+
+- Encode the exact clinical section of an attached `batch` or `collection`
+  Bundle in `Communication.topic`; do not write the outer
+  `Composition.section` claim.
+- Raise the Common Utils baseline to 2.3.15 for native FHIR topic projection
+  and consent-scoped SMART derivation.
+
 ## [2.3.9] - 2026-07-30
 
 - Raise the Common Utils baseline to 2.3.12.
@@ -47,7 +55,7 @@ All notable changes to this project will be documented in this file.
 ## [2.3.4] - 2026-07-24
 
 - Added explicit clinical write builders for one-section
-  `batch|collection + Communication Composition.section` updates and
+  `batch|collection + Communication.topic` updates and
   multi-section Composition-first document updates.
 - Added `FhirDocumentFacade.resetFilters()` as the UI-oriented name for
   returning an unfiltered immutable view; `clearFilters()` remains as a
