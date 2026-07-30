@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.12] - 2026-07-30
+
+- Raise the Common Utils baseline to 2.3.17 so every supported IPS resource
+  re-exported by Core uses its explicit primary coded claim and preserves
+  native coding metadata through readback.
+
 ## [2.3.11] - 2026-07-30
 
 - Raise the Common Utils baseline to 2.3.16 so the re-exported clinical card
