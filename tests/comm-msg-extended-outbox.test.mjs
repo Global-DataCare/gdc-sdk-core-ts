@@ -194,7 +194,8 @@ test('section batch attachment carries the one section explicitly on Communicati
     { section: 'LOINC|8716-3' },
   );
   const claims = attached.message.body.data[0].resource.meta.claims;
-  assert.equal(claims['Composition.section'], 'LOINC|8716-3');
+  assert.equal(claims['Communication.topic'], 'LOINC|8716-3');
+  assert.equal('Composition.section' in claims, false);
 
   assert.throws(
     () => attachSectionBundleToCommMsgExtendedDraft(

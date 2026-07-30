@@ -2,7 +2,6 @@
 
 import type { CommMsgExtended, DataEntry } from 'gdc-common-utils-ts/models/comm';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
-import { CompositionClaim } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
 import type { CommunicationOutboxStatus } from './communication-draft.js';
@@ -228,7 +227,7 @@ export function attachFhirResourceAsAttachmentToCommMsgExtendedDraft(
     if (!section || section.includes(',')) {
       throw new TypeError('Section-scoped Communication attachment requires exactly one section.');
     }
-    claims[CompositionClaim.Section] = section;
+    claims[CommunicationClaim.Topic] = section;
   }
   if (options.noteText) {
     claims[CommunicationClaim.NoteText] = options.noteText;
