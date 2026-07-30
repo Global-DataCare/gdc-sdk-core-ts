@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.11] - 2026-07-30
+
+- Raise the Common Utils baseline to 2.3.16 so the re-exported clinical card
+  projection resolves terminology tokens claims-first when `$summary` native
+  coding retains only its display.
+
 ## [2.3.10] - 2026-07-30
 
 - Encode the exact clinical section of an attached `batch` or `collection`
