@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.13] - 2026-07-31
+
+- Re-export the canonical local terminology provider, catalog/search contracts
+  and clinical translation adapter for all SDK runtimes.
+
 ## [2.3.12] - 2026-07-30
 
 - Raise the Common Utils baseline to 2.3.17 so every supported IPS resource
