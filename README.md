@@ -422,6 +422,17 @@ Where those variables come from:
 - `pin`
   comes from the invitee during channel enrollment
 
+## Local terminology fallback
+
+Core re-exports `LocalTerminologyProvider`,
+`createClinicalCodeTranslator(...)` and their catalog/search contracts. The
+provider accepts the established legacy catalog shape
+`data[].attributes[code] = display`; it does not translate free text or make
+network requests.
+
+Use the provider directly for cached/offline display and search. Node and Front
+add runtime-specific facades without changing this canonical contract.
+
 ## API Index
 
 The canonical contract should live in JSDoc on exported code. This README is the

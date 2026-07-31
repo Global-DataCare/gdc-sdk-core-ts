@@ -40,6 +40,18 @@ export {
   type ClinicalResourceDisplayOptions,
   type ClinicalTerminologyTranslationInput,
 } from 'gdc-common-utils-ts/utils/clinical-resource-view';
+export {
+  LocalTerminologyProvider,
+  createClinicalCodeTranslator,
+} from 'gdc-common-utils-ts/utils/local-terminology-provider';
+export type {
+  TerminologyCatalogDocument,
+  TerminologyCatalogResource,
+  TerminologyLookupInput,
+  TerminologyProvider,
+  TerminologySearchInput,
+  TerminologySearchResult,
+} from 'gdc-common-utils-ts/models/terminology';
 
 // Register the typed `BundleEditor.asResourceType(...)` surfaces.
 import 'gdc-common-utils-ts/utils/allergy-intolerance-entry-editor';

@@ -5,6 +5,8 @@ import {
   BundleEditableResourceTypes,
   BundleEditor,
   BundleOperations,
+  LocalTerminologyProvider,
+  createClinicalCodeTranslator,
   toClinicalResourceCardView,
   toClinicalSectionViews,
 } from '../dist/index.js';
@@ -66,4 +68,23 @@ test('SDK root returns every Composition section with locale-aware cards', () =>
   const sections = toClinicalSectionViews(bundle, { locale: 'en' });
   assert.equal(sections.length, 1);
   assert.equal(sections[0].resources[0].title, 'Penicillin');
+});
+
+test('SDK root exposes the local terminology fallback used by every runtime', () => {
+  const terminology = new LocalTerminologyProvider([{
+    language: 'es',
+    data: [{
+      id: 'http://snomed.info/sct',
+      attributes: { '373270004': 'Penicilina' },
+    }],
+  }]);
+
+  const translateCode = createClinicalCodeTranslator(terminology);
+  assert.equal(translateCode({
+    resourceType: 'AllergyIntolerance',
+    system: 'http://snomed.info/sct',
+    code: '373270004',
+    token: 'http://snomed.info/sct|373270004',
+    locale: 'es',
+  }), 'Penicilina');
 });
