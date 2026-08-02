@@ -55,6 +55,16 @@ export type SmartTokenRequestContract = {
    */
   vpToken?: string;
   /**
+   * Controls the legacy OpenID-SMART behavior that copied `idToken` into
+   * `vp_token` when no presentation was supplied.
+   *
+   * New cross-provider clients should use `omit`: the requester `id_token`
+   * remains an identity proof and `vp_token` is emitted only when an actual
+   * relationship/role presentation exists. `id-token` preserves existing
+   * deployments while they migrate.
+   */
+  vpTokenFallback?: 'id-token' | 'omit';
+  /**
    * Optional pre-signed OAuth/OpenID `client_assertion`.
    */
   clientAssertion?: string;

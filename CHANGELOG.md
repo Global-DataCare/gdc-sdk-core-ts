@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.14] - 2026-08-02
+
+- Let a server-side SMART exchange send the requester's `id_token` while
+  explicitly omitting `vp_token`; retain the legacy id-token fallback unless
+  the caller selects the canonical omit behavior.
+
 ## [2.3.13] - 2026-07-31
 
 - Re-export the canonical local terminology provider, catalog/search contracts
