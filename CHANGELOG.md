@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.15] - 2026-08-03
+
+- Clarify in clinical-summary JSDoc, 101 docs and executable tutorial comments
+  that `Subject/$summary` is an internal operation reference carried by
+  Communication; application runtimes submit `Communication/_batch` instead of
+  calling the operation route directly.
+
 ## [2.3.14] - 2026-08-02
 
 - Let a server-side SMART exchange send the requester's `id_token` while

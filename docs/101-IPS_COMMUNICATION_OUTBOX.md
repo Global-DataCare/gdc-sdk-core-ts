@@ -40,6 +40,11 @@ That `content-reference` currently points to:
 
 - `individual/org.hl7.fhir.api/Subject/$summary`
 
+That value is an internal GW operation reference. It is carried inside the
+Communication and resolved by GW; it is not a public application/BFF HTTP call.
+The Node/Front actor facade is the public application contract, and its runtime
+submits the Communication through `Communication/_batch`.
+
 ## Important Distinction
 
 The read request and its result are different resources:
@@ -65,6 +70,7 @@ Practical rule for developers:
 
 - do not handwrite `$summary` Communications or FHIR Parameters
 - do not call an ingestion method to perform this read
+- do not POST directly to the `$summary` or flattened `Bundle/_search` route
 - use the actor facade `requestClinicalSummary(...)`
 
 So for new developers, the safe mental model is:

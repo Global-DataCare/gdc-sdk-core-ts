@@ -24,9 +24,10 @@ import {
  * Semantic input for reading the clinical summary available to one subject.
  *
  * The request is represented by an auditable `Communication` whose
- * `content-reference` targets `Subject/$summary` and whose attachment is the
- * FHIR `Parameters` resource. It is not a clinical write or index-ingestion
- * input.
+ * `content-reference` names GW's internal `Subject/$summary` operation and
+ * whose attachment is the FHIR `Parameters` resource. Application code never
+ * invokes that operation route directly; a runtime submits the containing
+ * Communication. This is not a clinical write or index-ingestion input.
  */
 export type ClinicalSummaryRequestInput = Omit<
   CreateSummaryOperationCommunicationInput,
@@ -68,7 +69,8 @@ export type ClinicalSummaryReadResult = Readonly<{
 /**
  * Builds the transport-neutral Communication outbox job for one `$summary`
  * read. Native FHIR rendering produces one Communication with two
- * `payload[]` elements: the operation reference and its attached Parameters.
+ * `payload[]` elements: GW's internal operation reference and its attached
+ * Parameters. This helper builds no direct `$summary` HTTP request.
  */
 export function buildClinicalSummaryCommunicationJob(
   input: ClinicalSummaryRequestInput,
