@@ -61,8 +61,9 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
     createSummaryOperationRequestReferencePath(summaryOperationRequestParameters);
 
   // Step 4.
-  // Runtime/backend may also need the absolute GW CORE URL that will receive
-  // the request, but that URL is not the main thing the frontend edits.
+  // Compatibility/diagnostic code may still materialize the historic absolute
+  // operation URL. The application/BFF read path does not call it: the actor
+  // facade submits the Communication and GW resolves its content-reference.
   const summaryOperationRequestReferenceUrl =
     createSummaryOperationRequestReferenceUrl({
       providerSectorDidWeb: EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
@@ -96,7 +97,7 @@ test('101: IPS search Communication becomes a draft and outbox job', () => {
   // Step 8.
   // Assertions:
   // - the semantic request can be rendered as FHIR Parameters
-  // - the canonical Communication targets Subject/$summary
+  // - the canonical Communication carries GW's internal Subject/$summary operation
   // - its attachment carries the exact FHIR Parameters resource
   // - sdk-core preserves that request envelope unchanged in the outbox
   assert.equal(summaryOperationRequestReferencePath, EXAMPLE_IPS_BUNDLE_REFERENCE_URL);

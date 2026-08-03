@@ -1,11 +1,12 @@
 /**
  * Teaching goal:
- * - author the canonical clinical read as Communication + Subject/$summary
+ * - author the canonical clinical read as one Communication carrying GW's
+ *   internal Subject/$summary operation reference
  * - keep the FHIR Parameters array attached to that Communication
  * - turn the returned document into neutral structural and clinical readers
  *
- * This is not an ingestion lifecycle. No example in this file may call an
- * `ingest*` method.
+ * This is not an ingestion lifecycle or a direct operation-route call. No
+ * example in this file may call an `ingest*` method or construct a GW URL.
  */
 
 import test from 'node:test';
@@ -25,6 +26,8 @@ test('101: builds and reads one clinical $summary Communication', () => {
   const section = HealthcareBasicSections.AllergiesAndIntolerances.attributeValue;
 
   // Step 1. Freeze the semantic read request into one transport-neutral job.
+  // The later Node/Front runtime submits this Communication; the app does not
+  // extract Subject/$summary and call it as another HTTP endpoint.
   const communicationJob = buildClinicalSummaryCommunicationJob({
     subjectId: EXAMPLE_SUBJECT_DID,
     requesterId: EXAMPLE_SUBJECT_DID,
