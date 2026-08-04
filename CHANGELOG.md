@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.16] - 2026-08-04
+
 - Validate `periodEnd` in generic Consent communication operations so
   temporary grants cannot serialize a malformed, fail-open expiry.
 
