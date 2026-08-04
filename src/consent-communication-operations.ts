@@ -3,6 +3,7 @@
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import { ClaimConsent } from 'gdc-common-utils-ts/models/consent-rule';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
+import { isValidConsentPeriodBoundary } from 'gdc-common-utils-ts/utils/consent';
 import type { CommunicationInput } from './communication-bundle-contracts.js';
 import {
   addClaimsResourceToDraft,
@@ -99,6 +100,7 @@ function normalizeOperation(input: ConsentCommunicationOperationInput): ConsentC
   const core = unique(input.sections.core);
   const extended = unique(input.sections.extended);
   const roles = unique(input.target.roles);
+  const periodEnd = String(input.periodEnd || '').trim();
   return {
     ...input,
     operationId: String(input.operationId || '').trim(),
@@ -113,6 +115,7 @@ function normalizeOperation(input: ConsentCommunicationOperationInput): ConsentC
       core,
       ...(extended.length ? { extended } : {}),
     },
+    ...(periodEnd ? { periodEnd } : {}),
   };
 }
 
@@ -138,6 +141,9 @@ export function assertConsentCommunicationOperationInput(
   }
   if (normalized.sections.core.length === 0) {
     throw new TypeError('sections.core must contain at least one section code.');
+  }
+  if (normalized.periodEnd && !isValidConsentPeriodBoundary(normalized.periodEnd)) {
+    throw new TypeError('periodEnd must be a valid ISO 8601 date or date-time.');
   }
   return normalized;
 }
