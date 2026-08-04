@@ -35,10 +35,12 @@ test('buildConsentOperationClaims maps abstract operation input into claim rows'
     },
     codeDisplay: 'Patient summary consent',
     sourcePortalUrl: 'https://portal.example.org/consents/123',
+    periodEnd: '2026-08-31T18:30:00Z',
   });
 
   assert.equal(claims[ClaimConsent.subject], 'did:web:api.acme.org:individual:123');
   assert.equal(claims[ClaimConsent.purpose], HealthcareConsentPurposes.Treatment);
+  assert.equal(claims[ClaimConsent.periodEnd], '2026-08-31T18:30:00Z');
   assert.equal(
     claims[ClaimConsent.action],
     [
@@ -47,6 +49,24 @@ test('buildConsentOperationClaims maps abstract operation input into claim rows'
       HealthcareBasicSections.HistoryOfMedicationUse.claim,
     ].join(','),
   );
+});
+
+test('buildConsentOperationClaims rejects a malformed temporary expiry', () => {
+  assert.throws(() => buildConsentOperationClaims({
+    operationKind: ConsentCommunicationOperationKinds.Add,
+    operationId: 'op-invalid-expiry-001',
+    subject: 'did:web:api.acme.org:individual:123',
+    purpose: HealthcareConsentPurposes.Treatment,
+    target: {
+      kind: ConsentCommunicationTargetKinds.Professional,
+      identifier: 'doctor@example.org',
+      roles: [HealthcareActorRoles.Physician],
+    },
+    sections: {
+      core: [HealthcareBasicSections.AllergiesAndIntolerances.claim],
+    },
+    periodEnd: 'tomorrow evening',
+  }), /periodEnd must be a valid ISO 8601 date or date-time/);
 });
 
 test('addConsentOperationToDraft appends a consent claims payload entry', () => {

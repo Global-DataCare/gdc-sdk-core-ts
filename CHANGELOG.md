@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Validate `periodEnd` in generic Consent communication operations so
+  temporary grants cannot serialize a malformed, fail-open expiry.
+
 ## [2.3.15] - 2026-08-03
 
 - Clarify in clinical-summary JSDoc, 101 docs and executable tutorial comments
