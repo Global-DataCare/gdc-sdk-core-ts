@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.18] - 2026-08-05
+
+- Re-export Common Utils 2.3.28 and its enforced canonical
+  `<ResourceType>.<concrete-param>` FHIR API claim names.
+
 ## [2.3.17] - 2026-08-05
 
 - Raise Common Utils to 2.3.27 so Core re-exports the complete IPS structured
