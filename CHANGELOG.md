@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.17] - 2026-08-05
+
+- Raise Common Utils to 2.3.27 so Core re-exports the complete IPS structured
+  clinical claims, viewer fields and editor hydration contract.
+
 ## [2.3.16] - 2026-08-04
 
 - Validate `periodEnd` in generic Consent communication operations so
