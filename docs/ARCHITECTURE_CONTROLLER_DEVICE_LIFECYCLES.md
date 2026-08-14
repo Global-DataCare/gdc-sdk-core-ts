@@ -73,25 +73,35 @@ Important split:
 
 Canonical intent:
 
-- reverify or rebind the current controller for an existing tenant
+- reverify/reissue the existing organization's ICA credentials
+- expose activation material for the current controller License as a separate
+  claims projection
+- let the later DCR sequence rebind the current controller device
 - do not create a new commercial Offer
 - do not run a new Order flow
 
 Shared contract:
 
 1. submit `Organization/_issue`
-2. consume `_issue-response`
-3. require one reissued activation code in
-   `meta.claims['org.schema.IndividualProduct.serialNumber']`
+2. consume `_issue-response` and keep its projections distinct:
+   - `vc[]`: all deduplicated ICA-issued VCs
+   - `resource.icaResponse`: complete raw ICA response
+   - `meta.claims`: host claims, including the activation code
+3. require the activation code in
+   `meta.claims['org.schema.IndividualProduct.serialNumber']`; it is not a VC
 4. continue with:
    - `Token/_exchange`
    - `Device/_dcr`
 
 Commercial rule:
 
-- `_issue` is a recovery/rebind path
-- `_issue` must not mint a new Offer
-- `_issue` must not require `Order/_batch`
+- `Organization/_issue` is organization credential reissuance/reverification;
+  it is not `License/_issue` and does not itself register a device
+- a typed `License:Issued` entry belongs to `License/_issue`, not to the
+  canonical `Organization/_issue-response`
+- `OperationOutcome.issue[]` is an unrelated diagnostics array
+- `Organization/_issue` must not mint a new Offer or require `Order/_batch`
+- `Token/_exchange -> Device/_dcr` performs the actual device activation/rebind
 
 Evidence rule:
 

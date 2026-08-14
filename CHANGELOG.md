@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Separate `Organization/_issue` credential reissuance, `License/_issue`
+  License issuance and `OperationOutcome.issue[]` diagnostics in the shared
+  controller/device lifecycle documentation, including the exact `vc[]`, raw
+  ICA response and activation-code projections.
+
 ## [2.3.18] - 2026-08-05
 
 - Re-export Common Utils 2.3.28 and its enforced canonical
