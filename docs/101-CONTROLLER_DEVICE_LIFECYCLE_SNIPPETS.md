@@ -154,6 +154,23 @@ const claims = getClaimsInFirstDataEntry(transactionPollBody.body);
 
 ### 1.3 Recovery / Rebind With `_issue`
 
+`Organization/_issue` reverifies/reissues the existing organization's ICA
+credentials; it does not perform License issuance or device registration. Its
+canonical polled entry keeps these projections separate:
+
+```text
+body.data[0]
+├── vc[]                         all deduplicated ICA-issued VCs
+├── resource.icaResponse         complete raw ICA response
+└── meta.claims
+    └── IndividualProduct.serialNumber   License activation code
+```
+
+The activation code is not a VC. A `License:Issued` entry belongs to the
+separate `License/_issue` operation, while `OperationOutcome.issue[]` is only a
+diagnostics array. `Token/_exchange -> Device/_dcr`, not
+`Organization/_issue`, performs the actual device activation/rebind.
+
 ```ts
 import { readActivationCode } from 'gdc-sdk-core-ts';
 
