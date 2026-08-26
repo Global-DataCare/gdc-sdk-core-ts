@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.20] - 2026-08-26
+
+- Separate legacy representative bootstrap from modern device enrollment in
+  the 101 contracts: legacy `_activate` binds its submitted representative key
+  without a second DCR, while later controllers and employees use trusted
+  OIDC email proof followed by managed exchange and DCR.
+
 - Accept complete submit/poll results in the shared Offer and activation-code
   readers while keeping `data[].resource.meta.claims` as the only canonical
   response claim view.

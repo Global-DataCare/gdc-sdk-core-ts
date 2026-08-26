@@ -421,8 +421,20 @@ Where the data comes from:
   comes from the previous employee invitation/issuance step
 - `idToken`
   comes from the authenticated employee identity flow
-- `dcrPayload`
-  comes from the device/app registration request
+- profile enrollment
+  uses `ServerProfileSessionManager.enroll(...)` from `gdc-sdk-node-ts`; the
+  portal supplies identity, route, activation, VP and application parameters,
+  while the SDK provisions the wallet and authors OpenID DCR internally
+
+Public JWK selection, `createProfileDeviceActivationRequest(...)` and raw
+`dcrPayload` are advanced compatibility surfaces and are not part of this 101
+flow.
+
+Legacy exception: the historical representative key supplied through
+`controllerBinding` to `Organization/_activate` is already bound by that
+bootstrap operation. Do not run profile enrollment, token exchange or DCR
+again for the same representative key. Later service controllers and employee
+devices use the managed enrollment flow above.
 
 ## 3. Individual Organization Bootstrap
 
