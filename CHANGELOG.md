@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Accept complete submit/poll results in the shared Offer and activation-code
+  readers while keeping `data[].resource.meta.claims` as the only canonical
+  response claim view.
 - Separate `Organization/_issue` credential reissuance, `License/_issue`
   License issuance and `OperationOutcome.issue[]` diagnostics in the shared
   controller/device lifecycle documentation, including the exact `vc[]`, raw
