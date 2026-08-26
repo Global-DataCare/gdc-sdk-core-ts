@@ -124,6 +124,12 @@ Shared contract:
 2. exchange activation code through `Token/_exchange`
 3. register device technical client through `Device/_dcr`
 
+Legacy bootstrap exception: historical `Organization/_activate` binds the
+submitted representative public key as part of tenant creation. That same
+bootstrap representative does not repeat token exchange or DCR. The shared
+three-step contract applies to later service controllers, employees and device
+replacement/recovery.
+
 ### 2.2 Professional Device Replacement
 
 Canonical intent:
@@ -145,6 +151,14 @@ Important non-goal:
 
 - `Device/_dcr` is not the human identity proof by itself
 - `Device/_dcr` registers the technical client/device keys
+
+The preceding exchange has two independent inputs. A signed OIDC `id_token`
+from a GW-trusted issuer proves the authenticated account and verified email
+bound to the seat. A controller/professional `vp_token` proves credential and
+role authority but cannot replace that email proof. A managed wallet can hold
+the issuer signing key and create the compact JWT; the portal/BFF remains the
+OpenID Provider and owns email verification, provider discovery, public JWKS
+publication and exact issuer/audience trust configuration with GW.
 
 ### 2.3 Managed Key Clarification
 

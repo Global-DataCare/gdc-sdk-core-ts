@@ -212,8 +212,27 @@ if (!activationCode) {
 }
 ```
 
-Runtime execution for the actual device bootstrap belongs in `gdc-sdk-node-ts`,
-for example through `activateEmployeeDeviceWithActivationRequest(...)`.
+Runtime execution for the actual device bootstrap belongs in `gdc-sdk-node-ts`.
+Use `ServerProfileSessionManager.enroll(...)`; it provisions the wallet and
+executes activation-code exchange plus DCR. Public-key selection, direct
+`activateEmployeeDeviceWithActivationRequest(...)` and raw OpenID metadata are
+advanced runtime concerns, not portal application inputs.
+
+This handoff is for modern controllers and employee devices. It is not repeated
+for the historical representative whose public `controllerBinding` was already
+bound by the legacy `Organization/_activate` bootstrap.
+
+Identity boundary for that handoff:
+
+- pass a signed OIDC `id_token` from a GW-trusted issuer to prove the
+  authenticated account and verified-email binding consumed by
+  `Token/_exchange`;
+- pass the controller/professional `vp_token` separately to prove credential
+  and role authority; a VP does not prove control of the email address;
+- `NodeManagedWallet` may manage the OpenID issuer key and sign a compact JWT,
+  but it is not itself an OpenID Provider. A self-hosted portal issuer must
+  verify the email, publish OpenID configuration and JWKS, and be configured as
+  trusted by GW for the exact issuer and audience.
 
 ## 3. Individual Controller
 
