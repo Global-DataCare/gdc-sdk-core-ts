@@ -4,10 +4,17 @@ import {
   ClaimsIndividualProductSchemaorg,
   ClaimsOfferSchemaorg,
 } from 'gdc-common-utils-ts/constants/schemaorg';
-import { getClaimsInFirstDataEntry } from 'gdc-common-utils-ts/utils/bundle-reader';
-
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+/** Accepts the complete submit/poll result and reads canonical resource claims. */
+function readFirstEntryClaims(value: unknown): Record<string, unknown> {
+  const result = (value || {}) as Record<string, any>;
+  const bundle = result.poll?.body || result.body || result;
+  const entries = Array.isArray(bundle.data) ? bundle.data : Array.isArray(bundle.entry) ? bundle.entry : [];
+  const first = (entries[0] || {}) as Record<string, any>;
+  return (first.resource?.meta?.claims || {}) as Record<string, unknown>;
 }
 
 /**
@@ -19,9 +26,7 @@ function normalizeText(value: unknown): string {
  * - commercial individual organization `_transaction-response`
  */
 export function readCommercialOfferId(body: unknown): string {
-  const pollBody = (body || {}) as Record<string, unknown>;
-  const bundle = ((pollBody.body as Record<string, unknown> | undefined) || pollBody);
-  return normalizeText(getClaimsInFirstDataEntry(bundle)[ClaimsOfferSchemaorg.identifier]);
+  return normalizeText(readFirstEntryClaims(body)[ClaimsOfferSchemaorg.identifier]);
 }
 
 /**
@@ -34,7 +39,5 @@ export function readCommercialOfferId(body: unknown): string {
  * - other flows that return `org.schema.IndividualProduct.serialNumber`
  */
 export function readActivationCode(body: unknown): string {
-  const pollBody = (body || {}) as Record<string, unknown>;
-  const bundle = ((pollBody.body as Record<string, unknown> | undefined) || pollBody);
-  return normalizeText(getClaimsInFirstDataEntry(bundle)[ClaimsIndividualProductSchemaorg.serialNumber]);
+  return normalizeText(readFirstEntryClaims(body)[ClaimsIndividualProductSchemaorg.serialNumber]);
 }
