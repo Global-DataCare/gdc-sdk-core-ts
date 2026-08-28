@@ -1,3 +1,9 @@
+/**
+ * Flow contract: SDK Core exposes the runtime-neutral typed clinical batch
+ * authoring API from Common Utils. One batch may create and delete independent
+ * resources without raw FHIR request literals; transport and GW execution stay
+ * outside this layer.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
@@ -5,11 +11,33 @@ import {
   BundleEditableResourceTypes,
   BundleEditor,
   BundleOperations,
+  BundleTypes,
+  HttpRequestMethods,
   LocalTerminologyProvider,
   createClinicalCodeTranslator,
   toClinicalResourceCardView,
   toClinicalSectionViews,
 } from '../dist/index.js';
+
+test('SDK root authors mixed clinical batch operations through entry methods', () => {
+  const createdAllergyId = 'allergy-sdk-core-create-001';
+  const allergyId = 'allergy-sdk-core-001';
+  const allergyVersionId = 'zSdkCoreClinicalVersion001';
+  const batch = new BundleEditor().setBundleType(BundleTypes.batch);
+
+  batch
+    .newEntryAs(BundleEditableResourceTypes.allergyIntolerance, createdAllergyId)
+    .create();
+  batch
+    .newEntryAs(BundleEditableResourceTypes.allergyIntolerance, allergyId)
+    .delete()
+    .ifMatch(allergyVersionId);
+
+  const built = batch.build();
+  assert.equal(built.entry[0].request.method, HttpRequestMethods.Post);
+  assert.equal(built.entry[1].request.method, HttpRequestMethods.Delete);
+  assert.equal(built.entry[1].resource, undefined);
+});
 
 test('SDK root keeps manual CodeableConcept text separate from system|code', () => {
   const token = 'http://snomed.info/sct|373270004';

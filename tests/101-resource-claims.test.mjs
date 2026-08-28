@@ -105,7 +105,7 @@ test('101: sdk-core resource claim classes stay thin and discoverable', () => {
       HealthcareBasicSections.Results.attributeValue,
     ].join(','),
   );
-  assert.equal(medicationClaims[MedicationStatementClaim.MedicationText], EXAMPLE_MEDICATION_IBUPROFEN_TEXT);
+  assert.equal(medicationClaims[MedicationStatementClaim.CodeText], EXAMPLE_MEDICATION_IBUPROFEN_TEXT);
   assert.equal(medicationClaims[MedicationStatementClaimsFhirApiExtended.DoseQuantityValue], 400);
   assert.equal(EXAMPLE_MEDICATION_IBUPROFEN_NOTE, 'Take every 8 hours as needed. Keep a 4 hour gap from paracetamol.');
 

@@ -12,6 +12,7 @@ export {
   BundleOperations,
   BundleTypes,
 } from 'gdc-common-utils-ts/models/bundle-editor-types';
+export { HttpRequestMethods } from 'gdc-common-utils-ts/constants/http';
 export {
   HealthcareDocumentTypes,
   HealthcareIpsSectionResourceProfiles,

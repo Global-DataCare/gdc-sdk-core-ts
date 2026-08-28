@@ -79,7 +79,7 @@ test('101: portal/backend submits the first legal-organization ICA verification 
     'https://host.example.org/host/cds-es/v1/test-network/registry/org.schema/Organization/_transaction',
   );
   assert.equal(
-    submission.body.data[0]?.meta?.claims?.[ClaimsOrganizationSchemaorg.identifierValue],
+    submission.body.data[0]?.resource?.meta?.claims?.[ClaimsOrganizationSchemaorg.identifierValue],
     EXAMPLE_LEGAL_ORGANIZATION_TAX_ID,
   );
   assert.equal(
