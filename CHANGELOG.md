@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-08-28
+
+- Re-export the typed mixed clinical batch surface from Common Utils. Entry
+  editors now expose `create()`, `update()`, `delete()` and optional `ifMatch()`
+  semantics without requiring consumers to author raw FHIR request methods.
+
 ## [2.3.20] - 2026-08-26
 
 - Separate legacy representative bootstrap from modern device enrollment in
