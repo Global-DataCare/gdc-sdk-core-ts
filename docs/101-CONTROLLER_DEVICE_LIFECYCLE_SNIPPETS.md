@@ -34,6 +34,11 @@ Primary readback helpers:
 - `readCommercialOfferId(...)` from `gdc-sdk-core-ts`
 - `readActivationCode(...)` from `gdc-sdk-core-ts`
 
+`readActivationCode(...)` keeps the response layers separate: lifecycle claims
+come from `body.data[0].meta.claims`, while the Order's FHIR Invoice remains in
+`body.data[0].resource`. The reader also accepts the older resource-scoped
+claims projection; portal code must not traverse either envelope manually.
+
 Architecture background lives in:
 
 - [ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md](./ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md)

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Read controller activation licences from the actual GW Order and
+  Organization/_issue response location, `body.data[0].meta.claims`, while
+  retaining compatibility with older `resource.meta.claims` projections. The
+  reader does not replace or reinterpret the FHIR Invoice in `resource`.
+
 ## [2.4.0] - 2026-08-28
 
 - Re-export the typed mixed clinical batch surface from Common Utils. Entry
