@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-09-01
+
 - Read controller activation licences from the actual GW Order and
   Organization/_issue response location, `body.data[0].meta.claims`, while
   retaining compatibility with older `resource.meta.claims` projections. The
