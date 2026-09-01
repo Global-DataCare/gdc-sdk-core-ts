@@ -61,7 +61,10 @@ export function resolveTransportThreadId(profile: TransportProfile, payload: Rec
  * New applications own a claims-first `CommMsgExtended` outbox job; legacy
  * FHIR-Communication jobs remain accepted temporarily. This function first
  * renders `data[]` or `Bundle.entry[]`, then adds a DIDComm envelope only for
- * DIDComm profiles. Callers must not hand-build either representation or JWE.
+ * DIDComm profiles. The standard `from` sender is also projected to the GDC
+ * operational `iss` field when the authored message did not already provide
+ * one, so GW can bind clinical writes to the verified envelope actor. Callers
+ * must not hand-build either representation or JWE.
  */
 export async function renderCommunicationOutboxRequest(
   job: CommunicationOutboxJob | CommMsgExtendedCommunicationOutboxJob,
@@ -82,9 +85,16 @@ export async function renderCommunicationOutboxRequest(
         options.formatRenderers,
       )
     : requireEnvelopeBundle(job.envelope);
-  const didcommMessage = canonicalMessageJob
+  const authoredDidcommMessage: Record<string, unknown> = canonicalMessageJob
     ? { ...job.payload, body: clinicalBody, thid: job.thid }
     : { ...job.envelope, thid: job.thid };
+  const didcommSender = typeof authoredDidcommMessage.from === 'string'
+    ? authoredDidcommMessage.from.trim()
+    : '';
+  const didcommMessage = {
+    ...authoredDidcommMessage,
+    ...(!authoredDidcommMessage.iss && didcommSender ? { iss: didcommSender } : {}),
+  };
 
   if (profile === TransportProfiles.FhirJson) {
     const isFhirBundle = clinicalBody.resourceType === 'Bundle';

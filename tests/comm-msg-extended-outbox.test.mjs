@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -141,6 +142,18 @@ test('builds a DIDComm envelope only for DIDComm transport', async () => {
 
   assert.equal(rendered.body, 'request=compact-jwe');
   assert.ok(Array.isArray(packed[0].body.data));
+  assert.equal(packed[0].iss, packed[0].from);
+});
+
+test('projects the canonical DIDComm sender as the operational issuer in plain transport', async () => {
+  const rendered = await renderCommunicationOutboxRequest(
+    createIpsJob(),
+    TransportProfiles.DidcommPlainJson,
+    undefined,
+    { clinicalFormat: 'api' },
+  );
+
+  assert.equal(rendered.body.iss, rendered.body.from);
 });
 
 test('rejects an unknown clinical format when no extension renderer owns it', async () => {

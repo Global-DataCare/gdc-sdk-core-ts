@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-09-01
+
+- Project the canonical DIDComm `from` sender to the operational `iss` field
+  for plain and encrypted outbox transport when no issuer was already authored.
+  This lets GW bind high-level clinical writes to the envelope actor without
+  callers constructing transport plumbing.
+- Make local live E2E mandatory before npm publication or image construction;
+  a reported `SKIP` is a failed release gate.
+
 ## [2.4.1] - 2026-09-01
 
 - Read controller activation licences from the actual GW Order and
