@@ -1,5 +1,12 @@
 # gdc-sdk-core-ts
 
+## Local-first release contract
+
+All consumers follow `test -> local-network -> test-network -> network`.
+Every affected live E2E runs against real local services; a live E2E reported
+as `SKIP` blocks the release. Complete those live E2E gates before
+`npm publish` or any container image build. Mocks are diagnostic only.
+
 See [ARCHITECTURE.md](./ARCHITECTURE.md) and
 [CONTRIBUTING.md](./CONTRIBUTING.md) before adding or reshaping facades,
 profile contracts, or high-level tests.
