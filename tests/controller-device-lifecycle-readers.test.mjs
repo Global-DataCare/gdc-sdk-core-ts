@@ -1,3 +1,4 @@
+// Flow contract: SDK lifecycle readers consume GW Bundle entry claims without replacing the entry resource, and preserve resource-scoped compatibility.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readActivationCode, readCommercialOfferId } from '../dist/index.js';
@@ -28,4 +29,15 @@ test('lifecycle readers accept a canonical body without the submit/poll envelope
 
   assert.equal(readCommercialOfferId(body), 'urn:example:resource-offer');
   assert.equal(readActivationCode(body), 'lic-resource-access');
+});
+
+test('activation reader consumes Order response entry claims while preserving the Invoice resource', () => {
+  const invoice = { resourceType: 'Bundle', type: 'collection', entry: [] };
+  const body = { data: [{
+    meta: { claims: { 'org.schema.IndividualProduct.serialNumber': 'lic-order-entry' } },
+    resource: invoice,
+  }] };
+
+  assert.equal(readActivationCode(body), 'lic-order-entry');
+  assert.equal(body.data[0].resource, invoice);
 });

@@ -8,13 +8,18 @@ function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-/** Accepts the complete submit/poll result and reads canonical resource claims. */
+/**
+ * Accepts the complete submit/poll result and reads the first response entry.
+ * Order and Organization/_issue return lifecycle claims in `entry.meta.claims`
+ * while keeping the FHIR Invoice or business document unchanged in `resource`.
+ * Older resource-scoped projections remain readable for compatibility.
+ */
 function readFirstEntryClaims(value: unknown): Record<string, unknown> {
   const result = (value || {}) as Record<string, any>;
   const bundle = result.poll?.body || result.body || result;
   const entries = Array.isArray(bundle.data) ? bundle.data : Array.isArray(bundle.entry) ? bundle.entry : [];
   const first = (entries[0] || {}) as Record<string, any>;
-  return (first.resource?.meta?.claims || {}) as Record<string, unknown>;
+  return (first.meta?.claims || first.resource?.meta?.claims || {}) as Record<string, unknown>;
 }
 
 /**
