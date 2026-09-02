@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.3] - 2026-09-01
+
+- Replace the invented `AccessRequest.*` permission-request projection with
+  one auditable Communication carrying a batch Bundle of standard
+  `Consent.status = draft` entries. Draft requests never grant SMART access.
+- Consume the shared Common Utils Consent status/editor contract instead of
+  duplicating FHIR lifecycle vocabulary in SDK Core.
+
 ## [2.4.2] - 2026-09-01
 
 - Project the canonical DIDComm `from` sender to the operational `iss` field
