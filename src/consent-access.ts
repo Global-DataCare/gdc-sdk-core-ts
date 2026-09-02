@@ -14,7 +14,20 @@ import {
 } from 'gdc-common-utils-ts/utils/consent';
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import type { ConsentRule } from 'gdc-common-utils-ts/models/consent-rule';
+import {
+  ClaimConsent,
+  ConsentDecisions,
+  ConsentStatuses,
+} from 'gdc-common-utils-ts/models/consent-rule';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
+import {
+  BundleEditableResourceTypes,
+  BundleOperations,
+  BundleTypes,
+} from 'gdc-common-utils-ts/models/bundle-editor-types';
+import { BundleEditor } from 'gdc-common-utils-ts/utils/bundle-editor-core';
+// Registers the typed Consent entry surface used by BundleEditor.newEntryAs.
+import 'gdc-common-utils-ts/utils/consent-entry-editor';
 import type { BundleSearchQuery, CommunicationInput } from './communication-bundle-contracts.js';
 
 export type PermissionRequestCommunicationInput = Readonly<{
@@ -24,6 +37,7 @@ export type PermissionRequestCommunicationInput = Readonly<{
   purpose?: string;
   missing: MissingPermissionSet;
   communicationIdentifier?: string;
+  consentIdentifier?: string;
   thid?: string;
   sender?: string;
   recipient?: string | string[];
@@ -94,6 +108,9 @@ function compact(values: Array<string | undefined>): string[] {
 /**
  * Builds the canonical `Communication` payload used to request additional
  * subject-controlled permissions when the current SMART request is not covered.
+ * Its payload is a normal FHIR-like batch Bundle containing one
+ * `Consent.status = draft`; the draft records the proposal but grants nothing.
+ * `AccessRequest` is not a FHIR resource and must never be introduced here.
  *
  * Push/email/SMS remain notification channels around this canonical
  * `Communication`, not the primary contract.
@@ -117,18 +134,51 @@ export function buildPermissionRequestCommunication(
       + `${input.missing.resourceTypes.length ? ` and ${input.missing.resourceTypes.join(', ')}` : ''}.`;
 
   const claims: Record<string, unknown> = {
-    '@context': 'org.hl7.fhir.r4',
+    '@context': 'org.hl7.fhir.api',
     [CommunicationClaim.Identifier]: input.communicationIdentifier,
     [CommunicationClaim.Subject]: input.subject,
     [CommunicationClaim.Recipient]: input.recipient,
     [CommunicationClaim.Sender]: input.sender,
-    'AccessRequest.requester-target': requesterTargets.join(','),
-    'AccessRequest.requester-role': input.requesterRole,
-    'AccessRequest.purpose': input.purpose,
-    'AccessRequest.missing-sections': input.missing.sections.join(','),
-    'AccessRequest.missing-resource-types': input.missing.resourceTypes.join(','),
-    'AccessRequest.document-content-cid': input.documentContentCid,
+    [CommunicationClaim.Category]: 'permission-request',
+    [CommunicationClaim.NoteText]: text,
   };
+
+  const bundleEditor = new BundleEditor()
+    .setBundleOperation(BundleOperations.create)
+    .setBundleType(BundleTypes.batch)
+    .setAllowedResourceType(BundleEditableResourceTypes.consent);
+  const consentEditor = bundleEditor.newEntryAs(BundleEditableResourceTypes.consent);
+  if (input.consentIdentifier) consentEditor.setIdentifier(input.consentIdentifier);
+  consentEditor
+    .setStatus(ConsentStatuses.Draft)
+    .setSubject(input.subject)
+    .setDecision(ConsentDecisions.Permit)
+    .setActorIdentifierList(requesterTargets)
+    .setActorRoleList(compact([input.requesterRole]))
+    .setPurposeList(compact([input.purpose]))
+    .setSectionList(input.missing.sections)
+    .setResourceTypeList(input.missing.resourceTypes)
+    .doneEntry();
+  const payload = bundleEditor.buildJsonApi() as Record<string, unknown>;
+  const payloadData = Array.isArray(payload.data)
+    ? payload.data as Array<Record<string, any>>
+    : [];
+  const consentEntry = payloadData[0];
+  if (consentEntry?.request) consentEntry.request.url = ResourceTypesFhirR4.Consent;
+  if (consentEntry?.resource) {
+    // `meta.claims` remains the canonical cross-version representation. The
+    // native status is mirrored because every FHIR Consent requires it and
+    // consumers must be able to inspect the request without claim plumbing.
+    consentEntry.resource.status = ConsentStatuses.Draft;
+    consentEntry.resource.meta = {
+      ...consentEntry.resource.meta,
+      claims: {
+        '@context': 'org.hl7.fhir.api',
+        ...(consentEntry.resource.meta?.claims || {}),
+        [ClaimConsent.status]: ConsentStatuses.Draft,
+      },
+    };
+  }
 
   return {
     thid: input.thid,
@@ -138,6 +188,7 @@ export function buildPermissionRequestCommunication(
     category: ['permission-request'],
     text,
     claims,
+    payload,
   };
 }
 

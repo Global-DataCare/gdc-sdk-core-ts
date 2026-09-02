@@ -161,6 +161,11 @@ Primary reusable examples:
 - build permission-request `Communication`
 - invite actor and accept invitation
 
+A permission request is not a new resource type. The reusable constructor
+authors one auditable FHIR `Communication` whose attachment is a batch Bundle
+of `Consent.status = draft` resources. Draft Consent records requested scope
+but never grants access; the controller must later author an active Consent.
+
 Primary reusable examples:
 
 - [gdc-common-utils-ts/src/examples/related-person.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/related-person.ts)
@@ -216,6 +221,10 @@ Main helpers:
 - `getMissingPermissions(...)`
 - `buildPermissionRequestCommunication(...)`
 - `buildPermissionRequestCommunicationLookupQuery(...)`
+
+The constructor uses only registered `Communication.*` and `Consent.*` claims.
+Do not add `AccessRequest`, `AccessRequest.*`, product names, or notification
+transport details to this shared contract.
 
 Reference:
 

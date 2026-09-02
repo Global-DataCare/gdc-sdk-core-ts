@@ -500,6 +500,13 @@ Shared helpers:
 - [getMissingPermissions(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
 - [buildPermissionRequestCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/consent-access.ts)
 
+`buildPermissionRequestCommunication(...)` returns the high-level auditable
+message: a FHIR `Communication` draft carrying a batch Bundle whose entries are
+normal `Consent.status = draft` resources. The draft is inbox evidence only;
+it cannot authorize SMART access. Do not invent an `AccessRequest` resource or
+claims. Push, email and SMS may notify the controller, but they do not replace
+the Communication/Consent contract.
+
 Public runtime surfaces:
 
 - [IndividualControllerSdk](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/src/orchestration/individual-controller-sdk.ts)
