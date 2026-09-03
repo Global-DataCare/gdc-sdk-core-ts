@@ -10,6 +10,8 @@ import type {
 import { getBaseUrlFromDidWeb } from 'gdc-common-utils-ts/utils/did';
 import { ClaimsOrganizationSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
+import { GatewayRequestEntryTypes } from 'gdc-common-utils-ts/constants/gateway-response';
+import { Resource } from 'gdc-common-utils-ts/constants/Schemas';
 
 export const IndividualOnboardingGatewayOperation = Object.freeze({
   PdfDraftCreate: 'pdf-draft-create',
@@ -192,9 +194,12 @@ export function buildIndividualOrganizationRegistrationGatewayRequestBundle(
     type: 'collection',
     total: 1,
     data: [{
-      type: 'Family-registration-form-v1.0',
-      meta: {
-        ...(input.claims ? { claims: input.claims } : {}),
+      type: GatewayRequestEntryTypes.FamilyRegistrationForm,
+      resource: {
+        resourceType: Resource.ORGANIZATION,
+        meta: {
+          ...(input.claims ? { claims: input.claims } : {}),
+        },
       },
     }],
     ...(attachments.length > 0 ? { attachments } : {}),

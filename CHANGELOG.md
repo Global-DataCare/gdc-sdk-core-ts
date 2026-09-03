@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.8] - 2026-09-03
+
+- Complete the canonical claims migration for individual onboarding and
+  organization activation: legacy input claims remain readable during the
+  compatibility window, but every newly authored bundle entry now emits them
+  only at `entry.resource.meta.claims`.
+- Strengthen the source-level writer regression gate so nested and transformed
+  bundle entries cannot reintroduce `entry.meta.claims`.
+- Consume `gdc-common-utils-ts@2.7.7` for the shared canonical gateway and
+  SMART post-DCR route vocabulary.
+
 ## [2.4.7] - 2026-09-02
 
 - Emit controller, licence and hosting Order claims only at

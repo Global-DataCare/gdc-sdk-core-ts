@@ -316,22 +316,26 @@ export function createBootstrapFacade(): BootstrapFacade {
         const serviceClaims = builder.buildServiceClaims();
         const data = Array.isArray(input.data) && input.data.length
           ? input.data.map((entry) => {
-            const currentMetaClaims = (entry as any)?.meta?.claims || {};
+            const {
+              claims: legacyClaims,
+              ...currentEntryMeta
+            } = ((entry as any)?.meta || {}) as Record<string, unknown>;
+            const currentMetaClaims = legacyClaims
+              && typeof legacyClaims === 'object'
+              && !Array.isArray(legacyClaims)
+              ? legacyClaims as Record<string, unknown>
+              : {};
+            const { meta: _legacyEntryMeta, ...entryWithoutLegacyMeta } = entry as any;
             const currentResourceClaims = (entry as any)?.resource?.meta?.claims || {};
             return {
-              ...entry,
-              meta: {
-                ...((entry as any)?.meta || {}),
-                claims: {
-                  ...currentMetaClaims,
-                  ...serviceClaims,
-                },
-              },
+              ...entryWithoutLegacyMeta,
+              ...(Object.keys(currentEntryMeta).length > 0 ? { meta: currentEntryMeta } : {}),
               resource: {
                 ...((entry as any)?.resource || {}),
                 meta: {
                   ...((entry as any)?.resource?.meta || {}),
                   claims: {
+                    ...currentMetaClaims,
                     ...currentResourceClaims,
                     ...serviceClaims,
                   },
