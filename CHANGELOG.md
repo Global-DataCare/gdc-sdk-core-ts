@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.9] - 2026-09-03
+
+- Consume `gdc-common-utils-ts@2.7.8` so SMART authentication tests and
+  downstream gateways reuse the shared client-assertion and ACR
+  discriminators instead of duplicating protocol literals.
+
 ## [2.4.8] - 2026-09-03
 
 - Complete the canonical claims migration for individual onboarding and
