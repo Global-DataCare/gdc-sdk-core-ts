@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.7] - 2026-09-02
+
+- Emit controller, licence and hosting Order claims only at
+  `entry.resource.meta.claims`, and reject new governed writers that restore
+  the legacy entry-level placement.
+- Keep controller-device response readers temporarily compatible with both
+  placements while making the canonical resource claims authoritative when
+  both are present.
+
 ## [2.4.6] - 2026-09-02
 
 - Clarify the direct clinical-summary identity contract in public JSDoc,

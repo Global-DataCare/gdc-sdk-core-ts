@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -5,6 +6,7 @@ import {
   createLifecycleResultReader,
   EXAMPLE_HOST_ROUTE_CONTEXT,
   EXAMPLE_LEGAL_ORGANIZATION_ORDER_RESPONSE,
+  EXAMPLE_LICENSE_OFFER_ID,
   EXAMPLE_TENANT_DISABLE_MESSAGE,
   EXAMPLE_TENANT_DISABLE_REQUEST_TYPE,
   OrganizationLifecycleEditor,
@@ -14,8 +16,27 @@ import {
 
 import {
   HostLifecycleRequestType,
+  confirmLegalOrganizationOrderWithDeps,
   submitHostedTenantLifecycleWithDeps,
 } from '../dist/index.js';
+
+test('confirmLegalOrganizationOrderWithDeps authors Order claims only on the entry resource', async () => {
+  const calls = [];
+  await confirmLegalOrganizationOrderWithDeps({
+    input: { offerId: EXAMPLE_LICENSE_OFFER_ID },
+    hostCtx: cloneExample(EXAMPLE_HOST_ROUTE_CONTEXT),
+    hostRegistryOrderBatchPath: () => '/Order/_batch',
+    hostRegistryOrderPollPath: () => '/Order/_batch-response',
+    submitAndPoll: async (...args) => {
+      calls.push(args);
+      return cloneExample(EXAMPLE_LEGAL_ORGANIZATION_ORDER_RESPONSE);
+    },
+  });
+
+  const entry = calls[0][2].body.data[0];
+  assert.equal(entry.resource.meta.claims['Order.acceptedOffer.identifier'], EXAMPLE_LICENSE_OFFER_ID);
+  assert.equal(entry.meta?.claims, undefined);
+});
 
 test('submitHostedTenantLifecycleWithDeps accepts shared organization lifecycle editors', async () => {
   const calls = [];

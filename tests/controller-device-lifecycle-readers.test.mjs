@@ -31,7 +31,7 @@ test('lifecycle readers accept a canonical body without the submit/poll envelope
   assert.equal(readActivationCode(body), 'lic-resource-access');
 });
 
-test('activation reader consumes Order response entry claims while preserving the Invoice resource', () => {
+test('activation reader temporarily accepts legacy Order response entry claims while preserving the Invoice resource', () => {
   const invoice = { resourceType: 'Bundle', type: 'collection', entry: [] };
   const body = { data: [{
     meta: { claims: { 'org.schema.IndividualProduct.serialNumber': 'lic-order-entry' } },
@@ -40,4 +40,13 @@ test('activation reader consumes Order response entry claims while preserving th
 
   assert.equal(readActivationCode(body), 'lic-order-entry');
   assert.equal(body.data[0].resource, invoice);
+});
+
+test('lifecycle readers prefer canonical resource claims when both deployment shapes are present', () => {
+  const body = { data: [{
+    meta: { claims: { 'org.schema.Offer.identifier': 'urn:example:legacy-offer' } },
+    resource: { meta: { claims: { 'org.schema.Offer.identifier': 'urn:example:canonical-offer' } } },
+  }] };
+
+  assert.equal(readCommercialOfferId(body), 'urn:example:canonical-offer');
 });

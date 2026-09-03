@@ -148,7 +148,7 @@ type ConfirmLegalOrganizationOrderDeps = {
  *
  * Programming rule:
  * - `offerId` here must come from a prior response that exposed
- *   `meta.claims['org.schema.Offer.identifier']`
+ *   `resource.meta.claims['org.schema.Offer.identifier']`
  * - if the previous flow did not mint that claim, this helper must not be used
  */
 export async function confirmLegalOrganizationOrderWithDeps(
@@ -174,7 +174,6 @@ export async function confirmLegalOrganizationOrderWithDeps(
     body: {
       data: [{
         type: deps.input.dataType || 'Organization-order-request-v1.0',
-        meta: { claims },
         resource: { meta: { claims } },
       }],
     },
