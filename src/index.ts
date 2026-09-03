@@ -6,6 +6,7 @@ export * from './authority-resolver.js';
 export * from './app-identity.js';
 export * from './bootstrap-facade.js';
 export * from './clinical-summary.js';
+export * from './clinical-document-demo-clone.js';
 export * from './clinical-resource-authoring.js';
 export * from './communication-bundle-contracts.js';
 export * from './communication-bundle-resources.js';
