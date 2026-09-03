@@ -40,6 +40,7 @@ import {
   EXAMPLE_SELF_REGISTERED_INDIVIDUAL_EMAIL_NORMALIZED,
   EXAMPLE_SUBJECT_DID,
   EXAMPLE_TENANT_IDENTIFIER,
+  EXAMPLE_TENANT_ROUTE_CONTEXT,
   EXAMPLE_TENANT_SERVICE_DID,
 } from 'gdc-common-utils-ts/examples/shared';
 import {
@@ -181,8 +182,15 @@ test('101: portal onboarding demo flow submits a signed VC attachment plus minim
     registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsOrganizationSchemaorg.ownerEmail],
     undefined,
   );
-  assert.equal(registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsOrganizationSchemaorg.alternateName], EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME);
-  assert.equal(registrationSubmission.body.data[0]?.meta?.claims?.[ClaimsServiceSchemaorg.category], 'health-care');
+  assert.equal(registrationSubmission.body.data[0]?.meta?.claims, undefined);
+  assert.equal(
+    registrationSubmission.body.data[0]?.resource?.meta?.claims?.[ClaimsOrganizationSchemaorg.alternateName],
+    EXAMPLE_REGISTERED_SUBJECT_ALTERNATE_NAME,
+  );
+  assert.equal(
+    registrationSubmission.body.data[0]?.resource?.meta?.claims?.[ClaimsServiceSchemaorg.category],
+    EXAMPLE_TENANT_ROUTE_CONTEXT.sector,
+  );
   assert.equal(registrationSubmission.body.attachments?.[0]?.credentialSubject?.hasOccupation?.identifier?.value, 'RESPRSN');
   assert.equal(registrationSubmission.body.attachments?.[0]?.credentialSubject?.hasCredential?.material, EXAMPLE_ORG_CONTROLLER_SIGNING_KEY_ID);
 });

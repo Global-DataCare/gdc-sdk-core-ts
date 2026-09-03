@@ -30,7 +30,11 @@ test('governed SDK Core writers never author entry.meta.claims', () => {
   for (const file of sourceFiles(path.resolve('src'))) {
     const source = ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
     const visit = (node) => {
-      if (ts.isObjectLiteralExpression(node) && (hasProperty(node, 'request') || isDirectBundleArrayEntry(node))) {
+      if (ts.isObjectLiteralExpression(node) && (
+        hasProperty(node, 'request')
+        || hasProperty(node, 'resource')
+        || isDirectBundleArrayEntry(node)
+      )) {
         const legacyMeta = node.properties.find((property) => ts.isPropertyAssignment(property)
           && propertyName(property.name) === 'meta'
           && ts.isObjectLiteralExpression(property.initializer)
