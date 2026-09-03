@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Consume `gdc-common-utils-ts@2.8.1` so SDK runtimes and GW CORE share the
+  canonical DCR field for pre-authorized clinical creator bindings.
+
 - Add the runtime-neutral clinical creator export facade: authenticated email,
   telephone, actor-DID and DCR/device evidence resolves a protected stable
   member/Practitioner UUID plus role-assignment UUID, owner and governed role.
