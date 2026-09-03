@@ -614,6 +614,23 @@ For an editable demonstration copy of an imported IPS, pass the same profile
 `updateClinicalSummary(...)` sender. The helper sets the copy's
 `Composition.author` to that `actorDid`; it does not change the imported source.
 
+At IPS export time only, use `resolveClinicalCreatorIpsExport(...)` with the
+protected creator bindings and the already-authenticated channel evidence. It
+returns the FHIR author resources and the stable Consent actor. The same
+member/Practitioner UUID and assignment UUID are therefore reused after an
+email, telephone or registered DCR device login; none of those channel values
+becomes the exported author.
+
+```ts
+const exportedCreator = resolveClinicalCreatorIpsExport({
+  bindings: creatorBindings,
+  evidence: { actorDid: profile.actorDid },
+});
+
+composition.author = [{ reference: exportedCreator.author.authorReference }];
+bundle.entry.push(...exportedCreator.author.entries);
+```
+
 ## 7. Clinical Search And SMART Access
 
 Goal:
