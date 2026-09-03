@@ -58,8 +58,18 @@ export type CommMsgExtendedOutboxJobOptions = Readonly<{
 }>;
 
 export type ClinicalUpdateCommunicationInput = Readonly<{
+  /** DID of the individual whose clinical index is being updated. */
   subject: string;
+  /**
+   * Operational DID returned by the authenticated profile as `actorDid`.
+   * Direct clinical-summary calls also project this value to DIDComm
+   * `from`/`iss`; never substitute a stable multibase URN or a portal alias.
+   */
   sender?: string;
+  /**
+   * Real DID of the provider tenant inside its hosting host, not a portal
+   * alias and not the DID of the host itself.
+   */
   recipient?: string | string[];
   bundle: Record<string, unknown>;
   thid?: string;

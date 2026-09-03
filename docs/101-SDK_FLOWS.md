@@ -587,6 +587,7 @@ Shared helpers:
 - [createCommunicationResource(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
 - [buildCommunicationBatchMessage(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
 - [addFhirResourceToCommunication(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/communication-resource-helpers.ts)
+- [cloneImportedClinicalDocumentForDemo(...) ](https://github.com/Global-DataCare/gdc-sdk-core-ts/blob/main/src/clinical-document-demo-clone.ts)
 
 Public runtime surfaces:
 
@@ -597,10 +598,21 @@ Where the data comes from:
 
 - `subject`
   comes from the target subject DID
+- `sender`
+  is the operational `actorDid` returned by the authenticated profile, never a
+  stable multibase URN or a DID/alias owned by the portal
+- `recipient`
+  is the real provider-tenant DID inside the host that accommodates that
+  tenant, not the host DID or a portal alias
 - communication payload
   comes from the document or resource to import
 - write permission
   must already be granted and evaluated before runtime execution
+
+For an editable demonstration copy of an imported IPS, pass the same profile
+`actorDid` to `cloneImportedClinicalDocumentForDemo(...)` and as the direct
+`updateClinicalSummary(...)` sender. The helper sets the copy's
+`Composition.author` to that `actorDid`; it does not change the imported source.
 
 ## 7. Clinical Search And SMART Access
 

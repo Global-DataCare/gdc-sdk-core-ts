@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.6] - 2026-09-02
+
+- Clarify the direct clinical-summary identity contract in public JSDoc,
+  executable test comments and the high-level flow guide: `sender` is the
+  authenticated profile `actorDid`, `recipient` is the real hosted
+  provider-tenant DID, and the demo clone helper assigns that same `actorDid`
+  to the editable copy's `Composition.author`.
+
+## [2.4.5] - 2026-09-02
+
 - Add `cloneImportedClinicalDocumentForDemo(...)` to create an explicitly
   local, editable copy of an imported FHIR document with new resource ids,
   rewritten internal references, and the authenticated profile `actorDid` as

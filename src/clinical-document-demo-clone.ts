@@ -8,7 +8,10 @@ export type DemoClinicalDocumentResourceIdContext = Readonly<{
 
 export type CloneImportedClinicalDocumentForDemoInput = Readonly<{
   bundle: Record<string, unknown>;
-  /** Role-bearing actor DID resolved from the authenticated SDK profile/session. */
+  /**
+   * Operational `actorDid` returned by the authenticated SDK profile/session;
+   * never a stable multibase URN or a DID/alias owned by a portal.
+   */
   authenticatedActorDid: string;
   /** Optional deterministic factory for tests or a caller-owned demo namespace. */
   createResourceId?: (context: DemoClinicalDocumentResourceIdContext) => string;
@@ -48,7 +51,10 @@ function rewriteReferences(value: unknown, referenceMap: ReadonlyMap<string, str
  * id, internal references are rewritten, and the cloned Composition is owned
  * by the authenticated local actor. Source business identifiers and clinical
  * content remain intact so the copy retains its imported provenance without
- * pretending that the local actor authored the source document.
+ * pretending that the local actor authored the source document. The helper
+ * sets only the editable copy's `Composition.author`; direct update callers
+ * separately pass the same profile `actorDid` as `sender` and the real hosted
+ * provider-tenant DID as `recipient`.
  */
 export function cloneImportedClinicalDocumentForDemo(
   input: CloneImportedClinicalDocumentForDemoInput,
