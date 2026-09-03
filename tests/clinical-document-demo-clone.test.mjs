@@ -13,6 +13,8 @@ import { EXAMPLE_INTER_TENANT_ACCESS_CONTRACT_PROVIDER_ORGANIZATION_URN } from '
 import { cloneImportedClinicalDocumentForDemo } from '../dist/index.js';
 
 test('clones an imported IPS into a separately identified document owned by the demo actor', () => {
+  // Application contract: authenticatedActorDid is profile.actorDid. It is
+  // neither a stable multibase account URN nor a portal-owned DID/alias.
   const allergyId = EXAMPLE_ALLERGY_IDENTIFIER.split(':').at(-1);
   const originalBundle = {
     resourceType: ResourceTypesFhirR4.Bundle,
@@ -43,6 +45,8 @@ test('clones an imported IPS into a separately identified document owned by the 
     createResourceId: ({ originalId }) => `${originalId}-demo-copy`,
   });
 
+  // The helper owns the author rewrite; sender/recipient belong to the later
+  // updateClinicalSummary call and must not be inferred from imported data.
   assert.notStrictEqual(cloned, originalBundle);
   assert.equal(cloned.entry[0].resource.author[0].reference, EXAMPLE_CONTROLLER_DID);
   assert.equal(cloned.entry[0].resource.id, `${EXAMPLE_IPS_COMPOSITION_IDENTIFIER}-demo-copy`);

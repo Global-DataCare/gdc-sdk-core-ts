@@ -29,6 +29,8 @@ const clinicalDocument = {
 };
 
 function createIpsJob() {
+  // Direct clinical update contract: sender is the authenticated profile's
+  // operational actor DID; recipient is the real tenant DID hosted by GW.
   let communicationDraft = createCommMsgExtendedDraft({
     thid: 'ips-thread-1',
     subject: 'did:web:subject.example',
@@ -153,6 +155,8 @@ test('projects the canonical DIDComm sender as the operational issuer in plain t
     { clinicalFormat: 'api' },
   );
 
+  // This equality is why direct updateClinicalSummary callers must use
+  // profile.actorDid as sender rather than a stable URN or portal alias.
   assert.equal(rendered.body.iss, rendered.body.from);
 });
 
