@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -36,7 +37,8 @@ test('license controller facade stays thin over shared search editor and list re
   const entry = editor.buildSearchEntry();
 
   assert.equal(entry.type, LicenseEntryTypes.Search);
-  assert.equal(entry.meta.claims['@type'], LicenseEntryOperations.Search);
+  assert.equal(entry.resource.meta.claims['@type'], LicenseEntryOperations.Search);
+  assert.equal(entry.meta.claims, undefined);
   assert.equal(entry.meta.status, LicenseStatuses.Active);
 
   const records = facade.readListRecords(EXAMPLE_LICENSE_LIST_RESPONSE_BODY);
