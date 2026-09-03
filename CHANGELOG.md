@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add `cloneImportedClinicalDocumentForDemo(...)` to create an explicitly
+  local, editable copy of an imported FHIR document with new resource ids,
+  rewritten internal references, and the authenticated profile `actorDid` as
+  copy author. Stable contact URNs remain aliases and are never promoted to a
+  role-bearing author DID.
+  The input document and its source business identifiers remain unchanged.
+
 ## [2.4.4] - 2026-09-02
 
 - Require lockfile-authoritative npm ci, effective internal dependency
