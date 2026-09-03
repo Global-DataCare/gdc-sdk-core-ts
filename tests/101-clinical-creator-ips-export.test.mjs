@@ -1,0 +1,59 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import {
+  EXAMPLE_CLIENT_INSTANCE_UUID,
+  EXAMPLE_EMAIL_PROFESSIONAL,
+  EXAMPLE_HEALTHCARE_ACTOR_ROLE_PHYSICIAN,
+  EXAMPLE_KYC_CONTROLLER_TELEPHONE,
+  EXAMPLE_KYC_CONTROLLER_USER_UUID,
+  EXAMPLE_KYC_CONTROLLER_UUID,
+  EXAMPLE_PROVIDER_ORGANIZATION_DID,
+  FhirIpsCreatorKinds,
+  StableActorContactKinds,
+  buildStableActorIdentifier,
+} from 'gdc-common-utils-ts';
+import { resolveClinicalCreatorIpsExport } from '../dist/index.js';
+
+test('resolves portal, telephone and DCR channels to one PractitionerRole IPS author', () => {
+  const emailIdentifier = buildStableActorIdentifier({
+    contactKind: StableActorContactKinds.Email,
+    contact: EXAMPLE_EMAIL_PROFESSIONAL,
+  });
+  const telephoneIdentifier = buildStableActorIdentifier({
+    contactKind: StableActorContactKinds.Phone,
+    contact: EXAMPLE_KYC_CONTROLLER_TELEPHONE,
+  });
+  const binding = {
+    kind: FhirIpsCreatorKinds.Professional,
+    actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
+    authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
+    ownerIdentifier: EXAMPLE_PROVIDER_ORGANIZATION_DID,
+    role: EXAMPLE_HEALTHCARE_ACTOR_ROLE_PHYSICIAN,
+    verifiedContactIdentifiers: [emailIdentifier, telephoneIdentifier],
+    dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
+  };
+
+  for (const evidence of [
+    { verifiedContactIdentifiers: [emailIdentifier] },
+    { verifiedContactIdentifiers: [telephoneIdentifier] },
+    { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID },
+  ]) {
+    const exported = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
+    assert.equal(exported.author.authorReference, binding.authorIdentifier);
+    assert.equal(exported.author.entries[0].resource.resourceType, 'Practitioner');
+    assert.equal(exported.author.entries[1].resource.resourceType, 'PractitionerRole');
+    assert.deepEqual(exported.permissionActor, {
+      actorIdentifier: binding.authorIdentifier,
+      actorRole: binding.role,
+    });
+  }
+});
+
+test('fails closed when an authenticated channel has no creator binding', () => {
+  assert.throws(() => resolveClinicalCreatorIpsExport({
+    bindings: [],
+    evidence: { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID },
+  }), /No clinical creator binding matches/);
+});

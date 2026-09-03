@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add the runtime-neutral clinical creator export facade: authenticated email,
+  telephone, actor-DID and DCR/device evidence resolves a protected stable
+  member/Practitioner UUID plus role-assignment UUID, owner and governed role.
+- Export the resolved assignment as a FHIR IPS RelatedPerson or
+  PractitionerRole/Practitioner author and as the stable Consent actor without
+  changing direct `profile.actorDid` clinical-write semantics.
+
 ## [2.4.9] - 2026-09-03
 
 - Consume `gdc-common-utils-ts@2.7.8` so SMART authentication tests and
