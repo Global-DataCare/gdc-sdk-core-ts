@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-09-03
+
+- Let a server-side BFF pass an explicit clinical-section author separately
+  from the authenticated sender. The SDK clones the batch and owns canonical
+  `Composition.author` placement on the Bundle and each writable resource.
+
+## [2.5.1] - 2026-09-03
+
 - Consume `gdc-common-utils-ts@2.8.1` so SDK runtimes and GW CORE share the
   canonical DCR field for pre-authorized clinical creator bindings.
 

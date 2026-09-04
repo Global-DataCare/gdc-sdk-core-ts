@@ -7,6 +7,7 @@ import {
   attachSectionBundleToCommMsgExtendedDraft,
   createCommunicationOutboxJobFromCommMsgExtendedDraft,
   createCommMsgExtendedDraft,
+  createClinicalSectionUpdateOutboxJob,
   renderCommunicationOutboxRequest,
   TransportProfiles,
 } from '../dist/index.js';
@@ -234,4 +235,30 @@ test('section batch attachment carries the one section explicitly on Communicati
     ),
     /exactly one section/i,
   );
+});
+
+test('section update builder places the explicit author on each writable resource without mutating the BFF bundle', () => {
+  // Flow contract: the BFF selects an authorized clinical author independently
+  // from the authenticated sender; the SDK owns canonical claim placement.
+  const source = {
+    resourceType: 'Bundle',
+    type: 'batch',
+    data: [{
+      request: { method: 'PUT', url: 'Observation/9f45a66d-14cb-4b97-b72c-e0bd77254cb6' },
+      resource: { resourceType: 'Observation', id: '9f45a66d-14cb-4b97-b72c-e0bd77254cb6' },
+    }],
+  };
+  const job = createClinicalSectionUpdateOutboxJob({
+    subject: 'did:web:subject.example',
+    sender: 'did:web:clinic.example:employee:assistant',
+    author: 'did:web:clinic.example:employee:veterinarian',
+    section: 'http://loinc.org|30954-2',
+    bundle: source,
+  });
+  const claims = job.payload.body.data[0].resource.meta.claims;
+  const attached = JSON.parse(Buffer.from(claims['Communication.content-attachment-data'], 'base64').toString('utf8'));
+
+  assert.equal(attached.meta.claims['Composition.author'], 'did:web:clinic.example:employee:veterinarian');
+  assert.equal(attached.data[0].resource.meta.claims['Composition.author'], 'did:web:clinic.example:employee:veterinarian');
+  assert.equal(source.data[0].resource.meta, undefined);
 });

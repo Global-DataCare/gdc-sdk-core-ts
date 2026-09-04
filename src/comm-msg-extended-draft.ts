@@ -2,6 +2,7 @@
 
 import type { CommMsgExtended, DataEntry } from 'gdc-common-utils-ts/models/comm';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
+import { CompositionClaim } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
 import type { CommunicationOutboxStatus } from './communication-draft.js';
@@ -79,7 +80,11 @@ export type ClinicalUpdateCommunicationInput = Readonly<{
 }>;
 
 export type ClinicalSectionUpdateCommunicationInput =
-  ClinicalUpdateCommunicationInput & Readonly<{ section: string }>;
+  ClinicalUpdateCommunicationInput & Readonly<{
+    section: string;
+    /** Clinical author selected and authorized by the server-side BFF. */
+    author?: string;
+  }>;
 
 export type CommunicationClinicalFormatRenderer = (
   message: CommMsgExtended,
@@ -351,13 +356,38 @@ export function createClinicalSectionUpdateOutboxJob(
     sent: input.sent,
     noteText: input.noteText,
   });
+  const bundle = input.author
+    ? applyClinicalSectionAuthor(input.bundle, input.author)
+    : input.bundle;
   return createCommunicationOutboxJobFromCommMsgExtendedDraft(
-    attachSectionBundleToCommMsgExtendedDraft(draft, input.bundle, {
+    attachSectionBundleToCommMsgExtendedDraft(draft, bundle, {
       section: input.section,
       attachmentTitle: input.attachmentTitle || 'clinical-section-update.json',
       noteText: input.noteText,
     }),
   );
+}
+
+function applyClinicalSectionAuthor(
+  source: Record<string, unknown>,
+  authorInput: string,
+): Record<string, unknown> {
+  const author = String(authorInput || '').trim();
+  if (!author) throw new TypeError('Clinical section author must be a non-empty identifier.');
+  const bundle = clone(source) as Record<string, any>;
+  bundle.meta = { ...(bundle.meta || {}), claims: {
+    ...(bundle.meta?.claims || {}),
+    [CompositionClaim.Author]: author,
+  } };
+  const entries = Array.isArray(bundle.data) ? bundle.data : Array.isArray(bundle.entry) ? bundle.entry : [];
+  for (const entry of entries) {
+    if (!entry?.resource || String(entry?.request?.method || '').toUpperCase() === 'DELETE') continue;
+    entry.resource.meta = { ...(entry.resource.meta || {}), claims: {
+      ...(entry.resource.meta?.claims || {}),
+      [CompositionClaim.Author]: author,
+    } };
+  }
+  return bundle;
 }
 
 /** Freezes one canonical `CommMsgExtended` draft into a local outbox job. */
