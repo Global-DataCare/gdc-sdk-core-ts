@@ -33,16 +33,14 @@ description: Enforce branch, TDD, local live E2E, changelog, patch publication, 
    worktree.
 4. Never open an unrelated next fix while that closure is incomplete.
 
-## Interactive npm authorization fallback
+## Mandatory release authorization continuity
 
-1. Keep each authorization command and its browser window alive for up to five
-   minutes. If it expires or is rejected, create a fresh window; make at most
-   three attempts and never end the turn while one is pending.
-2. After three failed attempts, `npm pack` may create an immutable tarball so a
-   downstream consumer can be prepared and its local tests can continue.
-3. Tarball validation is provisional. Do not commit `file:` dependencies, mark
-   publication complete, publish the consumer, merge it to `main`, build an
-   image, or deploy anything from that dependency chain.
-4. When npm publication becomes available, install the exact dependency from
-   the registry, regenerate the lockfile, rerun the affected verification, and
-   only then publish the consumer, verify it, merge to `main`, and deploy.
+For any release chain that requires npm authorization, make at most three
+attempts and keep each command session and browser window alive for up to five
+minutes. Never end the turn or imply continued work while a window is pending.
+After all three attempts fail, an immutable `npm pack` tarball may be used only
+to prepare a downstream consumer and continue local tests; never commit a
+`file:` dependency. The registry dependency must publish and its exact npm
+version must be reinstalled and verified before the consumer may publish, merge
+to `main`, build an image, or deploy. Final order remains: push the branch,
+run `npm publish` from it, verify, merge to `main`, push and delete the branch.

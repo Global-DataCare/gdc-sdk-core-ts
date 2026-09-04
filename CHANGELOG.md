@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.4] - 2026-09-04
+
+- Require every repository skill to preserve bounded npm authorization
+  retries, tarball-only local fallback, and registry verification before any
+  consumer publication, merge, image build, or deployment.
+- Prepare consumption of `gdc-common-utils-ts@2.8.3`; release closure remains
+  blocked until that exact version is installed and verified from npm.
+
 ## [2.5.3] - 2026-09-04
 
 - Consume `gdc-common-utils-ts@2.8.2` for canonical FHIR LOINC section routing
