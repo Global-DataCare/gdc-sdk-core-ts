@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.3] - 2026-09-04
+
+- Consume `gdc-common-utils-ts@2.8.2` for canonical FHIR LOINC section routing
+  when importing individual clinical bundle documents.
+- Make branch-first publication, bottom-up consumer promotion, and the bounded
+  three-attempt npm authorization fallback explicit release contracts.
+
 ## [2.5.2] - 2026-09-03
 
 - Let a server-side BFF pass an explicit clinical-section author separately

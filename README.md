@@ -6,6 +6,16 @@ All consumers follow `test -> local-network -> test-network -> network`.
 Every affected live E2E runs against real local services; a live E2E reported
 as `SKIP` blocks the release. Complete those live E2E gates before
 `npm publish` or any container image build. Mocks are diagnostic only.
+Release dependencies bottom-up through their consumers. Push the branch, run
+`npm publish` from the branch, verify the registry artifact and a clean npm
+installation, and only then merge to `main`, push it, and delete the branch.
+
+Keep each interactive npm authorization window alive for up to five minutes
+and retry no more than three times. After three failed attempts, downstream
+work may continue against an immutable `npm pack` tarball for local validation
+only. A local tarball or `file:` dependency never permits consumer publication,
+merge to `main`, image creation, or deployment; first install and verify the
+published dependency from npm.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) and
 [CONTRIBUTING.md](./CONTRIBUTING.md) before adding or reshaping facades,

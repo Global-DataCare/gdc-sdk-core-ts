@@ -13,5 +13,7 @@ test('release guidance blocks skipped live E2E before publication or images', as
     assert.match(contract, /test -> local-network -> test-network -> network/);
     assert.match(contract, /live.*E2E.*SKIP.*release/s);
     assert.match(contract, /live.*E2E.*npm publish.*container image/s);
+    assert.match(contract, /push.*branch.*npm publish.*verify.*merge.*main/is);
+    assert.match(contract, /dependenc(?:y|ies).*bottom-up.*consumer/is);
   }
 });
