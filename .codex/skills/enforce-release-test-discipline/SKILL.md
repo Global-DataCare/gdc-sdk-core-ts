@@ -26,7 +26,23 @@ description: Enforce branch, TDD, local live E2E, changelog, patch publication, 
 ## Release
 
 1. Update the changelog and immutable patch version.
-2. Push the branch, merge it explicitly into `main`, push `main`, and verify a
-   clean worktree.
-3. Publish from `main` in a real TTY, verify registry version and integrity,
-   then pin consumers exactly and repeat their local live gates.
+2. Release the dependency chain bottom-up, one package and then each consumer.
+3. Push the branch, run `npm publish` from that branch in a real TTY, verify
+   registry version, integrity and a clean registry installation, then merge
+   explicitly into `main`, push `main`, delete the branch and verify a clean
+   worktree.
+4. Never open an unrelated next fix while that closure is incomplete.
+
+## Interactive npm authorization fallback
+
+1. Keep each authorization command and its browser window alive for up to five
+   minutes. If it expires or is rejected, create a fresh window; make at most
+   three attempts and never end the turn while one is pending.
+2. After three failed attempts, `npm pack` may create an immutable tarball so a
+   downstream consumer can be prepared and its local tests can continue.
+3. Tarball validation is provisional. Do not commit `file:` dependencies, mark
+   publication complete, publish the consumer, merge it to `main`, build an
+   image, or deploy anything from that dependency chain.
+4. When npm publication becomes available, install the exact dependency from
+   the registry, regenerate the lockfile, rerun the affected verification, and
+   only then publish the consumer, verify it, merge to `main`, and deploy.
