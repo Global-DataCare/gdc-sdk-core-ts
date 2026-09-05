@@ -4,11 +4,13 @@ import {
   FhirIpsCreatorKinds,
   buildClinicalCreatorPermissionActor,
   buildFhirIpsCreatorAuthor,
+  buildFhirIpsCreatorProvenance,
   resolveClinicalCreatorBinding,
   type AuthenticatedClinicalCreatorEvidence,
   type ClinicalCreatorBinding,
   type ClinicalCreatorPermissionActor,
   type FhirIpsCreatorAuthor,
+  type FhirIpsCreatorProvenance,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 
 export type ClinicalCreatorIpsExportInput = Readonly<{
@@ -19,6 +21,9 @@ export type ClinicalCreatorIpsExportInput = Readonly<{
 
 export type ClinicalCreatorIpsExport = Readonly<{
   binding: ClinicalCreatorBinding;
+  /** Canonical Composition author, attester and supporting FHIR resources. */
+  provenance: FhirIpsCreatorProvenance;
+  /** @deprecated Use `provenance`; retained for rolling portal compatibility. */
   author: FhirIpsCreatorAuthor;
   permissionActor: ClinicalCreatorPermissionActor;
 }>;
@@ -62,9 +67,29 @@ export function resolveClinicalCreatorIpsExport(
           kind: FhirIpsCreatorKinds.IndividualSubject,
           subjectReference: binding.ownerIdentifier,
         });
+  const provenance = binding.kind === FhirIpsCreatorKinds.Professional
+    ? buildFhirIpsCreatorProvenance({
+        ...common,
+        kind: FhirIpsCreatorKinds.Professional,
+        organizationReference: binding.ownerIdentifier,
+        role: binding.role,
+      })
+    : binding.kind === FhirIpsCreatorKinds.IndividualMember
+      ? buildFhirIpsCreatorProvenance({
+          ...common,
+          kind: FhirIpsCreatorKinds.IndividualMember,
+          subjectReference: binding.ownerIdentifier,
+          role: binding.role,
+        })
+      : buildFhirIpsCreatorProvenance({
+          ...common,
+          kind: FhirIpsCreatorKinds.IndividualSubject,
+          subjectReference: binding.ownerIdentifier,
+        });
 
   return {
     binding,
+    provenance,
     author,
     permissionActor: buildClinicalCreatorPermissionActor(binding),
   };
@@ -75,10 +100,12 @@ export type {
   ClinicalCreatorBinding,
   ClinicalCreatorPermissionActor,
   FhirIpsCreatorAuthor,
+  FhirIpsCreatorProvenance,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 export {
   FhirIpsCreatorKinds,
   buildClinicalCreatorPermissionActor,
   buildFhirIpsCreatorAuthor,
+  buildFhirIpsCreatorProvenance,
   resolveClinicalCreatorBinding,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';

@@ -10,13 +10,14 @@ import {
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
+  CompositionAttesterModes,
   FhirIpsCreatorKinds,
   StableActorContactKinds,
   buildStableActorIdentifier,
 } from 'gdc-common-utils-ts';
 import { resolveClinicalCreatorIpsExport } from '../dist/index.js';
 
-test('resolves portal, telephone and DCR channels to one PractitionerRole IPS author', () => {
+test('resolves portal, telephone and DCR channels to one organization author and professional attester', () => {
   const emailIdentifier = buildStableActorIdentifier({
     contactKind: StableActorContactKinds.Email,
     contact: EXAMPLE_EMAIL_PROFESSIONAL,
@@ -41,6 +42,13 @@ test('resolves portal, telephone and DCR channels to one PractitionerRole IPS au
     { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID },
   ]) {
     const exported = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
+    assert.equal(exported.provenance.authorReference, binding.ownerIdentifier);
+    assert.deepEqual(exported.provenance.attesters, [{
+      mode: CompositionAttesterModes.Professional,
+      party: { reference: binding.authorIdentifier },
+    }]);
+    assert.deepEqual(exported.provenance.entries, exported.author.entries);
+    // Compatibility-only projection: older consumers still see the role as author.
     assert.equal(exported.author.authorReference, binding.authorIdentifier);
     assert.equal(exported.author.entries[0].resource.resourceType, 'Practitioner');
     assert.equal(exported.author.entries[1].resource.resourceType, 'PractitionerRole');

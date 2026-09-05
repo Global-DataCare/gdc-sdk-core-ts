@@ -616,10 +616,11 @@ For an editable demonstration copy of an imported IPS, pass the same profile
 
 At IPS export time only, use `resolveClinicalCreatorIpsExport(...)` with the
 protected creator bindings and the already-authenticated channel evidence. It
-returns the FHIR author resources and the stable Consent actor. The same
-member/Practitioner UUID and assignment UUID are therefore reused after an
-email, telephone or registered DCR device login; none of those channel values
-becomes the exported author.
+returns the source `Composition.author`, the member or professional
+`Composition.attester`, their supporting FHIR resources and the stable Consent
+actor. The same member/Practitioner UUID and assignment UUID are therefore
+reused after an email, telephone or registered DCR device login; none of those
+channel values becomes the exported author or attester.
 
 ```ts
 const exportedCreator = resolveClinicalCreatorIpsExport({
@@ -627,9 +628,18 @@ const exportedCreator = resolveClinicalCreatorIpsExport({
   evidence: { actorDid: profile.actorDid },
 });
 
-composition.author = [{ reference: exportedCreator.author.authorReference }];
-bundle.entry.push(...exportedCreator.author.entries);
+composition.author = [{ reference: exportedCreator.provenance.authorReference }];
+composition.attester = [...exportedCreator.provenance.attesters];
+bundle.entry.push(...exportedCreator.provenance.entries);
 ```
+
+For an organization professional, the organization is the default author and
+the `PractitionerRole` assignment is the professional attester. For an
+individual member/caregiver, the subject is the default author and the
+`RelatedPerson` assignment is the personal attester. The authenticated sender
+and signing key remain transport audit evidence and are not silently promoted
+to either FHIR field. The older `exportedCreator.author` projection remains
+available only for rolling compatibility.
 
 ## 7. Clinical Search And SMART Access
 
