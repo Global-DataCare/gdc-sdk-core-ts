@@ -13,10 +13,28 @@ import {
   type FhirIpsCreatorProvenance,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 
+/** Closed, server-side choice of who created the clinical content. */
+export const ClinicalSourceAuthorSelections = Object.freeze({
+  /** The individual subject or provider organization owns/authored the content. */
+  Owner: 'owner',
+  /** The registered RelatedPerson or PractitionerRole created the content. */
+  Creator: 'creator',
+} as const);
+
+export type ClinicalSourceAuthorSelection =
+  typeof ClinicalSourceAuthorSelections[keyof typeof ClinicalSourceAuthorSelections];
+
 export type ClinicalCreatorIpsExportInput = Readonly<{
   bindings: readonly ClinicalCreatorBinding[];
   /** Already authenticated profile/channel evidence; this function does not authenticate it. */
   evidence: AuthenticatedClinicalCreatorEvidence;
+  /**
+   * Server-authorized content-source selection. Defaults to `owner` for
+   * dictated/organization-owned content. `creator` uses only the registered
+   * RelatedPerson or PractitionerRole resolved from `evidence`; callers cannot
+   * supply an arbitrary FHIR author reference.
+   */
+  sourceAuthor?: ClinicalSourceAuthorSelection;
 }>;
 
 export type ClinicalCreatorIpsExport = Readonly<{
@@ -32,8 +50,8 @@ export type ClinicalCreatorIpsExport = Readonly<{
  * Resolves one authenticated channel to its durable role assignment and
  * projects the corresponding FHIR IPS author resources and Consent actor.
  *
- * This export-only helper does not alter direct clinical writes: callers keep
- * using `profile.actorDid` as `sender` and as the editable copy author.
+ * DIDComm sender and verified signing-key identities remain transport/audit
+ * evidence. They are never inferred as the FHIR author or attester.
  */
 export function resolveClinicalCreatorIpsExport(
   input: ClinicalCreatorIpsExportInput,
@@ -42,6 +60,14 @@ export function resolveClinicalCreatorIpsExport(
   if (!binding) {
     throw new Error('No clinical creator binding matches the authenticated channel.');
   }
+  if (input.sourceAuthor !== undefined
+    && !Object.values(ClinicalSourceAuthorSelections).includes(input.sourceAuthor)) {
+    throw new Error('sourceAuthor must be the closed owner or creator selection.');
+  }
+
+  const compositionAuthorReference = input.sourceAuthor === ClinicalSourceAuthorSelections.Creator
+    ? binding.authorIdentifier
+    : binding.ownerIdentifier;
 
   const common = {
     kind: binding.kind,
@@ -72,6 +98,7 @@ export function resolveClinicalCreatorIpsExport(
         ...common,
         kind: FhirIpsCreatorKinds.Professional,
         organizationReference: binding.ownerIdentifier,
+        compositionAuthorReference,
         role: binding.role,
       })
     : binding.kind === FhirIpsCreatorKinds.IndividualMember
@@ -79,12 +106,14 @@ export function resolveClinicalCreatorIpsExport(
           ...common,
           kind: FhirIpsCreatorKinds.IndividualMember,
           subjectReference: binding.ownerIdentifier,
+          compositionAuthorReference,
           role: binding.role,
         })
       : buildFhirIpsCreatorProvenance({
           ...common,
           kind: FhirIpsCreatorKinds.IndividualSubject,
           subjectReference: binding.ownerIdentifier,
+          compositionAuthorReference,
         });
 
   return {
