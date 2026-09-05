@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Use the standard FHIR `notification` category for consent and permission
+  request Communications instead of inventing workflow-specific categories.
+- Document the claims-first R4/R5 boundary, LOINC clinical topics and the
+  `v3-ActReason|BTG` break-glass exception with the official HL7 and IHE links.
+- Consume `gdc-common-utils-ts@2.8.8` for canonical Communication codes.
+
 ## [2.5.6] - 2026-09-04
 
 - Add the closed `owner | creator` source-author selection to the authenticated

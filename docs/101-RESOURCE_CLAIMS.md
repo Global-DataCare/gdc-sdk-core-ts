@@ -47,6 +47,25 @@ Executable reference:
 
 ## Communication
 
+The claims map is the canonical cross-version representation. Runtimes project
+it to FHIR R4 or R5 and recover the same normalized flat claims on input.
+`Communication.category` uses only the four standard codes in the
+[FHIR Communication category value set](https://www.hl7.org/fhir/valueset-communication-category.html):
+`alert`, `notification`, `reminder`, and `instruction`. A clinical send or a
+contract/consent request is a `notification`; workflow labels such as
+`permission-request` are not extra category codes.
+
+Clinical section and document topics use governed LOINC coding descriptors.
+Break-glass is the explicit exception: category `alert` and topic
+[`v3-ActReason|BTG`](http://terminology.hl7.org/CodeSystem/v3-ActReason). The
+[IHE PCF example](https://profiles.ihe.net/ITI/PCF/Consent-ex-consent-advanced-normal-break-glass-restricted.json.html)
+expresses one compound Consent policy: the nested provision adds an emergency
+exception for restricted data; it is not a second independent operation.
+
+Search remains a projection over normalized FHIR search parameters. Callers
+must use the supported parameter names and cardinality/modifier restrictions;
+arbitrary claim or UI labels are not search parameters.
+
 ```ts
 import { CommunicationClaims } from 'gdc-sdk-core-ts';
 import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';

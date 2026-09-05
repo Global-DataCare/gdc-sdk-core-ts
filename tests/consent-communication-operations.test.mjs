@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -8,6 +9,7 @@ import {
 } from 'gdc-common-utils-ts/constants/healthcare';
 import { ClaimConsent } from 'gdc-common-utils-ts/models/consent-rule';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
+import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';
 
 import {
   ConsentCommunicationOperationKinds,
@@ -141,6 +143,10 @@ test('buildConsentOperationsCommunicationInput creates a workflow envelope', () 
   assert.equal(input.subject, 'did:web:api.acme.org:individual:123');
   assert.equal(input.text, 'Consent operations (2) for subject did:web:api.acme.org:individual:123');
   assert.equal(input.claims[CommunicationClaim.Subject], 'did:web:api.acme.org:individual:123');
-  assert.equal(input.claims[CommunicationClaim.Category], 'consent-management');
+  assert.equal(
+    input.claims[CommunicationClaim.Category],
+    CommunicationCategoryCodes.Notification.attributeValue,
+  );
+  assert.deepEqual(input.category, [CommunicationCategoryCodes.Notification.attributeValue]);
   assert.ok(Array.isArray(input.payload.operations));
 });
