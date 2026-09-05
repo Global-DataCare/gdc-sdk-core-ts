@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Keep the individual or provider organization as the IPS document author and
+  project authenticated administrative/professional/member assignments only as
+  `Composition.attester`, including for the legacy `creator` selection.
+- Consume `gdc-common-utils-ts@2.9.1` for neutral receptionist roles and
+  resolvable Organization, Practitioner, PractitionerRole and RelatedPerson
+  supporting resources.
+
 - Use the standard FHIR `notification` category for consent and permission
   request Communications instead of inventing workflow-specific categories.
 - Document the claims-first R4/R5 boundary, LOINC clinical topics and the
