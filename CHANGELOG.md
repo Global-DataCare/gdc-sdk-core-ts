@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.6] - 2026-09-04
+
+- Add the closed `owner | creator` source-author selection to the authenticated
+  clinical creator export. Personal and professional role assignments may be
+  both author and attester when they created the content; dictated or
+  organization-owned content keeps the individual or organization as author.
+- Reject arbitrary author references and keep DIDComm sender/signing-key
+  identities confined to transport and audit evidence.
+- Consume `gdc-common-utils-ts@2.8.7` for the synchronized provenance contract.
+
 ## [2.5.5] - 2026-09-04
 
 - Expose canonical clinical creator provenance at

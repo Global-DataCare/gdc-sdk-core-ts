@@ -10,12 +10,17 @@ import {
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
   EXAMPLE_PROVIDER_ORGANIZATION_DID,
+  EXAMPLE_RELATED_PERSON_ROLE,
+  EXAMPLE_SUBJECT_DID,
   CompositionAttesterModes,
   FhirIpsCreatorKinds,
   StableActorContactKinds,
   buildStableActorIdentifier,
 } from 'gdc-common-utils-ts';
-import { resolveClinicalCreatorIpsExport } from '../dist/index.js';
+import {
+  ClinicalSourceAuthorSelections,
+  resolveClinicalCreatorIpsExport,
+} from '../dist/index.js';
 
 test('resolves portal, telephone and DCR channels to one organization author and professional attester', () => {
   const emailIdentifier = buildStableActorIdentifier({
@@ -57,6 +62,36 @@ test('resolves portal, telephone and DCR channels to one organization author and
       actorRole: binding.role,
     });
   }
+});
+
+test('selects the content owner or the registered member creator without accepting an arbitrary author', () => {
+  const binding = {
+    kind: FhirIpsCreatorKinds.IndividualMember,
+    actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
+    authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
+    ownerIdentifier: EXAMPLE_SUBJECT_DID,
+    role: EXAMPLE_RELATED_PERSON_ROLE,
+    dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
+  };
+  const evidence = { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID };
+
+  const dictated = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
+  assert.equal(dictated.provenance.authorReference, EXAMPLE_SUBJECT_DID);
+  assert.equal(dictated.provenance.attesters[0].party.reference, binding.authorIdentifier);
+
+  const memberCreated = resolveClinicalCreatorIpsExport({
+    bindings: [binding],
+    evidence,
+    sourceAuthor: ClinicalSourceAuthorSelections.Creator,
+  });
+  assert.equal(memberCreated.provenance.authorReference, binding.authorIdentifier);
+  assert.equal(memberCreated.provenance.attesters[0].party.reference, binding.authorIdentifier);
+
+  assert.throws(() => resolveClinicalCreatorIpsExport({
+    bindings: [binding],
+    evidence,
+    sourceAuthor: 'urn:uuid:browser-supplied-author',
+  }), /sourceAuthor/);
 });
 
 test('fails closed when an authenticated channel has no creator binding', () => {
