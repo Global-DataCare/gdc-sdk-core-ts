@@ -237,9 +237,9 @@ test('section batch attachment carries the one section explicitly on Communicati
   );
 });
 
-test('section update builder places the explicit author on each writable resource without mutating the BFF bundle', () => {
-  // Flow contract: the BFF selects an authorized clinical author independently
-  // from the authenticated sender; the SDK owns canonical claim placement.
+test('section update builder places source author and attester assignment without mutating the BFF bundle', () => {
+  // Flow contract: the protected profile supplies the organization/individual
+  // author and registered assignment attester; the SDK owns claim placement.
   const source = {
     resourceType: 'Bundle',
     type: 'batch',
@@ -252,6 +252,11 @@ test('section update builder places the explicit author on each writable resourc
     subject: 'did:web:subject.example',
     sender: 'did:web:clinic.example:employee:assistant',
     author: 'did:web:clinic.example:employee:veterinarian',
+    attesters: [{
+      mode: 'professional',
+      party: { reference: 'urn:uuid:practitioner-role-assignment' },
+      time: '2026-09-05T12:00:00.000Z',
+    }],
     section: 'http://loinc.org|30954-2',
     bundle: source,
   });
@@ -260,5 +265,9 @@ test('section update builder places the explicit author on each writable resourc
 
   assert.equal(attached.meta.claims['Composition.author'], 'did:web:clinic.example:employee:veterinarian');
   assert.equal(attached.data[0].resource.meta.claims['Composition.author'], 'did:web:clinic.example:employee:veterinarian');
+  assert.equal(attached.meta.claims['Composition.attester'], 'urn:uuid:practitioner-role-assignment');
+  assert.equal(attached.meta.claims['Composition.attester-mode'], 'professional');
+  assert.equal(attached.meta.claims['Composition.attester-time'], '2026-09-05T12:00:00.000Z');
+  assert.equal(attached.data[0].resource.meta.claims['Composition.attester'], 'urn:uuid:practitioner-role-assignment');
   assert.equal(source.data[0].resource.meta, undefined);
 });

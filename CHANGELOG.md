@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Consume `gdc-common-utils-ts@2.9.1` for neutral receptionist roles and
   resolvable Organization, Practitioner, PractitionerRole and RelatedPerson
   supporting resources.
+- Carry protected-profile attester assignments alongside the source author on
+  section-scoped Bundles so GW can persist and authorize the exact actor role.
 
 - Use the standard FHIR `notification` category for consent and permission
   request Communications instead of inventing workflow-specific categories.
