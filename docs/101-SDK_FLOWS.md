@@ -633,13 +633,16 @@ composition.attester = [...exportedCreator.provenance.attesters];
 bundle.entry.push(...exportedCreator.provenance.entries);
 ```
 
-For an organization professional, the organization is the default author and
-the `PractitionerRole` assignment is the professional attester. For an
-individual member/caregiver, the subject is the default author and the
-`RelatedPerson` assignment is the personal attester. The authenticated sender
-and signing key remain transport audit evidence and are not silently promoted
-to either FHIR field. The older `exportedCreator.author` projection remains
-available only for rolling compatibility.
+For an organization employee, including a role-neutral administrator, the
+organization/EHR is the author and the `PractitionerRole` assignment is the
+professional attester. For an individual controller/member/caregiver, the
+subject or its patient portal is the author and the `RelatedPerson` assignment
+is the personal attester. This remains true when the person entered the value:
+the deprecated `creator` selection does not turn the assignment into the
+document author. The authenticated sender and signing key remain transport
+audit evidence and are not silently promoted to either FHIR field. The older
+`exportedCreator.author` projection remains available only for rolling
+compatibility.
 
 ## 7. Clinical Search And SMART Access
 

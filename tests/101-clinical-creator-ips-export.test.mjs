@@ -5,7 +5,7 @@ import test from 'node:test';
 import {
   EXAMPLE_CLIENT_INSTANCE_UUID,
   EXAMPLE_EMAIL_PROFESSIONAL,
-  EXAMPLE_HEALTHCARE_ACTOR_ROLE_PHYSICIAN,
+  EXAMPLE_HEALTHCARE_ACTOR_ROLE_RECEPTIONIST,
   EXAMPLE_KYC_CONTROLLER_TELEPHONE,
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
@@ -36,7 +36,7 @@ test('resolves portal, telephone and DCR channels to one organization author and
     actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
     authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
     ownerIdentifier: EXAMPLE_PROVIDER_ORGANIZATION_DID,
-    role: EXAMPLE_HEALTHCARE_ACTOR_ROLE_PHYSICIAN,
+    role: EXAMPLE_HEALTHCARE_ACTOR_ROLE_RECEPTIONIST,
     verifiedContactIdentifiers: [emailIdentifier, telephoneIdentifier],
     dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
   };
@@ -55,8 +55,9 @@ test('resolves portal, telephone and DCR channels to one organization author and
     assert.deepEqual(exported.provenance.entries, exported.author.entries);
     // Compatibility-only projection: older consumers still see the role as author.
     assert.equal(exported.author.authorReference, binding.authorIdentifier);
-    assert.equal(exported.author.entries[0].resource.resourceType, 'Practitioner');
-    assert.equal(exported.author.entries[1].resource.resourceType, 'PractitionerRole');
+    assert.equal(exported.author.entries[0].resource.resourceType, 'Organization');
+    assert.equal(exported.author.entries[1].resource.resourceType, 'Practitioner');
+    assert.equal(exported.author.entries[2].resource.resourceType, 'PractitionerRole');
     assert.deepEqual(exported.permissionActor, {
       actorIdentifier: binding.authorIdentifier,
       actorRole: binding.role,
@@ -64,7 +65,7 @@ test('resolves portal, telephone and DCR channels to one organization author and
   }
 });
 
-test('selects the content owner or the registered member creator without accepting an arbitrary author', () => {
+test('keeps the content owner as author and the registered member as attester', () => {
   const binding = {
     kind: FhirIpsCreatorKinds.IndividualMember,
     actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
@@ -84,7 +85,7 @@ test('selects the content owner or the registered member creator without accepti
     evidence,
     sourceAuthor: ClinicalSourceAuthorSelections.Creator,
   });
-  assert.equal(memberCreated.provenance.authorReference, binding.authorIdentifier);
+  assert.equal(memberCreated.provenance.authorReference, binding.ownerIdentifier);
   assert.equal(memberCreated.provenance.attesters[0].party.reference, binding.authorIdentifier);
 
   assert.throws(() => resolveClinicalCreatorIpsExport({
