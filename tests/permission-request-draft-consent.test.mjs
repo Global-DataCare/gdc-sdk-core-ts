@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * Flow contract:
  * 1. a professional identifies the permissions missing for one subject;
@@ -29,6 +30,8 @@ import {
   ClaimConsent,
   ConsentStatuses,
 } from 'gdc-common-utils-ts/models/consent-rule';
+import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';
+import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
 
 import { buildPermissionRequestCommunication } from '../dist/index.js';
 
@@ -53,6 +56,11 @@ test('permission request is one Communication carrying a draft Consent Bundle', 
   assert.equal(serialized.includes('AccessRequest.'), false);
   assert.equal(communication.claims['@context'], 'org.hl7.fhir.api');
   assert.equal(communication.claims['Communication.identifier'], EXAMPLE_COMMUNICATION_UUID);
+  assert.equal(
+    communication.claims[CommunicationClaim.Category],
+    CommunicationCategoryCodes.Notification.attributeValue,
+  );
+  assert.deepEqual(communication.category, [CommunicationCategoryCodes.Notification.attributeValue]);
   assert.equal(communication.payload.resourceType, 'Bundle');
   assert.equal(communication.payload.type, 'batch');
   assert.equal(communication.payload.data.length, 1);

@@ -13,6 +13,7 @@ import {
   groupActiveConsentsByTarget,
 } from 'gdc-common-utils-ts/utils/consent';
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
+import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';
 import type { ConsentRule } from 'gdc-common-utils-ts/models/consent-rule';
 import {
   ClaimConsent,
@@ -115,6 +116,12 @@ function compact(values: Array<string | undefined>): string[] {
  * Push/email/SMS remain notification channels around this canonical
  * `Communication`, not the primary contract.
  *
+ * The FHIR category is the standard `notification`; permission-request is a
+ * workflow meaning, not a fifth category:
+ * https://www.hl7.org/fhir/valueset-communication-category.html
+ * Topic is deliberately not invented here. Clinical section/document topics
+ * are LOINC codings supplied by the caller's governed workflow.
+ *
  * @param input Permission-request details to encode.
  */
 export function buildPermissionRequestCommunication(
@@ -139,7 +146,7 @@ export function buildPermissionRequestCommunication(
     [CommunicationClaim.Subject]: input.subject,
     [CommunicationClaim.Recipient]: input.recipient,
     [CommunicationClaim.Sender]: input.sender,
-    [CommunicationClaim.Category]: 'permission-request',
+    [CommunicationClaim.Category]: CommunicationCategoryCodes.Notification.attributeValue,
     [CommunicationClaim.NoteText]: text,
   };
 
@@ -185,7 +192,7 @@ export function buildPermissionRequestCommunication(
     subject: input.subject,
     sender: input.sender,
     recipient: input.recipient,
-    category: ['permission-request'],
+    category: [CommunicationCategoryCodes.Notification.attributeValue],
     text,
     claims,
     payload,

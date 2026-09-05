@@ -1,6 +1,7 @@
 // Copyright 2026 Antifraud Services Inc. under the Apache License, Version 2.0.
 
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
+import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';
 import { ClaimConsent } from 'gdc-common-utils-ts/models/consent-rule';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
 import { isValidConsentPeriodBoundary } from 'gdc-common-utils-ts/utils/consent';
@@ -205,6 +206,9 @@ export function addConsentOperationToDraft(
 /**
  * Builds a `CommunicationInput` envelope that carries abstract consent
  * operations in top-level `claims` for BFF/backend orchestration.
+ * The envelope uses FHIR `notification`; consent-management is workflow state,
+ * not a category code. See
+ * https://www.hl7.org/fhir/valueset-communication-category.html
  */
 export function buildConsentOperationsCommunicationInput(
   input: ConsentCommunicationBatchInput,
@@ -218,12 +222,12 @@ export function buildConsentOperationsCommunicationInput(
     subject: String(input.subject || '').trim(),
     sender: input.sender,
     recipient: input.recipient,
-    category: ['consent-management'],
+    category: [CommunicationCategoryCodes.Notification.attributeValue],
     text: summaryText,
     claims: {
       '@context': 'org.hl7.fhir.api',
       [CommunicationClaim.Subject]: String(input.subject || '').trim(),
-      [CommunicationClaim.Category]: 'consent-management',
+      [CommunicationClaim.Category]: CommunicationCategoryCodes.Notification.attributeValue,
       [CommunicationClaim.Text]: summaryText,
     },
     payload: { operations },
