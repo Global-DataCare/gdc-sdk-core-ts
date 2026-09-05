@@ -609,10 +609,14 @@ Where the data comes from:
 - write permission
   must already be granted and evaluated before runtime execution
 
-For an editable demonstration copy of an imported IPS, pass the same profile
-`actorDid` to `cloneImportedClinicalDocumentForDemo(...)` and as the direct
-`updateClinicalSummary(...)` sender. The helper sets the copy's
-`Composition.author` to that `actorDid`; it does not change the imported source.
+For an editable demonstration copy of an imported IPS, pass the complete
+protected `clinicalCreator` export to
+`cloneImportedClinicalDocumentForDemo(...)`. Pass profile `actorDid` separately
+as the direct `updateClinicalSummary(...)` sender. The helper never turns that
+operational DID into FHIR provenance: a professional uses the jurisdictional
+CDS legal-organization URN plus PractitionerRole attester; an individual
+member/controller uses one RelatedPerson urn:uuid as both author and attester.
+It does not change the imported source.
 
 At IPS export time only, use `resolveClinicalCreatorIpsExport(...)` with the
 protected creator bindings and the already-authenticated channel evidence. It

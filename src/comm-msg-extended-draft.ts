@@ -2,9 +2,14 @@
 
 import type { CommMsgExtended, DataEntry } from 'gdc-common-utils-ts/models/comm';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
-import { CompositionClaim } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
+import {
+  CompositionAttesterModes,
+  CompositionClaim,
+} from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
 import type { FhirIpsCreatorProvenance } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
+import { FhirIpsCreatorKinds } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
+import type { ClinicalCreatorIpsExport } from './clinical-creator-ips-export.js';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
 import type { CommunicationOutboxStatus } from './communication-draft.js';
 
@@ -83,6 +88,11 @@ export type ClinicalUpdateCommunicationInput = Readonly<{
 export type ClinicalSectionUpdateCommunicationInput =
   ClinicalUpdateCommunicationInput & Readonly<{
     section: string;
+    /**
+     * Complete protected profile export. Prefer this high-level input so a BFF
+     * never reconstructs FHIR author/attester references from `actorDid`.
+     */
+    clinicalCreator?: ClinicalCreatorIpsExport;
     /** Supplying organization/individual resolved by the protected BFF profile. */
     author?: string;
     /** Registered PractitionerRole/RelatedPerson attesters from that same profile. */
@@ -359,8 +369,13 @@ export function createClinicalSectionUpdateOutboxJob(
     sent: input.sent,
     noteText: input.noteText,
   });
-  const bundle = input.author || input.attesters?.length
-    ? applyClinicalSectionProvenance(input.bundle, input.author, input.attesters)
+  const protectedProvenance = input.clinicalCreator
+    ? clinicalSectionProvenanceFromCreator(input.clinicalCreator)
+    : undefined;
+  const author = protectedProvenance?.author ?? input.author;
+  const attesters = protectedProvenance?.attesters ?? input.attesters;
+  const bundle = author || attesters?.length
+    ? applyClinicalSectionProvenance(input.bundle, author, attesters)
     : input.bundle;
   return createCommunicationOutboxJobFromCommMsgExtendedDraft(
     attachSectionBundleToCommMsgExtendedDraft(draft, bundle, {
@@ -369,6 +384,21 @@ export function createClinicalSectionUpdateOutboxJob(
       noteText: input.noteText,
     }),
   );
+}
+
+function clinicalSectionProvenanceFromCreator(
+  creator: ClinicalCreatorIpsExport,
+): Readonly<{
+  author: string;
+  attesters: FhirIpsCreatorProvenance['attesters'];
+}> {
+  // A controller/caregiver acts through its registered RelatedPerson
+  // assignment. A professional document remains authored by the stable legal
+  // organization URN and attested by the registered PractitionerRole urn:uuid.
+  const author = creator.binding.kind === FhirIpsCreatorKinds.IndividualMember
+    ? creator.binding.authorIdentifier
+    : creator.provenance.authorReference;
+  return { author, attesters: creator.provenance.attesters };
 }
 
 function applyClinicalSectionProvenance(
@@ -380,7 +410,11 @@ function applyClinicalSectionProvenance(
   if (authorInput !== undefined && !author) {
     throw new TypeError('Clinical section author must be a non-empty identifier.');
   }
-  const references = attesters.map((attester) => String(attester.party?.reference || '').trim());
+  const effectiveAttesters = attesters.length > 0 ? attesters : author ? [{
+    mode: CompositionAttesterModes.Personal,
+    party: { reference: author },
+  }] : [];
+  const references = effectiveAttesters.map((attester) => String(attester.party?.reference || '').trim());
   if (references.some((reference) => !reference)) {
     throw new TypeError('Clinical section attester must contain one non-empty party reference.');
   }
@@ -388,8 +422,8 @@ function applyClinicalSectionProvenance(
     ...(author ? { [CompositionClaim.Author]: author } : {}),
     ...(references.length ? {
       [CompositionClaim.Attester]: references.join(','),
-      [CompositionClaim.AttesterMode]: attesters.map((attester) => attester.mode).join(','),
-      [CompositionClaim.AttesterTime]: attesters.map((attester) => attester.time || '').join(','),
+      [CompositionClaim.AttesterMode]: effectiveAttesters.map((attester) => attester.mode).join(','),
+      [CompositionClaim.AttesterTime]: effectiveAttesters.map((attester) => attester.time || '').join(','),
     } : {}),
   };
   const bundle = clone(source) as Record<string, any>;

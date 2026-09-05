@@ -15,11 +15,10 @@ import {
 
 /** Closed compatibility description of who supplied the clinical content. */
 export const ClinicalSourceAuthorSelections = Object.freeze({
-  /** The individual subject or provider organization authored the document. */
+  /** @deprecated Compatibility input; protected binding decides authorship. */
   Owner: 'owner',
   /**
-   * @deprecated The registered RelatedPerson or PractitionerRole is projected
-   * as attester; it never replaces the document-source author.
+   * @deprecated Compatibility input; protected binding decides authorship.
    */
   Creator: 'creator',
 } as const);
@@ -32,9 +31,8 @@ export type ClinicalCreatorIpsExportInput = Readonly<{
   /** Already authenticated profile/channel evidence; this function does not authenticate it. */
   evidence: AuthenticatedClinicalCreatorEvidence;
   /**
-   * Compatibility content-source selection. Both values keep the individual
-   * or organization as document author and the registered assignment as
-   * attester. Callers cannot supply an arbitrary FHIR reference.
+   * Compatibility content-source selection. Both values now produce the same
+   * binding-derived result; callers cannot supply an arbitrary FHIR reference.
    */
   sourceAuthor?: ClinicalSourceAuthorSelection;
 }>;
@@ -52,8 +50,10 @@ export type ClinicalCreatorIpsExport = Readonly<{
  * Resolves one authenticated channel to its durable role assignment and
  * projects the corresponding FHIR IPS author resources and Consent actor.
  *
- * DIDComm sender and verified signing-key identities remain transport/audit
- * evidence. They are never inferred as the FHIR author or attester.
+ * A professional uses its CDS legal-organization owner as author and the
+ * PractitionerRole assignment as attester. An individual member/controller
+ * uses its RelatedPerson assignment as both author and attester. DIDComm sender
+ * and verified signing-key identities remain transport/audit evidence.
  */
 export function resolveClinicalCreatorIpsExport(
   input: ClinicalCreatorIpsExportInput,
@@ -67,7 +67,9 @@ export function resolveClinicalCreatorIpsExport(
     throw new Error('sourceAuthor must be the closed owner or creator selection.');
   }
 
-  const compositionAuthorReference = binding.ownerIdentifier;
+  const compositionAuthorReference = binding.kind === FhirIpsCreatorKinds.IndividualMember
+    ? binding.authorIdentifier
+    : binding.ownerIdentifier;
 
   const common = {
     kind: binding.kind,

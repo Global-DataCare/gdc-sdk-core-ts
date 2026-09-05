@@ -9,7 +9,7 @@ import {
   EXAMPLE_KYC_CONTROLLER_TELEPHONE,
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
-  EXAMPLE_PROVIDER_ORGANIZATION_DID,
+  EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
   EXAMPLE_RELATED_PERSON_ROLE,
   EXAMPLE_SUBJECT_DID,
   CompositionAttesterModes,
@@ -35,7 +35,7 @@ test('resolves portal, telephone and DCR channels to one organization author and
     kind: FhirIpsCreatorKinds.Professional,
     actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
     authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
-    ownerIdentifier: EXAMPLE_PROVIDER_ORGANIZATION_DID,
+    ownerIdentifier: EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
     role: EXAMPLE_HEALTHCARE_ACTOR_ROLE_RECEPTIONIST,
     verifiedContactIdentifiers: [emailIdentifier, telephoneIdentifier],
     dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
@@ -65,7 +65,7 @@ test('resolves portal, telephone and DCR channels to one organization author and
   }
 });
 
-test('keeps the content owner as author and the registered member as attester', () => {
+test('uses the registered member RelatedPerson as both author and attester', () => {
   const binding = {
     kind: FhirIpsCreatorKinds.IndividualMember,
     actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
@@ -76,16 +76,16 @@ test('keeps the content owner as author and the registered member as attester', 
   };
   const evidence = { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID };
 
-  const dictated = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
-  assert.equal(dictated.provenance.authorReference, EXAMPLE_SUBJECT_DID);
-  assert.equal(dictated.provenance.attesters[0].party.reference, binding.authorIdentifier);
+  const memberCreatedByDefault = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
+  assert.equal(memberCreatedByDefault.provenance.authorReference, binding.authorIdentifier);
+  assert.equal(memberCreatedByDefault.provenance.attesters[0].party.reference, binding.authorIdentifier);
 
   const memberCreated = resolveClinicalCreatorIpsExport({
     bindings: [binding],
     evidence,
     sourceAuthor: ClinicalSourceAuthorSelections.Creator,
   });
-  assert.equal(memberCreated.provenance.authorReference, binding.ownerIdentifier);
+  assert.equal(memberCreated.provenance.authorReference, binding.authorIdentifier);
   assert.equal(memberCreated.provenance.attesters[0].party.reference, binding.authorIdentifier);
 
   assert.throws(() => resolveClinicalCreatorIpsExport({

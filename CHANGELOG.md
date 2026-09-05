@@ -4,14 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Keep the individual or provider organization as the IPS document author and
-  project authenticated administrative/professional/member assignments only as
-  `Composition.attester`, including for the legacy `creator` selection.
-- Consume `gdc-common-utils-ts@2.9.1` for neutral receptionist roles and
+## [2.9.1] - 2026-09-05
+
+- Use the jurisdictional CDS legal organization as professional IPS author and
+  its PractitionerRole as attester; use one RelatedPerson urn:uuid as both
+  author and attester for individual member/controller-created content.
+- Consume `gdc-common-utils-ts@2.9.3` for neutral receptionist roles and
   resolvable Organization, Practitioner, PractitionerRole and RelatedPerson
   supporting resources.
 - Carry protected-profile attester assignments alongside the source author on
   section-scoped Bundles so GW can persist and authorize the exact actor role.
+- Let direct individual section writes omit attesters and default them to the
+  author, while editable demo clones accept the complete protected-profile
+  provenance graph instead of turning transport `actorDid` into FHIR author.
+- Let section writes accept that complete `clinicalCreator` export directly:
+  professional sections use the stable legal organization URN plus the
+  PractitionerRole attester, while individual member/controller sections use
+  one RelatedPerson urn:uuid as both author and personal attester.
 
 - Use the standard FHIR `notification` category for consent and permission
   request Communications instead of inventing workflow-specific categories.
