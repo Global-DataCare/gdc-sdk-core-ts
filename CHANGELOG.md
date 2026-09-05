@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.5.5] - 2026-09-04
+
+- Expose canonical clinical creator provenance at
+  `resolveClinicalCreatorIpsExport(...).provenance`, separating an organization
+  or individual source author from its professional or personal attester.
+- Keep the historical role-as-author `author` property as a deprecated rolling
+  compatibility projection.
+- Consume `gdc-common-utils-ts@2.8.6` for governed attester modes and reusable
+  FHIR provenance projection.
+
 ## [2.5.4] - 2026-09-04
 
 - Require every repository skill to preserve bounded npm authorization
