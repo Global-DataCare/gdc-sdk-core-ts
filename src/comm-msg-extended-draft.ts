@@ -2,8 +2,14 @@
 
 import type { CommMsgExtended, DataEntry } from 'gdc-common-utils-ts/models/comm';
 import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
-import { CompositionClaim } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
+import {
+  CompositionAttesterModes,
+  CompositionClaim,
+} from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
+import type { FhirIpsCreatorProvenance } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
+import { FhirIpsCreatorKinds } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
+import type { ClinicalCreatorIpsExport } from './clinical-creator-ips-export.js';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
 import type { CommunicationOutboxStatus } from './communication-draft.js';
 
@@ -82,8 +88,15 @@ export type ClinicalUpdateCommunicationInput = Readonly<{
 export type ClinicalSectionUpdateCommunicationInput =
   ClinicalUpdateCommunicationInput & Readonly<{
     section: string;
-    /** Clinical author selected and authorized by the server-side BFF. */
+    /**
+     * Complete protected profile export. Prefer this high-level input so a BFF
+     * never reconstructs FHIR author/attester references from `actorDid`.
+     */
+    clinicalCreator?: ClinicalCreatorIpsExport;
+    /** Supplying organization/individual resolved by the protected BFF profile. */
     author?: string;
+    /** Registered PractitionerRole/RelatedPerson attesters from that same profile. */
+    attesters?: FhirIpsCreatorProvenance['attesters'];
   }>;
 
 export type CommunicationClinicalFormatRenderer = (
@@ -356,8 +369,13 @@ export function createClinicalSectionUpdateOutboxJob(
     sent: input.sent,
     noteText: input.noteText,
   });
-  const bundle = input.author
-    ? applyClinicalSectionAuthor(input.bundle, input.author)
+  const protectedProvenance = input.clinicalCreator
+    ? clinicalSectionProvenanceFromCreator(input.clinicalCreator)
+    : undefined;
+  const author = protectedProvenance?.author ?? input.author;
+  const attesters = protectedProvenance?.attesters ?? input.attesters;
+  const bundle = author || attesters?.length
+    ? applyClinicalSectionProvenance(input.bundle, author, attesters)
     : input.bundle;
   return createCommunicationOutboxJobFromCommMsgExtendedDraft(
     attachSectionBundleToCommMsgExtendedDraft(draft, bundle, {
@@ -368,23 +386,57 @@ export function createClinicalSectionUpdateOutboxJob(
   );
 }
 
-function applyClinicalSectionAuthor(
+function clinicalSectionProvenanceFromCreator(
+  creator: ClinicalCreatorIpsExport,
+): Readonly<{
+  author: string;
+  attesters: FhirIpsCreatorProvenance['attesters'];
+}> {
+  // A controller/caregiver acts through its registered RelatedPerson
+  // assignment. A professional document remains authored by the stable legal
+  // organization URN and attested by the registered PractitionerRole urn:uuid.
+  const author = creator.binding.kind === FhirIpsCreatorKinds.IndividualMember
+    ? creator.binding.authorIdentifier
+    : creator.provenance.authorReference;
+  return { author, attesters: creator.provenance.attesters };
+}
+
+function applyClinicalSectionProvenance(
   source: Record<string, unknown>,
-  authorInput: string,
+  authorInput?: string,
+  attesters: FhirIpsCreatorProvenance['attesters'] = [],
 ): Record<string, unknown> {
   const author = String(authorInput || '').trim();
-  if (!author) throw new TypeError('Clinical section author must be a non-empty identifier.');
+  if (authorInput !== undefined && !author) {
+    throw new TypeError('Clinical section author must be a non-empty identifier.');
+  }
+  const effectiveAttesters = attesters.length > 0 ? attesters : author ? [{
+    mode: CompositionAttesterModes.Personal,
+    party: { reference: author },
+  }] : [];
+  const references = effectiveAttesters.map((attester) => String(attester.party?.reference || '').trim());
+  if (references.some((reference) => !reference)) {
+    throw new TypeError('Clinical section attester must contain one non-empty party reference.');
+  }
+  const provenanceClaims = {
+    ...(author ? { [CompositionClaim.Author]: author } : {}),
+    ...(references.length ? {
+      [CompositionClaim.Attester]: references.join(','),
+      [CompositionClaim.AttesterMode]: effectiveAttesters.map((attester) => attester.mode).join(','),
+      [CompositionClaim.AttesterTime]: effectiveAttesters.map((attester) => attester.time || '').join(','),
+    } : {}),
+  };
   const bundle = clone(source) as Record<string, any>;
   bundle.meta = { ...(bundle.meta || {}), claims: {
     ...(bundle.meta?.claims || {}),
-    [CompositionClaim.Author]: author,
+    ...provenanceClaims,
   } };
   const entries = Array.isArray(bundle.data) ? bundle.data : Array.isArray(bundle.entry) ? bundle.entry : [];
   for (const entry of entries) {
     if (!entry?.resource || String(entry?.request?.method || '').toUpperCase() === 'DELETE') continue;
     entry.resource.meta = { ...(entry.resource.meta || {}), claims: {
       ...(entry.resource.meta?.claims || {}),
-      [CompositionClaim.Author]: author,
+      ...provenanceClaims,
     } };
   }
   return bundle;
