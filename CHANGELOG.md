@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.2] - 2026-09-06
+
+- Pin `gdc-common-utils-ts@2.9.4` so runtime-neutral consumers use the current
+  active-Consent and flat-claim contract without a nested older copy.
+
 ## [2.9.1] - 2026-09-05
 
 - Use the jurisdictional CDS legal organization as professional IPS author and
