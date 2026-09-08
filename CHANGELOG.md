@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.5] - 2026-09-07
+
+- Consume the published `gdc-common-utils-ts@2.9.7` contract, whose opaque
+  subject-identifier hash stops at Fabric and whose provider-facing human
+  lookup is IHE PDQm `POST Patient/$match`.
+
 ## [2.9.4] - 2026-09-07
 
 - Resolve an opaque subject-identifier asset to the provider-only
