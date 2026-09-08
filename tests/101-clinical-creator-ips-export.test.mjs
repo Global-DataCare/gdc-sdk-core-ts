@@ -11,8 +11,6 @@ import {
   EXAMPLE_KYC_CONTROLLER_UUID,
   EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
   EXAMPLE_PRIVATE_INDIVIDUAL_UUID,
-  EXAMPLE_RELATED_PERSON_ROLE,
-  EXAMPLE_SUBJECT_DID,
   CompositionAttesterModes,
   FhirIpsCreatorKinds,
   HealthcareActorRoleCodes,
@@ -31,7 +29,7 @@ test('normalizes a high-level personal creator binding before transport', () => 
   const binding = normalizeClinicalCreatorBinding({
     kind: FhirIpsCreatorKinds.IndividualMember,
     actorIdentifier: EXAMPLE_KYC_CONTROLLER_USER_UUID,
-    authorIdentifier: EXAMPLE_KYC_CONTROLLER_UUID,
+    assignmentIdentifier: EXAMPLE_KYC_CONTROLLER_UUID,
     ownerIdentifier: EXAMPLE_PRIVATE_INDIVIDUAL_UUID,
     role: HealthcareActorRoleCodes.Controller,
   });
@@ -54,15 +52,15 @@ test('resolves portal, telephone and DCR channels to one organization author and
     contactKind: StableActorContactKinds.Phone,
     contact: EXAMPLE_KYC_CONTROLLER_TELEPHONE,
   });
-  const binding = {
+  const binding = normalizeClinicalCreatorBinding({
     kind: FhirIpsCreatorKinds.Professional,
-    actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
-    authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
+    actorIdentifier: EXAMPLE_KYC_CONTROLLER_USER_UUID,
+    assignmentIdentifier: EXAMPLE_KYC_CONTROLLER_UUID,
     ownerIdentifier: EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
     role: EXAMPLE_HEALTHCARE_ACTOR_ROLE_RECEPTIONIST,
     verifiedContactIdentifiers: [emailIdentifier, telephoneIdentifier],
     dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
-  };
+  });
 
   for (const evidence of [
     { verifiedContactIdentifiers: [emailIdentifier] },
@@ -88,15 +86,15 @@ test('resolves portal, telephone and DCR channels to one organization author and
   }
 });
 
-test('uses the registered member RelatedPerson as both author and attester', () => {
-  const binding = {
+test('keeps personal content author selection separate from the member attester', () => {
+  const binding = normalizeClinicalCreatorBinding({
     kind: FhirIpsCreatorKinds.IndividualMember,
-    actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
-    authorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
-    ownerIdentifier: EXAMPLE_SUBJECT_DID,
-    role: EXAMPLE_RELATED_PERSON_ROLE,
+    actorIdentifier: EXAMPLE_KYC_CONTROLLER_USER_UUID,
+    assignmentIdentifier: EXAMPLE_KYC_CONTROLLER_UUID,
+    ownerIdentifier: EXAMPLE_PRIVATE_INDIVIDUAL_UUID,
+    role: HealthcareActorRoleCodes.Controller,
     dcrClientIds: [EXAMPLE_CLIENT_INSTANCE_UUID],
-  };
+  });
   const evidence = { dcrClientId: EXAMPLE_CLIENT_INSTANCE_UUID };
 
   const memberCreatedByDefault = resolveClinicalCreatorIpsExport({ bindings: [binding], evidence });
@@ -111,6 +109,17 @@ test('uses the registered member RelatedPerson as both author and attester', () 
   assert.equal(memberCreated.provenance.authorReference, binding.authorIdentifier);
   assert.equal(memberCreated.provenance.attesters[0].party.reference, binding.authorIdentifier);
 
+  // The member transcribes content originated by the individual: the owner is
+  // author, while the same registered RelatedPerson performs the attestation.
+  const individualCreated = resolveClinicalCreatorIpsExport({
+    bindings: [binding],
+    evidence,
+    sourceAuthor: ClinicalSourceAuthorSelections.Owner,
+  });
+  assert.equal(individualCreated.provenance.authorReference, binding.ownerIdentifier);
+  assert.equal(individualCreated.provenance.attesters[0].party.reference, binding.authorIdentifier);
+
+  // This literal is deliberately invalid: browsers cannot inject an author.
   assert.throws(() => resolveClinicalCreatorIpsExport({
     bindings: [binding],
     evidence,

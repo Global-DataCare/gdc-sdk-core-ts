@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.7] - 2026-09-08
+
+- Allow a protected individual-member binding to export either the individual
+  or the registered RelatedPerson as the explicit content author while keeping
+  the RelatedPerson as attester and `actorDid` as sender evidence.
+- Consume `gdc-common-utils-ts@2.9.10` and teach BFF callers to use
+  `assignmentIdentifier` instead of constructing the deprecated wire
+  `authorIdentifier` property.
+
 ## [2.9.6] - 2026-09-08
 
 - Re-export the high-level clinical creator binding normalizer so SDKs accept

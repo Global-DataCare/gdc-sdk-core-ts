@@ -614,9 +614,10 @@ protected `clinicalCreator` export to
 `cloneImportedClinicalDocumentForDemo(...)`. Pass profile `actorDid` separately
 as the direct `updateClinicalSummary(...)` sender. The helper never turns that
 operational DID into FHIR provenance: a professional uses the jurisdictional
-CDS legal-organization URN plus PractitionerRole attester; an individual
-member/controller uses one RelatedPerson urn:uuid as both author and attester.
-It does not change the imported source.
+CDS legal-organization URN plus PractitionerRole attester. Personal content
+uses the individual as author when it originated or dictated the fact, or the
+registered RelatedPerson when that member originated it; the RelatedPerson is
+the explicit attester in both cases. It does not change the imported source.
 
 At IPS export time only, use `resolveClinicalCreatorIpsExport(...)` with the
 protected creator bindings and the already-authenticated channel evidence. It
@@ -630,6 +631,8 @@ channel values becomes the exported author or attester.
 const exportedCreator = resolveClinicalCreatorIpsExport({
   bindings: creatorBindings,
   evidence: { actorDid: profile.actorDid },
+  // Owner: individual-originated/dictated. Creator: member-originated.
+  sourceAuthor: ClinicalSourceAuthorSelections.Owner,
 });
 
 composition.author = [{ reference: exportedCreator.provenance.authorReference }];
@@ -640,11 +643,11 @@ bundle.entry.push(...exportedCreator.provenance.entries);
 For an organization employee, including a role-neutral administrator, the
 organization/EHR is the author and the `PractitionerRole` assignment is the
 professional attester. For an individual controller/member/caregiver, the
-subject or its patient portal is the author and the `RelatedPerson` assignment
-is the personal attester. This remains true when the person entered the value:
-the deprecated `creator` selection does not turn the assignment into the
-document author. The authenticated sender and signing key remain transport
-audit evidence and are not silently promoted to either FHIR field. The older
+`Owner` selection keeps the individual as author when the member transcribes
+what that individual supplied; `Creator` uses the registered RelatedPerson
+when the member supplied the content. The RelatedPerson remains the personal
+attester. The authenticated sender and signing key remain transport audit
+evidence and are not silently promoted to either FHIR field. The older
 `exportedCreator.author` projection remains available only for rolling
 compatibility.
 
