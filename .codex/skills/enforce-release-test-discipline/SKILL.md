@@ -13,6 +13,17 @@ description: Enforce branch, TDD, local live E2E, changelog, patch publication, 
 3. Begin every new or modified test with:
    `// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.`
 4. Use canonical fixtures and constants from their owning shared package.
+5. Keep `actorDid` as authenticated sender/submitter evidence. For personal
+   content, `ClinicalSourceAuthorSelections.Owner` means that the individual
+   originated or dictated the fact; `Creator` means that the registered member
+   originated it. The registered RelatedPerson is the attester in either case.
+   BFFs use `assignmentIdentifier`; deprecated `authorIdentifier` is only the
+   persisted DCR/profile wire name for that assignment and never selects the
+   author.
+6. A telephone-transcribed section Bundle stays in the owning pending workflow
+   until an authorized member explicitly attests it. If Communication status
+   represents that workflow, use governed FHIR event states (`preparation`,
+   then `completed` or `not-done`), never an invented `draft` value.
 
 ## Local-first gates
 

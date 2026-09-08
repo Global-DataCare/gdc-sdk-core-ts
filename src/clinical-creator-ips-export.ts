@@ -13,13 +13,11 @@ import {
   type FhirIpsCreatorProvenance,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 
-/** Closed compatibility description of who supplied the clinical content. */
+/** Closed, BFF-controlled description of who originated personal content. */
 export const ClinicalSourceAuthorSelections = Object.freeze({
-  /** @deprecated Compatibility input; protected binding decides authorship. */
+  /** The individual/subject originated or dictated the content. */
   Owner: 'owner',
-  /**
-   * @deprecated Compatibility input; protected binding decides authorship.
-   */
+  /** The registered member/controller originated the content. */
   Creator: 'creator',
 } as const);
 
@@ -31,8 +29,9 @@ export type ClinicalCreatorIpsExportInput = Readonly<{
   /** Already authenticated profile/channel evidence; this function does not authenticate it. */
   evidence: AuthenticatedClinicalCreatorEvidence;
   /**
-   * Compatibility content-source selection. Both values now produce the same
-   * binding-derived result; callers cannot supply an arbitrary FHIR reference.
+   * Closed content-source selection for personal records. `owner` keeps the
+   * individual as author; `creator` uses the registered RelatedPerson. It does
+   * not accept an arbitrary FHIR reference and never changes the sender.
    */
   sourceAuthor?: ClinicalSourceAuthorSelection;
 }>;
@@ -51,9 +50,10 @@ export type ClinicalCreatorIpsExport = Readonly<{
  * projects the corresponding FHIR IPS author resources and Consent actor.
  *
  * A professional uses its CDS legal-organization owner as author and the
- * PractitionerRole assignment as attester. An individual member/controller
- * uses its RelatedPerson assignment as both author and attester. DIDComm sender
- * and verified signing-key identities remain transport/audit evidence.
+ * PractitionerRole assignment as attester. For an individual member/controller,
+ * the explicit closed source selection chooses the individual or RelatedPerson
+ * as author, while the RelatedPerson remains the attester. DIDComm sender and
+ * verified signing-key identities remain transport/audit evidence.
  */
 export function resolveClinicalCreatorIpsExport(
   input: ClinicalCreatorIpsExportInput,
@@ -68,6 +68,7 @@ export function resolveClinicalCreatorIpsExport(
   }
 
   const compositionAuthorReference = binding.kind === FhirIpsCreatorKinds.IndividualMember
+    && input.sourceAuthor !== ClinicalSourceAuthorSelections.Owner
     ? binding.authorIdentifier
     : binding.ownerIdentifier;
 
