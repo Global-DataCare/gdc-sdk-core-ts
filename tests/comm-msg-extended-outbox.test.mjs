@@ -306,7 +306,7 @@ test('section update builder preserves the legacy direct individual author-as-at
   assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
 });
 
-test('subject section update accepts the explicit data author name without requiring document provenance', () => {
+test('subject section update keeps its data author separate from the explicit profile attester', () => {
   const job = createSubjectSectionUpdateOutboxJob({
     subject: EXAMPLE_SUBJECT_DID,
     sender: EXAMPLE_CONTROLLER_DID,

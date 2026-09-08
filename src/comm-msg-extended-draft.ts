@@ -100,7 +100,8 @@ export type ClinicalSectionUpdateCommunicationInput =
 
 /**
  * Generic subject-section mutation. The attached Bundle is a batch/collection,
- * not a FHIR document, so it never manufactures a Composition attester.
+ * but it deliberately carries the current Composition-compatible flat claims
+ * because confidential storage indexes them for a later document projection.
  */
 export type SubjectSectionUpdateCommunicationInput =
   Omit<ClinicalSectionUpdateCommunicationInput, 'author' | 'clinicalCreator' | 'attesters'> & Readonly<{
@@ -400,10 +401,10 @@ export function createClinicalSectionUpdateOutboxJob(
 }
 
 /**
- * Builds one generic subject-section update while preserving the historical
- * flat author claim used by confidential indexing. Attestation belongs to a
- * future document projection. The caller supplies the unlocked profile's
- * attester explicitly; it is never inferred from the data author.
+ * Builds one generic subject-section update while preserving the current
+ * Composition-compatible author and attester claims used by confidential
+ * indexing. The caller supplies the unlocked profile's attester explicitly;
+ * it is never inferred from the data author.
  */
 export function createSubjectSectionUpdateOutboxJob(
   input: SubjectSectionUpdateCommunicationInput,
