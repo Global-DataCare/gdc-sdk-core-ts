@@ -1,5 +1,8 @@
 # gdc-sdk-core-ts
 
+Development and releases follow the mandatory
+[`local-first TDD and release contract`](docs/LOCAL_FIRST_RELEASE_CONTRACT.md).
+
 ## Local-first release contract
 
 All consumers follow `test -> local-network -> test-network -> network`.

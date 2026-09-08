@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.3] - 2026-09-07
+
+- Consume the published `gdc-common-utils-ts@2.9.5` contract.
+- Make branch closure and the local-first tarball fallback executable policy,
+  while keeping publication, merge and deployment blocked until every shared
+  dependency is installed and verified from npm.
+
 ## [2.9.2] - 2026-09-06
 
 - Pin `gdc-common-utils-ts@2.9.4` so runtime-neutral consumers use the current
