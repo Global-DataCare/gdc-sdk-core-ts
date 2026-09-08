@@ -10,17 +10,40 @@ import {
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
   EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+  EXAMPLE_PRIVATE_INDIVIDUAL_UUID,
   EXAMPLE_RELATED_PERSON_ROLE,
   EXAMPLE_SUBJECT_DID,
   CompositionAttesterModes,
   FhirIpsCreatorKinds,
+  HealthcareActorRoleCodes,
+  HL7_CODING_SYSTEM_V3_ROLE_CODE,
   StableActorContactKinds,
+  UrnPrefixes,
   buildStableActorIdentifier,
 } from 'gdc-common-utils-ts';
 import {
   ClinicalSourceAuthorSelections,
+  normalizeClinicalCreatorBinding,
   resolveClinicalCreatorIpsExport,
 } from '../dist/index.js';
+
+test('normalizes a high-level personal creator binding before transport', () => {
+  const binding = normalizeClinicalCreatorBinding({
+    kind: FhirIpsCreatorKinds.IndividualMember,
+    actorIdentifier: EXAMPLE_KYC_CONTROLLER_USER_UUID,
+    authorIdentifier: EXAMPLE_KYC_CONTROLLER_UUID,
+    ownerIdentifier: EXAMPLE_PRIVATE_INDIVIDUAL_UUID,
+    role: HealthcareActorRoleCodes.Controller,
+  });
+
+  assert.deepEqual(binding, {
+    kind: FhirIpsCreatorKinds.IndividualMember,
+    actorIdentifier: `${UrnPrefixes.Uuid}${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
+    authorIdentifier: `${UrnPrefixes.Uuid}${EXAMPLE_KYC_CONTROLLER_UUID}`,
+    ownerIdentifier: `${UrnPrefixes.Uuid}${EXAMPLE_PRIVATE_INDIVIDUAL_UUID}`,
+    role: `${HL7_CODING_SYSTEM_V3_ROLE_CODE}|${HealthcareActorRoleCodes.Controller}`,
+  });
+});
 
 test('resolves portal, telephone and DCR channels to one organization author and professional attester', () => {
   const emailIdentifier = buildStableActorIdentifier({

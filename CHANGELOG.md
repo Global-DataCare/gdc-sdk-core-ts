@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.6] - 2026-09-08
+
+- Re-export the high-level clinical creator binding normalizer so SDKs accept
+  UUIDs and governed bare role codes without caller-authored URN or coding
+  system prefixes.
+
 ## [2.9.5] - 2026-09-07
 
 - Consume the published `gdc-common-utils-ts@2.9.7` contract, whose opaque

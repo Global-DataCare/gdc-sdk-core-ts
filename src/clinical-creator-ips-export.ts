@@ -129,6 +129,7 @@ export function resolveClinicalCreatorIpsExport(
 export type {
   AuthenticatedClinicalCreatorEvidence,
   ClinicalCreatorBinding,
+  ClinicalCreatorBindingInput,
   ClinicalCreatorPermissionActor,
   FhirIpsCreatorAuthor,
   FhirIpsCreatorProvenance,
@@ -138,5 +139,6 @@ export {
   buildClinicalCreatorPermissionActor,
   buildFhirIpsCreatorAuthor,
   buildFhirIpsCreatorProvenance,
+  normalizeClinicalCreatorBinding,
   resolveClinicalCreatorBinding,
 } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
