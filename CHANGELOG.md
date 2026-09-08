@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
   write independent from the authenticated profile export. The same unlocked
   `RelatedPerson` or `PractitionerRole` remains the attester across documents
   without overwriting their potentially different authors.
+- Add the product-neutral subject-section update helper so a batch or
+  collection carries its explicit data author and unlocked-profile attester
+  without pretending to be a FHIR document.
 
 ## [2.9.7] - 2026-09-08
 

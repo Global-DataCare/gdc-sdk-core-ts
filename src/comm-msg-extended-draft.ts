@@ -98,6 +98,18 @@ export type ClinicalSectionUpdateCommunicationInput =
     attesters?: FhirIpsCreatorProvenance['attesters'];
   }>;
 
+/**
+ * Generic subject-section mutation. The attached Bundle is a batch/collection,
+ * not a FHIR document, so it never manufactures a Composition attester.
+ */
+export type SubjectSectionUpdateCommunicationInput =
+  Omit<ClinicalSectionUpdateCommunicationInput, 'author' | 'clinicalCreator' | 'attesters'> & Readonly<{
+    /** Author/source responsible for the data in this section mutation. */
+    dataAuthorReference: string;
+    /** Attester resolved from the authenticated and unlocked profile. */
+    attester: FhirIpsCreatorProvenance['attesters'][number];
+  }>;
+
 export type CommunicationClinicalFormatRenderer = (
   message: CommMsgExtended,
 ) => Record<string, unknown>;
@@ -385,6 +397,22 @@ export function createClinicalSectionUpdateOutboxJob(
       noteText: input.noteText,
     }),
   );
+}
+
+/**
+ * Builds one generic subject-section update while preserving the historical
+ * flat author claim used by confidential indexing. Attestation belongs to a
+ * future document projection. The caller supplies the unlocked profile's
+ * attester explicitly; it is never inferred from the data author.
+ */
+export function createSubjectSectionUpdateOutboxJob(
+  input: SubjectSectionUpdateCommunicationInput,
+): CommMsgExtendedCommunicationOutboxJob {
+  return createClinicalSectionUpdateOutboxJob({
+    ...input,
+    author: input.dataAuthorReference,
+    attesters: [input.attester],
+  });
 }
 
 function clinicalSectionProvenanceFromCreator(

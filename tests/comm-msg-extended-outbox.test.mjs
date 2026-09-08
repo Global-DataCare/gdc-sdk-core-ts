@@ -9,6 +9,7 @@ import {
   EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
   EXAMPLE_SUBJECT_DID,
   FhirIpsCreatorKinds,
+  CompositionAttesterModes,
 } from 'gdc-common-utils-ts';
 import {
   attachClinicalDocumentToCommMsgExtendedDraft,
@@ -17,6 +18,7 @@ import {
   createCommunicationOutboxJobFromCommMsgExtendedDraft,
   createCommMsgExtendedDraft,
   createClinicalSectionUpdateOutboxJob,
+  createSubjectSectionUpdateOutboxJob,
   renderCommunicationOutboxRequest,
   resolveClinicalCreatorIpsExport,
   TransportProfiles,
@@ -282,9 +284,7 @@ test('section update builder places source author and attester assignment withou
   assert.equal(source.data[0].resource.meta, undefined);
 });
 
-test('section update builder defaults an omitted attester to the direct individual author', () => {
-  // Flow contract: direct self-authorship needs no separate assignment input;
-  // the SDK emits the same reference as personal author and attester.
+test('section update builder preserves the legacy direct individual author-as-attester default', () => {
   const job = createClinicalSectionUpdateOutboxJob({
     subject: 'did:web:individual.example',
     sender: 'did:web:individual.example',
@@ -301,8 +301,41 @@ test('section update builder defaults an omitted attester to the direct individu
   });
   const claims = job.payload.body.data[0].resource.meta.claims;
   const attached = JSON.parse(Buffer.from(claims['Communication.content-attachment-data'], 'base64').toString('utf8'));
+  assert.equal(attached.meta.claims['Composition.author'], 'did:web:individual.example');
   assert.equal(attached.meta.claims['Composition.attester'], 'did:web:individual.example');
   assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
+});
+
+test('subject section update accepts the explicit data author name without requiring document provenance', () => {
+  const job = createSubjectSectionUpdateOutboxJob({
+    subject: EXAMPLE_SUBJECT_DID,
+    sender: EXAMPLE_CONTROLLER_DID,
+    section: 'http://loinc.org|8716-3',
+    dataAuthorReference: EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+    attester: {
+      mode: CompositionAttesterModes.Personal,
+      party: { reference: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}` },
+    },
+    bundle: {
+      resourceType: 'Bundle',
+      type: 'batch',
+      data: [{ resource: { resourceType: 'Observation' } }],
+    },
+  });
+  const claims = job.payload.body.data[0].resource.meta.claims;
+  const attached = JSON.parse(Buffer.from(
+    claims['Communication.content-attachment-data'],
+    'base64',
+  ).toString('utf8'));
+
+  assert.equal(
+    attached.meta.claims['Composition.author'],
+    EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+  );
+  assert.equal(
+    attached.meta.claims['Composition.attester'],
+    `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
+  );
 });
 
 test('section update builder keeps each document author separate from the unlocked profile attester', () => {
