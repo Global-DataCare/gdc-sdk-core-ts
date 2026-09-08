@@ -6,8 +6,10 @@ import {
   EXAMPLE_INDIVIDUAL_CONTROLLER_ROLE_VALUE,
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
+  EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
   EXAMPLE_SUBJECT_DID,
   FhirIpsCreatorKinds,
+  CompositionAttesterModes,
 } from 'gdc-common-utils-ts';
 import {
   attachClinicalDocumentToCommMsgExtendedDraft,
@@ -16,6 +18,7 @@ import {
   createCommunicationOutboxJobFromCommMsgExtendedDraft,
   createCommMsgExtendedDraft,
   createClinicalSectionUpdateOutboxJob,
+  createSubjectSectionUpdateOutboxJob,
   renderCommunicationOutboxRequest,
   resolveClinicalCreatorIpsExport,
   TransportProfiles,
@@ -281,9 +284,7 @@ test('section update builder places source author and attester assignment withou
   assert.equal(source.data[0].resource.meta, undefined);
 });
 
-test('section update builder defaults an omitted attester to the direct individual author', () => {
-  // Flow contract: direct self-authorship needs no separate assignment input;
-  // the SDK emits the same reference as personal author and attester.
+test('section update builder preserves the legacy direct individual author-as-attester default', () => {
   const job = createClinicalSectionUpdateOutboxJob({
     subject: 'did:web:individual.example',
     sender: 'did:web:individual.example',
@@ -300,31 +301,21 @@ test('section update builder defaults an omitted attester to the direct individu
   });
   const claims = job.payload.body.data[0].resource.meta.claims;
   const attached = JSON.parse(Buffer.from(claims['Communication.content-attachment-data'], 'base64').toString('utf8'));
+  assert.equal(attached.meta.claims['Composition.author'], 'did:web:individual.example');
   assert.equal(attached.meta.claims['Composition.attester'], 'did:web:individual.example');
   assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
 });
 
-test('section update builder derives member author and attester from the protected creator export', () => {
-  // Flow contract: a controller/member is represented by its registered
-  // RelatedPerson urn:uuid in both FHIR author and personal attester. The BFF
-  // passes the complete protected export and does not rebuild those fields.
-  const relatedPersonReference = `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`;
-  const clinicalCreator = resolveClinicalCreatorIpsExport({
-    bindings: [{
-      kind: FhirIpsCreatorKinds.IndividualMember,
-      actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
-      authorIdentifier: relatedPersonReference,
-      ownerIdentifier: EXAMPLE_SUBJECT_DID,
-      role: EXAMPLE_INDIVIDUAL_CONTROLLER_ROLE_VALUE,
-      actorDids: [EXAMPLE_CONTROLLER_DID],
-    }],
-    evidence: { actorDid: EXAMPLE_CONTROLLER_DID },
-  });
-  const job = createClinicalSectionUpdateOutboxJob({
+test('subject section update keeps its data author separate from the explicit profile attester', () => {
+  const job = createSubjectSectionUpdateOutboxJob({
     subject: EXAMPLE_SUBJECT_DID,
     sender: EXAMPLE_CONTROLLER_DID,
-    clinicalCreator,
     section: 'http://loinc.org|8716-3',
+    dataAuthorReference: EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+    attester: {
+      mode: CompositionAttesterModes.Personal,
+      party: { reference: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}` },
+    },
     bundle: {
       resourceType: 'Bundle',
       type: 'batch',
@@ -337,7 +328,57 @@ test('section update builder derives member author and attester from the protect
     'base64',
   ).toString('utf8'));
 
-  assert.equal(attached.meta.claims['Composition.author'], relatedPersonReference);
-  assert.equal(attached.meta.claims['Composition.attester'], relatedPersonReference);
-  assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
+  assert.equal(
+    attached.meta.claims['Composition.author'],
+    EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+  );
+  assert.equal(
+    attached.meta.claims['Composition.attester'],
+    `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`,
+  );
+});
+
+test('section update builder keeps each document author separate from the unlocked profile attester', () => {
+  // Flow contract: one unlocked controller/member profile always contributes
+  // its RelatedPerson attester, while each document keeps its own author.
+  const relatedPersonReference = `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`;
+  const clinicalCreator = resolveClinicalCreatorIpsExport({
+    bindings: [{
+      kind: FhirIpsCreatorKinds.IndividualMember,
+      actorIdentifier: `urn:uuid:${EXAMPLE_KYC_CONTROLLER_USER_UUID}`,
+      authorIdentifier: relatedPersonReference,
+      ownerIdentifier: EXAMPLE_SUBJECT_DID,
+      role: EXAMPLE_INDIVIDUAL_CONTROLLER_ROLE_VALUE,
+      actorDids: [EXAMPLE_CONTROLLER_DID],
+    }],
+    evidence: { actorDid: EXAMPLE_CONTROLLER_DID },
+  });
+  const build = (author) => createClinicalSectionUpdateOutboxJob({
+    subject: EXAMPLE_SUBJECT_DID,
+    sender: EXAMPLE_CONTROLLER_DID,
+    clinicalCreator,
+    author,
+    section: 'http://loinc.org|8716-3',
+    bundle: {
+      resourceType: 'Bundle',
+      type: 'batch',
+      data: [{ resource: { resourceType: 'Observation' } }],
+    },
+  });
+  const attached = [EXAMPLE_SUBJECT_DID, EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS]
+    .map((author) => build(author))
+    .map((job) => JSON.parse(Buffer.from(
+      job.payload.body.data[0].resource.meta.claims['Communication.content-attachment-data'],
+      'base64',
+    ).toString('utf8')));
+
+  assert.deepEqual(attached.map((bundle) => bundle.meta.claims['Composition.author']), [
+    EXAMPLE_SUBJECT_DID,
+    EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+  ]);
+  assert.deepEqual(attached.map((bundle) => bundle.meta.claims['Composition.attester']), [
+    relatedPersonReference,
+    relatedPersonReference,
+  ]);
+  assert.ok(attached.every((bundle) => bundle.meta.claims['Composition.attester-mode'] === 'personal'));
 });

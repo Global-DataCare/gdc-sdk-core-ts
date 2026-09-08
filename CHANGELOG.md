@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Keep the source `Composition.author` supplied for each clinical section
+  write independent from the authenticated profile export. The same unlocked
+  `RelatedPerson` or `PractitionerRole` remains the attester across documents
+  without overwriting their potentially different authors.
+- Add the product-neutral subject-section update helper so a batch or
+  collection carries its explicit data author and unlocked-profile attester as
+  the existing Composition-compatible flat claims used by confidential
+  indexing and later document projection.
+
 ## [2.9.7] - 2026-09-08
 
 - Allow a protected individual-member binding to export either the individual
