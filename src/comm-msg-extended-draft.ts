@@ -7,7 +7,6 @@ import {
   CompositionClaim,
 } from 'gdc-common-utils-ts/models/interoperable-claims/composition-claims';
 import type { FhirIpsCreatorProvenance } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
-import { FhirIpsCreatorKinds } from 'gdc-common-utils-ts/utils/fhir-ips-creator-identity';
 import { transformCommunicationClaimsToResourceFhirR4 } from 'gdc-common-utils-ts/utils/communication-fhir-r4';
 import type { ClinicalCreatorIpsExport } from './clinical-creator-ips-export.js';
 import { CommunicationOutboxStatuses } from './communication-draft.js';
@@ -93,9 +92,9 @@ export type ClinicalSectionUpdateCommunicationInput =
      * never reconstructs FHIR author/attester references from `actorDid`.
      */
     clinicalCreator?: ClinicalCreatorIpsExport;
-    /** Supplying organization/individual resolved by the protected BFF profile. */
+    /** Document-specific source author resolved by the trusted BFF workflow. */
     author?: string;
-    /** Registered PractitionerRole/RelatedPerson attesters from that same profile. */
+    /** Registered PractitionerRole/RelatedPerson attesters from the unlocked profile. */
     attesters?: FhirIpsCreatorProvenance['attesters'];
   }>;
 
@@ -372,7 +371,9 @@ export function createClinicalSectionUpdateOutboxJob(
   const protectedProvenance = input.clinicalCreator
     ? clinicalSectionProvenanceFromCreator(input.clinicalCreator)
     : undefined;
-  const author = protectedProvenance?.author ?? input.author;
+  // Authorship belongs to this document. The authenticated profile export may
+  // supply its attester, but it must never replace an explicit source author.
+  const author = input.author ?? protectedProvenance?.author;
   const attesters = protectedProvenance?.attesters ?? input.attesters;
   const bundle = author || attesters?.length
     ? applyClinicalSectionProvenance(input.bundle, author, attesters)
@@ -392,13 +393,10 @@ function clinicalSectionProvenanceFromCreator(
   author: string;
   attesters: FhirIpsCreatorProvenance['attesters'];
 }> {
-  // A controller/caregiver acts through its registered RelatedPerson
-  // assignment. A professional document remains authored by the stable legal
-  // organization URN and attested by the registered PractitionerRole urn:uuid.
-  const author = creator.binding.kind === FhirIpsCreatorKinds.IndividualMember
-    ? creator.binding.authorIdentifier
-    : creator.provenance.authorReference;
-  return { author, attesters: creator.provenance.attesters };
+  return {
+    author: creator.provenance.authorReference,
+    attesters: creator.provenance.attesters,
+  };
 }
 
 function applyClinicalSectionProvenance(

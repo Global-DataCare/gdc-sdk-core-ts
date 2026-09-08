@@ -6,6 +6,7 @@ import {
   EXAMPLE_INDIVIDUAL_CONTROLLER_ROLE_VALUE,
   EXAMPLE_KYC_CONTROLLER_USER_UUID,
   EXAMPLE_KYC_CONTROLLER_UUID,
+  EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
   EXAMPLE_SUBJECT_DID,
   FhirIpsCreatorKinds,
 } from 'gdc-common-utils-ts';
@@ -304,10 +305,9 @@ test('section update builder defaults an omitted attester to the direct individu
   assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
 });
 
-test('section update builder derives member author and attester from the protected creator export', () => {
-  // Flow contract: a controller/member is represented by its registered
-  // RelatedPerson urn:uuid in both FHIR author and personal attester. The BFF
-  // passes the complete protected export and does not rebuild those fields.
+test('section update builder keeps each document author separate from the unlocked profile attester', () => {
+  // Flow contract: one unlocked controller/member profile always contributes
+  // its RelatedPerson attester, while each document keeps its own author.
   const relatedPersonReference = `urn:uuid:${EXAMPLE_KYC_CONTROLLER_UUID}`;
   const clinicalCreator = resolveClinicalCreatorIpsExport({
     bindings: [{
@@ -320,10 +320,11 @@ test('section update builder derives member author and attester from the protect
     }],
     evidence: { actorDid: EXAMPLE_CONTROLLER_DID },
   });
-  const job = createClinicalSectionUpdateOutboxJob({
+  const build = (author) => createClinicalSectionUpdateOutboxJob({
     subject: EXAMPLE_SUBJECT_DID,
     sender: EXAMPLE_CONTROLLER_DID,
     clinicalCreator,
+    author,
     section: 'http://loinc.org|8716-3',
     bundle: {
       resourceType: 'Bundle',
@@ -331,13 +332,20 @@ test('section update builder derives member author and attester from the protect
       data: [{ resource: { resourceType: 'Observation' } }],
     },
   });
-  const claims = job.payload.body.data[0].resource.meta.claims;
-  const attached = JSON.parse(Buffer.from(
-    claims['Communication.content-attachment-data'],
-    'base64',
-  ).toString('utf8'));
+  const attached = [EXAMPLE_SUBJECT_DID, EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS]
+    .map((author) => build(author))
+    .map((job) => JSON.parse(Buffer.from(
+      job.payload.body.data[0].resource.meta.claims['Communication.content-attachment-data'],
+      'base64',
+    ).toString('utf8')));
 
-  assert.equal(attached.meta.claims['Composition.author'], relatedPersonReference);
-  assert.equal(attached.meta.claims['Composition.attester'], relatedPersonReference);
-  assert.equal(attached.meta.claims['Composition.attester-mode'], 'personal');
+  assert.deepEqual(attached.map((bundle) => bundle.meta.claims['Composition.author']), [
+    EXAMPLE_SUBJECT_DID,
+    EXAMPLE_PROVIDER_ORGANIZATION_AUTHORIZATION_URN_CDS,
+  ]);
+  assert.deepEqual(attached.map((bundle) => bundle.meta.claims['Composition.attester']), [
+    relatedPersonReference,
+    relatedPersonReference,
+  ]);
+  assert.ok(attached.every((bundle) => bundle.meta.claims['Composition.attester-mode'] === 'personal'));
 });
