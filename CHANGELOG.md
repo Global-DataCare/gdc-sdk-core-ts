@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.4] - 2026-09-07
+
+- Resolve an opaque subject-identifier asset to the provider-only
+  `indexProviderDid` contract from `gdc-common-utils-ts@2.9.6`.
+- Add the high-level IHE PDQm `POST Patient/$match` builders for a native FHIR
+  Parameters body or a one-entry GW `body.data[]`, and document the unchanged
+  Bundle response in legacy FHIR, DIDComm plain and encrypted strict transport.
+
 ## [2.9.3] - 2026-09-07
 
 - Consume the published `gdc-common-utils-ts@2.9.5` contract.

@@ -5,6 +5,19 @@ description: Preserve the active Node.js 24 workspace runtime for installs, buil
 
 # Preserve Workspace Node Runtime
 
+## Subject index and PDQm red lines
+
+- Fabric subject-identifier lookup returns only `indexProviderDid`. Resolve
+  that `did:web`; no card or contact value belongs in the ledger response.
+- The provider-facing human-health operation is IHE PDQm POST
+  `Patient/$match`, with one FHIR Parameters resource. For DIDComm, place it at
+  `body.data[0].resource`; plain and strict transport must preserve the same
+  primary Bundle.
+- Use `application/didcomm-plain+json` for plain messages and
+  `application/x-www-form-urlencoded` with `request=<JWE>`/`response=<JWE>`
+  for strict messages. Keep this DIDComm JWE framing distinct from claiming a
+  native OAuth JAR/JARM object.
+
 ## Keep Node 24 active
 
 1. Run `node --version` before the first install, build, test, service, E2E,
