@@ -69,6 +69,9 @@ open these documents in this order:
   `common-utils`, `sdk-core`, `sdk-node`, and `sdk-front` in v2.
 - [docs/101-SDK_FLOWS.md](./docs/101-SDK_FLOWS.md)
   Business-flow map from actor split to consent, invitation, import, and SMART.
+- [docs/101-SUBJECT_INDEX_PROVIDER_RESOLUTION.md](./docs/101-SUBJECT_INDEX_PROVIDER_RESOLUTION.md)
+  Provider-only Fabric discovery followed by PDQm Patient matching over legacy
+  FHIR, DIDComm plain, or encrypted strict transport.
 - [docs/101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md](./docs/101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md)
   Copy/paste-oriented high-level snippets for legal controller recovery,
   professional device bootstrap, and individual-controller recovery policy.

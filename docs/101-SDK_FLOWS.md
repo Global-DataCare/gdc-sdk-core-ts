@@ -654,6 +654,12 @@ Goal:
 
 - let a professional or other authorized actor retrieve subject data
 
+Resolve an unknown subject's provider and perform a standards-based patient
+match through
+[101-SUBJECT_INDEX_PROVIDER_RESOLUTION.md](./101-SUBJECT_INDEX_PROVIDER_RESOLUTION.md).
+Fabric returns only `indexProviderDid`; the provider operation is PDQm POST
+`Patient/$match`, never a GET identity query.
+
 Open these files first:
 
 - [professional.ts](https://github.com/Global-DataCare/gdc-common-utils-ts/blob/main/src/examples/professional.ts)

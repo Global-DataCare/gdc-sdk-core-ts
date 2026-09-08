@@ -16,6 +16,21 @@ description: Enforce branch, TDD, local live E2E, changelog, patch publication, 
 
 ## Local-first gates
 
+### Subject index and PDQm red lines
+
+- Fabric subject-identifier lookup returns only `indexProviderDid`. Resolve
+  that `did:web`; do not return a card, provider code or duplicated URL.
+- Human-health cross-reference uses IHE PDQm POST `Patient/$match`. Legacy FHIR
+  sends one `Parameters` body whose `parameter[]` contains the input Patient.
+- DIDComm uses one primary Bundle with
+  `body.data[0].resource = Parameters` and `request = POST Patient/$match`.
+  Plain transport is `application/didcomm-plain+json`; strict transport signs
+  and encrypts the same message into `application/x-www-form-urlencoded`
+  `request=<JWE>` and reads `response=<JWE>`.
+- The response is the same result Bundle across legacy FHIR, DIDComm plain and
+  strict transport. Never substitute a GET identity query or expose the
+  Fabric hash in the provider-facing FHIR operation.
+
 - Always follow `test -> local-network -> test-network -> network`.
 - Run focused, integration, full, type and build checks first.
 - Enable every affected package or SDK live E2E against real local services.
