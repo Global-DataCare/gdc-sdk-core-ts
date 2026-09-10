@@ -33,17 +33,22 @@ breaking migration is explicitly authorized.
 
 ## Resolve the Attester from Real Data
 
-For an individual member, controller or caregiver:
+For the principal individual controller:
 
-1. Read the actual response from the existing `RelatedPerson/_search`
-   contact/member flow.
-2. Select the intended active row server-side by verified data.
-3. Use its governed `RelatedPerson.identifier` UUID.
-4. Canonicalize it as `urn:uuid:<uuid>` with the shared SDK helper.
+1. Registration sends the stable UUID as
+   `Organization.owner.identifier.value`.
+2. GW automatically materializes the matching `RelatedPerson/RESPRSN` during
+   the separate confirmed Order transition.
+3. Enrollment consumes the typed Order result and protects that assignment in
+   the profile; later logins recover it by unlocking/opening the profile.
+4. Only later document writes canonicalize it as `urn:uuid:<uuid>`.
 
-Registration of an individual organization does not create a
-`RelatedPerson`. Never substitute the individual resource id, subject DID,
-actor DID, profile id, email, telephone or OAuth client id.
+Do not search or create the principal RelatedPerson in the portal. Use
+`RelatedPerson/_search` only to select additional caregivers or members that
+were created through their own lifecycle. Registration alone does not create
+the principal RelatedPerson; the confirmed Order does. Never substitute the
+individual resource id, subject DID, actor DID, profile id, email, telephone
+or OAuth client id.
 
 For a professional:
 
