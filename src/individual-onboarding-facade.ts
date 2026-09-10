@@ -329,6 +329,7 @@ export function createIndividualOnboardingFacade(): IndividualOnboardingFacade {
 
       return {
         formFields,
+        ...(input.kyc ? { kyc: input.kyc } : {}),
         ...(input.template ? { template: input.template } : {}),
         ...(claims ? { claims } : {}),
         ...(documentReference ? { documentReference } : {}),

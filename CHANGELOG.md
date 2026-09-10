@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.9] - 2026-09-10
+
+- Preserve the original KYC payload in the high-level individual-onboarding
+  draft and convert a `setPdf(...)` DocumentReference into the canonical GW
+  signed-PDF attachment without making the portal author wire Bundles.
+- Keep PDF drafting and final Organization registration separate from Order
+  confirmation, enrollment, profile opening and clinical attestation.
+
+## [2.9.8] - 2026-09-08
+
 - Keep the source `Composition.author` supplied for each clinical section
   write independent from the authenticated profile export. The same unlocked
   `RelatedPerson` or `PractitionerRole` remains the attester across documents
