@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file.
   confirmation, enrollment, profile opening and clinical attestation.
 - Make the release suite consume the pinned public `gdc-common-utils-ts`
   package exports so a clean install no longer depends on a sibling checkout.
+- Extract claims-first and native FHIR `DiagnosticReport` resources from
+  Communication document Bundles, including presented-form attachments and
+  the governed contained-document compatibility claim.
 
 ## [2.9.8] - 2026-09-08
 

@@ -7,6 +7,9 @@ import {
   DocumentReferenceClaim,
 } from 'gdc-common-utils-ts/models/interoperable-claims/document-reference-claims';
 import {
+  DiagnosticReportClaim,
+} from 'gdc-common-utils-ts/models/interoperable-claims/diagnostic-report-claims';
+import {
   ResourceTypesFhirR4,
 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
 import {
@@ -598,15 +601,28 @@ export function getDocumentReferenceClaimsByIdentifiersFromCommunicationDocument
 }
 
 /**
- * TODO(ips-next):
- * Add `getDiagnosticReportClaimsFromCommunicationDocument(...)` after
- * `common-utils` exposes the finalized DiagnosticReport claim helpers and
- * bundle-editor upsert contract.
+ * Extracts canonical `DiagnosticReport` claims from the first document Bundle
+ * carried by a Communication.
  *
- * Keep this aligned with shared claim keys from `gdc-common-utils-ts` and do
- * not invent repo-local literals for `presented-form-*` or
- * `contained-documents`.
+ * Claims-first resources preserve their governed `meta.claims` values. Native
+ * FHIR resources are projected through the shared `DiagnosticReportClaim`
+ * keys, with explicit claims taking precedence when both representations are
+ * present.
  */
+export function getDiagnosticReportClaimsFromCommunicationDocument(
+  communication: FhirResourceLike,
+): Record<string, unknown>[] {
+  const bundle = getFirstBundleDocumentFromCommunication(communication);
+  return getBundleDocumentResourcesByType(bundle, ResourceTypesFhirR4.DiagnosticReport)
+    .map((resource) => {
+      const structuralClaims = extractDiagnosticReportClaims(resource);
+      const explicitClaims = isPlainObject(resource.meta) && isPlainObject(resource.meta.claims)
+        ? cloneRecord(resource.meta.claims)
+        : {};
+      return { ...structuralClaims, ...explicitClaims };
+    })
+    .filter((claims) => Object.keys(claims).length > 0);
+}
 
 /**
  * Sorts FHIR resources by their first canonical clinical date descending.
@@ -680,4 +696,71 @@ function extractDocumentReferenceClaims(resource: FhirResourceLike): Record<stri
     [DocumentReferenceClaim.ContentHash]: typeof attachment?.hash === 'string' ? attachment.hash : undefined,
     [DocumentReferenceClaim.Language]: typeof attachment?.language === 'string' ? attachment.language : undefined,
   };
+}
+
+function extractReferenceList(value: unknown): string | undefined {
+  const references = (Array.isArray(value) ? value : [value])
+    .map((item) => (isPlainObject(item) && typeof item.reference === 'string' ? item.reference.trim() : ''))
+    .filter(Boolean);
+  return references.length ? references.join(',') : undefined;
+}
+
+function compactClaims(claims: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(claims).filter(([, value]) => value !== undefined && value !== ''),
+  );
+}
+
+function extractDiagnosticReportClaims(resource: FhirResourceLike): Record<string, unknown> {
+  const identifier = Array.isArray(resource.identifier) && isPlainObject(resource.identifier[0])
+    ? resource.identifier[0].value
+    : undefined;
+  const code = isPlainObject(resource.code) ? resource.code : undefined;
+  const codeCoding = code && Array.isArray(code.coding)
+    ? code.coding.find(isPlainObject)
+    : undefined;
+  const subject = isPlainObject(resource.subject) && typeof resource.subject.reference === 'string'
+    ? resource.subject.reference.trim()
+    : undefined;
+  const encounter = isPlainObject(resource.encounter) && typeof resource.encounter.reference === 'string'
+    ? resource.encounter.reference.trim()
+    : undefined;
+  const presentedForm = Array.isArray(resource.presentedForm)
+    ? resource.presentedForm.find(isPlainObject)
+    : undefined;
+  const mediaReferences = Array.isArray(resource.media)
+    ? resource.media
+      .map((item) => (isPlainObject(item) ? item.link : undefined))
+      .filter(isPlainObject)
+    : [];
+
+  return compactClaims({
+    [DiagnosticReportClaim.BasedOn]: extractReferenceList(resource.basedOn),
+    [DiagnosticReportClaim.Category]: getFirstCodingToken(resource.category),
+    [DiagnosticReportClaim.Code]: getFirstCodingToken(code ? [code] : undefined),
+    [DiagnosticReportClaim.CodeText]: code && typeof code.text === 'string' ? code.text.trim() : undefined,
+    [DiagnosticReportClaim.CodeDisplay]: codeCoding && typeof codeCoding.display === 'string'
+      ? codeCoding.display.trim()
+      : undefined,
+    [DiagnosticReportClaim.Date]: getCanonicalDate(resource),
+    [DiagnosticReportClaim.Encounter]: encounter,
+    [DiagnosticReportClaim.Identifier]: typeof identifier === 'string' ? identifier.trim() : undefined,
+    [DiagnosticReportClaim.Media]: extractReferenceList(mediaReferences),
+    [DiagnosticReportClaim.Patient]: subject,
+    [DiagnosticReportClaim.Performer]: extractReferenceList(resource.performer),
+    [DiagnosticReportClaim.Result]: extractReferenceList(resource.result),
+    [DiagnosticReportClaim.ResultsInterpreter]: extractReferenceList(resource.resultsInterpreter),
+    [DiagnosticReportClaim.Specimen]: extractReferenceList(resource.specimen),
+    [DiagnosticReportClaim.Status]: typeof resource.status === 'string' ? resource.status.trim() : undefined,
+    [DiagnosticReportClaim.Subject]: subject,
+    [DiagnosticReportClaim.PresentedFormContentType]: presentedForm && typeof presentedForm.contentType === 'string'
+      ? presentedForm.contentType.trim()
+      : undefined,
+    [DiagnosticReportClaim.PresentedFormData]: presentedForm && typeof presentedForm.data === 'string'
+      ? presentedForm.data
+      : undefined,
+    [DiagnosticReportClaim.PresentedFormUrl]: presentedForm && typeof presentedForm.url === 'string'
+      ? presentedForm.url.trim()
+      : undefined,
+  });
 }
