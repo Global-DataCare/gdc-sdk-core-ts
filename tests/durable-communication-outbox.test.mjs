@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * Flow contract:
  * 1. Enqueue is idempotent and never replaces a different job silently.
@@ -8,7 +9,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { WalletMessagePriorities } from '../../gdc-common-utils-ts/dist/models/wallet.js';
+import { WalletMessagePriorities } from 'gdc-common-utils-ts/models/wallet';
 import {
   DurableCommunicationOutboxRepositoryMemory,
   DurableCommunicationOutboxStatuses,

@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
   signed-PDF attachment without making the portal author wire Bundles.
 - Keep PDF drafting and final Organization registration separate from Order
   confirmation, enrollment, profile opening and clinical attestation.
+- Make the release suite consume the pinned public `gdc-common-utils-ts`
+  package exports so a clean install no longer depends on a sibling checkout.
 
 ## [2.9.8] - 2026-09-08
 

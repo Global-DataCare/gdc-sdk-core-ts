@@ -1,5 +1,6 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
- * Flow contract: SDK Core keeps KYC prefill, signed-PDF evidence and final
+ * SDK Core keeps KYC prefill, signed-PDF evidence and final
  * individual registration separate from Order confirmation and enrollment.
  */
 import test from 'node:test';

@@ -1,9 +1,10 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
   ActivationCredentialTypes,
-} from '../../gdc-common-utils-ts/dist/index.js';
+} from 'gdc-common-utils-ts';
 
 import {
   IcaCredentialFormats,

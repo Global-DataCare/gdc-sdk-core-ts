@@ -20,7 +20,7 @@ import {
   LicenseEntryTypes,
   LicenseCommercialSearchEntryType,
   LicenseStatuses,
-} from '../../gdc-common-utils-ts/dist/index.js';
+} from 'gdc-common-utils-ts';
 
 test('license controller facade stays thin over shared search editor and list readers', () => {
   const facade = createLicenseControllerFacade();

@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * 101 flow contract:
  * 1. Begin with the canonical claims-first Communication job.
@@ -8,7 +9,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { WalletMessagePriorities } from '../../gdc-common-utils-ts/dist/models/wallet.js';
+import { WalletMessagePriorities } from 'gdc-common-utils-ts/models/wallet';
 import {
   DurableCommunicationOutboxRepositoryMemory,
   DurableCommunicationOutboxStatuses,

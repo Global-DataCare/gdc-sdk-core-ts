@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -9,7 +10,7 @@ import {
 import {
   EXAMPLE_DOCUMENT_REFERENCE_IDENTIFIER,
   EXAMPLE_DOCUMENT_REFERENCE_URL,
-} from '../../gdc-common-utils-ts/dist/examples/shared.js';
+} from 'gdc-common-utils-ts/examples/shared';
 import {
   VitalSignsCodes,
 } from 'gdc-common-utils-ts/constants/vital-signs';
