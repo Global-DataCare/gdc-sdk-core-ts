@@ -4,9 +4,11 @@ import type { BundleJsonApi } from 'gdc-common-utils-ts/models/bundle';
 import type { VerifiableCredentialV2 } from 'gdc-common-utils-ts/models/verifiable-credential';
 import type {
   IndividualFormTemplateFields,
+  IndividualOnboardingDraftResult,
   IndividualOnboardingPdfTemplateInput,
   IndividualOrganizationKycPayload,
 } from 'gdc-common-utils-ts/models/individual-onboarding';
+import { DocumentReferenceClaim } from 'gdc-common-utils-ts/models/interoperable-claims/document-reference-claims';
 import { getBaseUrlFromDidWeb } from 'gdc-common-utils-ts/utils/did';
 import { ClaimsOrganizationSchemaorg } from 'gdc-common-utils-ts/constants/schemaorg';
 import { ResourceTypesFhirR4 } from 'gdc-common-utils-ts/constants/fhir-resource-types';
@@ -67,8 +69,15 @@ export type IndividualOnboardingPdfDraftGatewayRequestInput = Readonly<{
 
 export type IndividualOrganizationRegistrationGatewayRequestInput = Readonly<{
   claims?: Record<string, unknown>;
+  kyc?: IndividualOrganizationKycPayload;
   verifiableCredential?: VerifiableCredentialV2;
   attachments?: unknown[];
+}>;
+
+export type IndividualOrganizationRegistrationFromDraftInput = Readonly<{
+  draft: IndividualOnboardingDraftResult;
+  /** Compatibility/routing hints applied below KYC and signed-PDF evidence. */
+  routingClaims?: Record<string, unknown>;
 }>;
 
 function normalizeText(value: unknown): string {
@@ -199,11 +208,45 @@ export function buildIndividualOrganizationRegistrationGatewayRequestBundle(
         resourceType: Resource.ORGANIZATION,
         meta: {
           ...(input.claims ? { claims: input.claims } : {}),
+          ...(input.kyc ? { kyc: input.kyc } : {}),
         },
       },
     }],
     ...(attachments.length > 0 ? { attachments } : {}),
   } as BundleJsonApi;
+}
+
+/**
+ * Converts the high-level onboarding editor result into the final GW request.
+ *
+ * The portal never needs to construct a DIDComm attachment. Normalized claims
+ * remain compatibility/routing hints, the original KYC payload stays separate
+ * for audit, and a `setPdf(...)` document becomes the higher-precedence signed
+ * PDF attachment consumed and verified by GW.
+ */
+export function buildIndividualOrganizationRegistrationGatewayRequestFromDraft(
+  input: IndividualOrganizationRegistrationFromDraftInput,
+): BundleJsonApi {
+  const pdfClaims = input.draft.documentReference?.resource?.meta?.claims;
+  const contentType = normalizeText(pdfClaims?.[DocumentReferenceClaim.ContentType]);
+  const contentData = normalizeText(pdfClaims?.[DocumentReferenceClaim.ContentData]);
+  const identifier = normalizeText(pdfClaims?.[DocumentReferenceClaim.Identifier]);
+  const attachments = contentType && contentData
+    ? [{
+      ...(identifier ? { id: identifier } : {}),
+      media_type: contentType,
+      data: { base64: contentData },
+    }]
+    : [];
+
+  return buildIndividualOrganizationRegistrationGatewayRequestBundle({
+    claims: {
+      ...(input.draft.claims || {}),
+      ...(input.routingClaims || {}),
+    },
+    ...(input.draft.kyc ? { kyc: input.draft.kyc } : {}),
+    attachments,
+  });
 }
 
 /**

@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * Teaching goal:
  * - common-utils finishes one Bundle containing one or several semantic changes
@@ -17,7 +18,7 @@ import {
   BundleEditor,
   BundleOperations,
   BundleTypes,
-} from '../../gdc-common-utils-ts/dist/index.js';
+} from 'gdc-common-utils-ts';
 import {
   EXAMPLE_EMAIL_RELATED_PERSON,
   EXAMPLE_RELATED_PERSON_ACTIVE_NAME,
@@ -27,7 +28,7 @@ import {
   EXAMPLE_RELATED_PERSON_ROLE,
   EXAMPLE_SUBJECT_DID,
   EXAMPLE_TENANT_SERVICE_DID,
-} from '../../gdc-common-utils-ts/dist/examples/shared.js';
+} from 'gdc-common-utils-ts/examples/shared';
 
 import {
   TransportProfiles,

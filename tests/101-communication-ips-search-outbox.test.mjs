@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * 101 note:
  * - `gdc-common-utils-ts` owns the canonical communication/search authoring editors/readers.
@@ -9,7 +10,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
+import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
 import {
   communication,
   createSummaryOperationRequestParameters,
@@ -17,14 +18,14 @@ import {
   createSummaryOperationRequestReferencePath,
   createSummaryOperationRequestReferenceUrl,
   SummaryOperationCommunicationDefaults,
-} from '../../gdc-common-utils-ts/dist/utils/communication-bundle-document-request.js';
+} from 'gdc-common-utils-ts/utils/communication-bundle-document-request';
 import {
   EXAMPLE_INDEX_PROVIDER_SECTOR_DID_WEB,
   EXAMPLE_IPS_BUNDLE_REFERENCE_ABSOLUTE_URL,
   EXAMPLE_IPS_BUNDLE_REFERENCE_URL,
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
-} from '../../gdc-common-utils-ts/dist/examples/shared.js';
+} from 'gdc-common-utils-ts/examples/shared';
 import {
   CommunicationOutboxStatuses,
   createCommMsgExtendedDraft,

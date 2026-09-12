@@ -166,7 +166,7 @@ export function buildPermissionRequestCommunication(
     .setSectionList(input.missing.sections)
     .setResourceTypeList(input.missing.resourceTypes)
     .doneEntry();
-  const payload = bundleEditor.buildJsonApi() as Record<string, unknown>;
+  const payload = bundleEditor.buildJsonApi() as unknown as Record<string, unknown>;
   const payloadData = Array.isArray(payload.data)
     ? payload.data as Array<Record<string, any>>
     : [];

@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * 101 note:
  * - Teach the highest-level runtime-neutral `sdk-core` surface for this topic.
@@ -8,8 +9,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CommunicationCategoryCodes } from '../../gdc-common-utils-ts/dist/constants/communication.js';
-import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
+import { CommunicationCategoryCodes } from 'gdc-common-utils-ts/constants/communication';
+import { HealthcareActorRoles, HealthcareBasicSections, HealthcareConsentPurposes } from 'gdc-common-utils-ts/constants/healthcare';
 import {
   EXAMPLE_COMMUNICATION_UUID,
   EXAMPLE_CONSENT_UUID,
@@ -27,14 +28,14 @@ import {
   EXAMPLE_MEDICATION_IBUPROFEN_NOTE,
   EXAMPLE_MEDICATION_TIMING_PERIOD_UNIT_HOURS,
   EXAMPLE_SUBJECT_DID,
-} from '../../gdc-common-utils-ts/dist/examples/shared.js';
-import { ClaimConsent, ConsentDecisions } from '../../gdc-common-utils-ts/dist/models/consent-rule.js';
-import { CommunicationClaim } from '../../gdc-common-utils-ts/dist/models/interoperable-claims/communication-claims.js';
+} from 'gdc-common-utils-ts/examples/shared';
+import { ClaimConsent, ConsentDecisions } from 'gdc-common-utils-ts/models/consent-rule';
+import { CommunicationClaim } from 'gdc-common-utils-ts/models/interoperable-claims/communication-claims';
 import {
   MedicationStatementClaim,
   MedicationStatementClaimsFhirApiExtended,
-} from '../../gdc-common-utils-ts/dist/models/interoperable-claims/medication-statement-claims.js';
-import { BundleEntryClaimsContext } from '../../gdc-common-utils-ts/dist/models/communication-attached-bundle-session.js';
+} from 'gdc-common-utils-ts/models/interoperable-claims/medication-statement-claims';
+import { BundleEntryClaimsContext } from 'gdc-common-utils-ts/models/communication-attached-bundle-session';
 
 import {
   CommunicationClaims,

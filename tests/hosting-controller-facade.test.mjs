@@ -12,7 +12,7 @@ import {
   OrganizationLifecycleEditor,
   ClaimsOrganizationSchemaorg,
   cloneExample,
-} from '../../gdc-common-utils-ts/dist/index.js';
+} from 'gdc-common-utils-ts';
 
 import {
   HostLifecycleRequestType,

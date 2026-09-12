@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 /**
  * Teaching goal:
  * - common-utils authors one permission Bundle with typed Consent entries
@@ -17,8 +18,8 @@ import {
   BundleOperations,
   BundleTypes,
   ConsentDecisions,
-} from '../../gdc-common-utils-ts/dist/index.js';
-import { HealthcareBasicSections, HealthcareConsentPurposes } from '../../gdc-common-utils-ts/dist/constants/healthcare.js';
+} from 'gdc-common-utils-ts';
+import { HealthcareBasicSections, HealthcareConsentPurposes } from 'gdc-common-utils-ts/constants/healthcare';
 import {
   EXAMPLE_CONSENT_DATE,
   EXAMPLE_CONSENT_PERIOD_END,
@@ -28,7 +29,7 @@ import {
   EXAMPLE_PROFESSIONAL_DID,
   EXAMPLE_SUBJECT_DID,
   EXAMPLE_TENANT_SERVICE_DID,
-} from '../../gdc-common-utils-ts/dist/examples/shared.js';
+} from 'gdc-common-utils-ts/examples/shared';
 
 import {
   CommunicationOutboxStatuses,

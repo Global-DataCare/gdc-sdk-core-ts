@@ -1,3 +1,4 @@
+// Flow contract: reuse shared test fixtures and canonical types; do not introduce duplicated literals.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -7,14 +8,14 @@ import {
 } from '../dist/index.js';
 import {
   ClaimsOrganizationSchemaorg,
-} from '../../gdc-common-utils-ts/dist/constants/schemaorg.js';
+} from 'gdc-common-utils-ts/constants/schemaorg';
 import {
   EXAMPLE_EMAIL_CONTROLLER_INDIVIDUAL,
   EXAMPLE_INDIVIDUAL_DISABLE_MESSAGE,
   EXAMPLE_INDIVIDUAL_ORGANIZATION_DISABLE_REQUEST_TYPE,
   EXAMPLE_INDIVIDUAL_ORGANIZATION_PURGE_REQUEST_TYPE,
   EXAMPLE_LIFECYCLE_PLACEHOLDERS,
-} from '../../gdc-common-utils-ts/dist/examples/index.js';
+} from 'gdc-common-utils-ts/examples';
 
 test('individual organization lifecycle facade stays thin over shared editor and result readers', () => {
   const facade = createIndividualOrganizationLifecycleFacade();

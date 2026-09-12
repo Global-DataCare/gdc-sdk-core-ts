@@ -33,17 +33,22 @@ breaking migration is explicitly authorized.
 
 ## Resolve the Attester from Real Data
 
-For an individual member, controller or caregiver:
+For the principal individual controller:
 
-1. Read the actual response from the existing `RelatedPerson/_search`
-   contact/member flow.
-2. Select the intended active row server-side by verified data.
-3. Use its governed `RelatedPerson.identifier` UUID.
-4. Canonicalize it as `urn:uuid:<uuid>` with the shared SDK helper.
+1. Registration sends the stable UUID as
+   `Organization.owner.identifier.value`.
+2. GW automatically materializes the matching `RelatedPerson/RESPRSN` during
+   the separate confirmed Order transition.
+3. Enrollment consumes the typed Order result and protects that assignment in
+   the profile; later logins recover it by unlocking/opening the profile.
+4. Only later document writes canonicalize it as `urn:uuid:<uuid>`.
 
-Registration of an individual organization does not create a
-`RelatedPerson`. Never substitute the individual resource id, subject DID,
-actor DID, profile id, email, telephone or OAuth client id.
+Do not search or create the principal RelatedPerson in the portal. Use
+`RelatedPerson/_search` only to select additional caregivers or members that
+were created through their own lifecycle. Registration alone does not create
+the principal RelatedPerson; the confirmed Order does. Never substitute the
+individual resource id, subject DID, actor DID, profile id, email, telephone
+or OAuth client id.
 
 For a professional:
 
@@ -114,6 +119,36 @@ and author roles, as a future internal migration. Before exposing them:
 Do not mix Smart Health Card, detached-signature, ES384 or PQC work into a
 simple section-write change unless explicitly requested.
 
+## Release continuity
+
+Follow [`docs/LOCAL_FIRST_RELEASE_CONTRACT.md`](../../../docs/LOCAL_FIRST_RELEASE_CONTRACT.md).
+Make at most three npm authorization attempts and keep each alive for up to
+five minutes. After three failed attempts, continue the local `test` stage with
+an immutable `npm pack` tarball. Continue unit, integration, local service, UI
+and Playwright gates with the immutable tarball installed `--no-save` on
+pushed but unmerged branches; never commit that temporary dependency.
+
+- Do not attempt `npm publish` until every affected local `test` gate is green,
+  including unit, integration, local services, real UI and Playwright.
+- An authorization failure must never stop the test stage.
+- Resume only the smallest failed gate; do not repeat a green gate unless the
+  fix changed its boundary, it creates required state, or the environment is
+  no longer trustworthy.
+- After publication, install the exact registry version and run only the minimal
+  install/export smoke; do not repeat the green matrix without cause.
+- Missing exact registry publication blocks only consumer merge, image build,
+  `local-network`, `test-network` and `network` promotion.
+- A gateway installs the exact registry version before its image and
+  `local-network`. A portal may use the tarball for `local-network`, then must
+  install the exact registry version before staging.
+- Registry publish and verification precede consumer merge and deploy.
+- Every test file's first line is a `Flow contract:` comment. Reuse canonical
+  types and terminology from HL7/FHIR, LOINC, SNOMED CT, ICD-10, WHO ATC and
+  Schema.org before inventing vocabulary.
+- Put missing reusable types in the versioned domain data package or
+  common-utils shared package first, and reuse its fixtures so downstream tests
+  contain no duplicated literals.
+
 ## Use Precise Wording
 
 In developer-facing explanations, avoid using "contract" as a generic heading
@@ -123,4 +158,3 @@ or synonym for the current model. Prefer "current rules", "current model",
 Use "Contract" when referring to the FHIR `Contract` resource, "smart
 contract" for ledger code, or "API/schema contract" only when a formal
 interface guarantee is actually meant.
-
