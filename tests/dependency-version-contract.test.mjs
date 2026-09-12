@@ -6,5 +6,5 @@ import test from 'node:test';
 test('release pins the current common contract', () => {
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   assert.equal(manifest.version, '2.9.9');
-  assert.equal(manifest.dependencies['gdc-common-utils-ts'], '2.9.13');
+  assert.equal(manifest.dependencies['gdc-common-utils-ts'], '2.9.14');
 });

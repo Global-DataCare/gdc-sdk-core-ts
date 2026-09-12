@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ## [2.9.9] - 2026-09-10
 
+- Pin the published common contract that emits opaque individual multihash
+  DIDs without exposing the private identifier type.
 - Preserve the original KYC payload in the high-level individual-onboarding
   draft and convert a `setPdf(...)` DocumentReference into the canonical GW
   signed-PDF attachment without making the portal author wire Bundles.

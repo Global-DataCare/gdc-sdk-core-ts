@@ -18,7 +18,7 @@
     "prepublishOnly": "npm run check:product-neutrality && npm run type-check && npm test"
   },
   "dependencies": {
-    "gdc-common-utils-ts": "2.9.13"
+    "gdc-common-utils-ts": "2.9.14"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
