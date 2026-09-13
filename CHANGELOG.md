@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.10] - 2026-09-13
+
+- Pin `gdc-common-utils-ts@2.9.15` so runtime-neutral consumers receive the
+  published FHIR coding-token editor contract.
+
 ## [2.9.9] - 2026-09-10
 
 - Pin the published common contract that emits opaque individual multihash
