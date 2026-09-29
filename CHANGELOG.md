@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.11] - 2026-09-29
+
+- Pin `gdc-common-utils-ts@2.9.25` so SDK consumers use the current clinical
+  editor and Bundle reader contract without installing a second historical
+  copy of Common Utils.
+
 ## [2.9.10] - 2026-09-13
 
 - Pin `gdc-common-utils-ts@2.9.15` so runtime-neutral consumers receive the
