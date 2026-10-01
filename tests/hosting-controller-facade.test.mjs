@@ -9,6 +9,7 @@ import {
   EXAMPLE_LICENSE_OFFER_ID,
   EXAMPLE_TENANT_DISABLE_MESSAGE,
   EXAMPLE_TENANT_DISABLE_REQUEST_TYPE,
+  EXAMPLE_TENANT_SERVICE_DID,
   OrganizationLifecycleEditor,
   ClaimsOrganizationSchemaorg,
   cloneExample,
@@ -17,6 +18,7 @@ import {
 import {
   HostLifecycleRequestType,
   confirmLegalOrganizationOrderWithDeps,
+  readHostedTenantDidFromResponseBody,
   submitHostedTenantLifecycleWithDeps,
 } from '../dist/index.js';
 
@@ -38,11 +40,25 @@ test('confirmLegalOrganizationOrderWithDeps authors Order claims only on the ent
   assert.equal(entry.meta?.claims, undefined);
 });
 
+test('reads the registered hosted tenant DID from the Order invoice Bundle response', () => {
+  assert.equal(readHostedTenantDidFromResponseBody({
+    data: [{
+      resource: {
+        resourceType: 'Bundle',
+        type: 'collection',
+        meta: { claims: { 'org.schema.Organization.did': EXAMPLE_TENANT_SERVICE_DID } },
+      },
+      response: { status: '201' },
+    }],
+  }), EXAMPLE_TENANT_SERVICE_DID);
+});
+
 test('submitHostedTenantLifecycleWithDeps accepts shared organization lifecycle editors', async () => {
   const calls = [];
   const organizationEditor = new OrganizationLifecycleEditor()
     .setIdentifier(String(EXAMPLE_TENANT_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.identifier]))
     .setIdentifierValue(String(EXAMPLE_TENANT_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.identifierValue]))
+    .setTenantDid(EXAMPLE_TENANT_SERVICE_DID)
     .setTaxId(String(EXAMPLE_TENANT_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.taxId]))
     .setRequestType(EXAMPLE_TENANT_DISABLE_REQUEST_TYPE);
 
@@ -68,6 +84,10 @@ test('submitHostedTenantLifecycleWithDeps accepts shared organization lifecycle 
   assert.equal(
     calls[0][2].body.data[0].resource.meta.claims[ClaimsOrganizationSchemaorg.identifierValue],
     EXAMPLE_TENANT_DISABLE_MESSAGE.claims[ClaimsOrganizationSchemaorg.identifierValue],
+  );
+  assert.equal(
+    calls[0][2].body.data[0].resource.meta.claims[ClaimsOrganizationSchemaorg.sameAs],
+    EXAMPLE_TENANT_SERVICE_DID,
   );
   assert.deepEqual(calls[0][3], {
     timeoutMs: 12_000,
