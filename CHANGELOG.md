@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.9.12] - 2026-09-30
+
+- Consume `gdc-common-utils-ts@2.9.26` and preserve the exact hosted tenant
+  DID in organization lifecycle requests, so one legal organization can
+  disable, enable or purge one sector tenant without selecting a sibling.
+
 ## [2.9.11] - 2026-09-29
 
 - Pin `gdc-common-utils-ts@2.9.25` so SDK consumers use the current clinical

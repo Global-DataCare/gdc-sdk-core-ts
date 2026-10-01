@@ -5,6 +5,43 @@ import { OrganizationLifecycleEditor } from 'gdc-common-utils-ts/utils/organizat
 import type { PollOptions, SubmitAndPollResult, SubmitPayload } from './polling-model.js';
 import { resolvePollOptionsFromSeconds } from './polling-model.js';
 
+const HOSTED_TENANT_DID_RESPONSE_CLAIM = 'org.schema.Organization.did';
+
+/**
+ * Reads the operational hosted-tenant DID returned by GW after organization
+ * activation. Callers pass this value to
+ * `OrganizationLifecycleEditor.setTenantDid(...)`; they never reconstruct it
+ * from a host name, tenant alias, or legal identifier.
+ */
+export function readHostedTenantDidFromResponseBody(body: unknown): string | undefined {
+  if (!body || typeof body !== 'object') return undefined;
+  const candidate = body as Record<string, unknown>;
+  const entries = Array.isArray(candidate.data)
+    ? candidate.data
+    : Array.isArray(candidate.entry)
+      ? candidate.entry
+      : [];
+
+  for (const entryValue of entries) {
+    if (!entryValue || typeof entryValue !== 'object') continue;
+    const entry = entryValue as Record<string, unknown>;
+    const resourceValue = entry.resource;
+    if (!resourceValue || typeof resourceValue !== 'object') continue;
+    const resource = resourceValue as Record<string, unknown>;
+    const resourceType = String(resource.resourceType || '');
+    if (resourceType !== 'Organization' && resourceType !== 'Bundle') continue;
+    const metaValue = resource.meta;
+    if (!metaValue || typeof metaValue !== 'object') continue;
+    const claimsValue = (metaValue as Record<string, unknown>).claims;
+    if (!claimsValue || typeof claimsValue !== 'object') continue;
+    const tenantDid = String(
+      (claimsValue as Record<string, unknown>)[HOSTED_TENANT_DID_RESPONSE_CLAIM] || '',
+    ).trim();
+    if (tenantDid) return tenantDid;
+  }
+  return undefined;
+}
+
 /**
  * Current host-registry route context for existing host endpoints.
  *
