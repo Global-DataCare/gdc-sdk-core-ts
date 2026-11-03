@@ -21,3 +21,7 @@ the immutable tarball produced by `npm pack`. Never commit a `file:` dependency
 or treat that tarball as publication proof. Publishing the consumer, merging
 it to `main`, building an image, or deploying remains blocked until the
 dependency is installed and reverified from the npm registry.
+
+All Node/npm gates follow the repository
+[`preserve-workspace-node-runtime` skill](.codex/skills/preserve-workspace-node-runtime/SKILL.md),
+which is compatible with the canonical workspace Node.js 26.13.0 contract.
