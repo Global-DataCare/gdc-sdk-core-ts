@@ -674,3 +674,7 @@ See the executable example:
 - JSDoc on exported code is canonical.
 - README should explain the business flows first.
 - Runtime routing details belong in node/front runtime docs, not in this package.
+
+## Entregable E9 — pruebas unitarias y testeo
+
+La [validación local completa del 11 de noviembre](deliverables/e9-testing/20261111T121038Z/README.md) contiene la matriz superada y sus registros.

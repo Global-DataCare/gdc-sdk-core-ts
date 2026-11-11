@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "gdc.e9.testing/v1",
+  "expediente": "E9-20261111T121038Z",
+  "scope": "component subset",
+  "status": "SUPERADO_COMPONENTE",
+  "executionDate": "2026-11-11",
+  "platform": "macOS (Darwin)",
+  "node": "v26.13.0",
+  "npm": "11.20.0",
+  "sources": {
+    "gdc-sdk-core-ts": {
+      "repository": "gdc-sdk-core-ts",
+      "version": "2.9.12",
+      "commit": "e795e5b74f11e8e8c100b76fef4fed5ab39b8f2d"
+    }
+  },
+  "suites": [
+    {
+      "id": "sdk-core",
+      "source": {
+        "repository": "gdc-sdk-core-ts",
+        "version": "2.9.12",
+        "commit": "e795e5b74f11e8e8c100b76fef4fed5ab39b8f2d"
+      },
+      "node": "v26.13.0",
+      "npm": "11.20.0",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "startedAt": "2026-11-11T12:19:22.331936+00:00",
+      "finishedAt": "2026-11-11T12:19:29.651648+00:00",
+      "elapsedSeconds": 7.033,
+      "tests": {
+        "total": 134,
+        "passed": 134,
+        "failed": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "pending": 0
+      },
+      "log": {
+        "path": "logs/sdk-core.log",
+        "originalSha256": "12fecfc877dadd7cf3a41a39290bec99f962fafe63c4d95cc71e5397d8b8c617",
+        "sha256": "12fecfc877dadd7cf3a41a39290bec99f962fafe63c4d95cc71e5397d8b8c617"
+      },
+      "provenance": "provenance/sdk-core.json"
+    }
+  ],
+  "checks": [
+    {
+      "repository": "gdc-sdk-core-ts",
+      "label": "01-install",
+      "exitCode": 0,
+      "log": {
+        "path": "checks/gdc-sdk-core-ts-01-install.log",
+        "sha256": "3e37983579472dc7444ce34f3bc7b160ead21431a8a80a85bc31941631312f1e"
+      }
+    },
+    {
+      "repository": "gdc-sdk-core-ts",
+      "label": "03-typecheck",
+      "exitCode": 0,
+      "log": {
+        "path": "checks/gdc-sdk-core-ts-03-typecheck.log",
+        "sha256": "759d8f2d9ecb1f3cb528fb8dd1fbdc5898fc1ff193131a6dd4246020e8698f66"
+      }
+    },
+    {
+      "repository": "gdc-sdk-core-ts",
+      "label": "final-dependencies",
+      "exitCode": 0,
+      "log": {
+        "path": "checks/gdc-sdk-core-ts-final-dependencies.log",
+        "sha256": "b37c589553be222627f1b06631f7528fb4ebbd43bceb92949c7df2e12321c95b"
+      }
+    }
+  ],
+  "privateInputSha256": {},
+  "sanitization": [
+    "local workspace and home paths normalized",
+    "private signed PDF paths replaced by content hashes",
+    "private organization identifiers replaced by hashes",
+    "compact local tokens and private PEMs redacted if present",
+    "test names, outcomes, counters and commands otherwise preserved",
+    "console line endings normalized to LF"
+  ],
+  "publication": {
+    "gitBranch": "main",
+    "npmPublish": "not performed",
+    "imagesOrDeployment": "not performed"
+  }
+}
