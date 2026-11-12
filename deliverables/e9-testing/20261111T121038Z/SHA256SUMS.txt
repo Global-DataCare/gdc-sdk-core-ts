@@ -3,7 +3,7 @@ cf45fef1d5ceace1f83b32d8a9b6115b5d1e0152696544594887d25479c2886d  checks/gdc-sdk
 3e37983579472dc7444ce34f3bc7b160ead21431a8a80a85bc31941631312f1e  checks/gdc-sdk-core-ts-01-install.log
 c7bb2449045a0cf8a2c38f8b39451c54e15ee358ce1f7d74480cb287caebeee1  checks/gdc-sdk-core-ts-03-typecheck.json
 759d8f2d9ecb1f3cb528fb8dd1fbdc5898fc1ff193131a6dd4246020e8698f66  checks/gdc-sdk-core-ts-03-typecheck.log
-110840406a1fb8f463bc0230a86927ec2626e9a815ca67dd64e86297aab2c0e6  checks/gdc-sdk-core-ts-final-dependencies.json
+d575aabdb47bbc86549c8980e9126999c2b4e7682f720385d3693c442ca696f7  checks/gdc-sdk-core-ts-final-dependencies.json
 b37c589553be222627f1b06631f7528fb4ebbd43bceb92949c7df2e12321c95b  checks/gdc-sdk-core-ts-final-dependencies.log
 12fecfc877dadd7cf3a41a39290bec99f962fafe63c4d95cc71e5397d8b8c617  logs/sdk-core.log
 a215286873c100292ff35539de2bad3332894bab72698660822e1cbd6f37e623  manifest.json
