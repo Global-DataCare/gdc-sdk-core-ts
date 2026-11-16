@@ -46,6 +46,17 @@ Do not collapse those terms into one "key" concept.
 
 ### 1.1 New Organization Onboarding
 
+There are two entry paths. Select the one already used by the integrating
+portal; adding another portal/device does not migrate the original onboarding.
+
+| Entry path | Sequence |
+| --- | --- |
+| Host-led registration | Signed PDF -> GW `Organization/_transaction` -> returned Offer -> `Order/_batch` -> controller device exchange/DCR when required |
+| Legacy ICA proof-first registration | Signed PDF -> ICA `_verify` / `_verify-response` -> controller-signed VP -> GW `Organization/_activate` / `_activate-response` -> returned Offer -> `Order/_batch` when required |
+
+The following list describes the host-led path; the legacy path is explained
+separately immediately below.
+
 Canonical intent:
 
 - verify legal evidence
@@ -68,6 +79,44 @@ Important split:
 
 - `Organization/_transaction` and `Order/_batch` are commercial/legal steps
 - `Token/_exchange` and `Device/_dcr` are controller device bootstrap steps
+
+### Legacy PDF verification and host activation
+
+This is the existing proof-first integration for a portal that verifies its
+signed organization PDF directly with the ICA before calling the host. It is
+not `Organization/_transaction`, and it does not require changing the portal
+just because the host-led path is documented first.
+
+1. The portal submits the certificate-signed PDF and the required public-key
+   bindings to ICA:
+   `POST /ica/cds-{jurisdiction}/v1/{sector}/{networkKind}/pdf/{resourceType}/_verify`.
+2. It follows the returned `Location` and polls `_verify-response` to obtain
+   the ICA-issued credentials. The document signature, representative identity
+   and controller designation remain distinct evidence.
+3. The controller wallet builds and signs the verifiable presentation (VP)
+   from those credentials. The account login token does not replace this VP.
+4. The SDK submits that proof and the public controller binding to
+   `POST /host/cds-{jurisdiction}/v1/{sector}/registry/org.schema/Organization/_activate`
+   through `HostOnboardingSdk.activateOrganizationInGatewayFromIcaProof(...)`.
+   The portal follows `Location` for `_activate-response`. In this host registry
+   route, the sector slot is the deployment's onboarding network selector;
+   do not substitute the ICA's business sector without checking route context.
+5. When activation returns a commercial Offer, the portal confirms it through
+   `Order/_batch` using the returned identifier and existing SDK readers.
+6. Historical representative bootstrap already binds the submitted role key
+   and supplied communication JWKS during `_activate`. That same initial
+   binding does not repeat `Token/_exchange` or `Device/_dcr`. The portal
+   retains the protected wallet seed and stable wallet context so it can use
+   the registered keys later. A separately registered controller/device uses
+   its own authorized exchange/DCR flow; it does not inherit that exception.
+
+The complete input example, shared builders, wallet context and custody rules
+are maintained once in
+[Node SDK: legacy PDF / verify / activate walkthrough](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#legacy-pdf-verify-activate).
+The [controller lifecycle evidence](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-ORGANIZATION_CONTROLLER_LIFECYCLE.md#what-proves-this-contract)
+identifies the executable coverage for both entry paths. These references
+separate the original bootstrap from later controller recovery and additional
+devices instead of treating every login as another activation.
 
 ### 1.2 Existing Organization Controller Recovery
 
