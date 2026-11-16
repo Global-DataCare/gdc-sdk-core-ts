@@ -43,6 +43,23 @@ Architecture background lives in:
 
 - [ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md](./ARCHITECTURE_CONTROLLER_DEVICE_LIFECYCLES.md)
 
+## Add another portal without replacing the first device
+
+Use the [Node SDK step-by-step additional-device example](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#add-the-same-controller-from-a-second-portal-keep-both-devices).
+It includes all imports and the source of each server-owned input. SDK Core
+owns the model; the Node BFF owns managed wallet creation, protected storage
+and the exchange/DCR calls through `ServerProfileSessionManager.enroll(...)`.
+
+- Keep the existing controller/organization and licensed authority.
+- Create a separate local profile and wallet for the other installation.
+- Normally omit `clientInstanceId` so the SDK derives it from that wallet.
+- If supplying it explicitly, use a distinct id for an additional installation;
+  reusing the old id with new keys is a replacement.
+- Respect `maxDevices` returned by the licence. The gateway's absent-value
+  default is five; an explicit older value of two still applies.
+- Do not call the OTP replacement helper or repeat commercial registration
+  merely to add a device. On later login, reopen the already stored profile.
+
 ## 1. Legal Organization Controller
 
 ### 1.1 Build The First Verification Request

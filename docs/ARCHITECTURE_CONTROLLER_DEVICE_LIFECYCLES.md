@@ -130,6 +130,40 @@ bootstrap representative does not repeat token exchange or DCR. The shared
 three-step contract applies to later service controllers, employees and device
 replacement/recovery.
 
+### Additional Device For The Same Controller Or Professional
+
+The same person can use independent registered wallets in different portals.
+The controller/employee role and organization stay the same; each installation
+has its own public/private keys and DCR technical client. Do not transfer a
+private key merely to make another portal usable.
+
+The backend resolves the existing licensed actor for the authenticated contact,
+then the Node runtime performs `Token/_exchange -> Device/_dcr` for the added
+installation. Email proves the authenticated account, not the controller role.
+The device remains subject to current role, licence and device authorization.
+
+The gateway uses the licence's explicit `maxDevices`, or its current default
+of five when absent. This is an active-device capacity, not five licences or
+five controllers. A licence explicitly set to two does not become five when
+a SDK constant changes. The portal must respect the effective server value.
+
+A new installation has a distinct `clientInstanceId`; a same-installation
+replacement reuses that installation id with new keys. Normal SDK enrollment
+derives the installation id from the managed wallet, so do not hand-build it
+from an email, role or organization DID. Preserve and reopen the stored profile
+on subsequent logins instead of enrolling again.
+
+The ICA retains the accredited identity/designation and initial evidence.
+Adding or revoking an operational device does not automatically revoke that
+identity credential. Later operations check current host/device/ledger state;
+the initial ICA key binding is not blanket authorization for every new key.
+
+Runtime code, imports, input sources, KMS/profile storage and the numbered
+additional-portal walkthrough live in
+[gdc-sdk-node-ts: Add the same controller from a second portal](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#add-the-same-controller-from-a-second-portal-keep-both-devices).
+Keep that implementation example in the Node runtime owner rather than copying
+wallet/HTTP orchestration into SDK Core.
+
 ### 2.2 Professional Device Replacement
 
 Canonical intent:
@@ -143,7 +177,7 @@ Current GW-aligned behavior:
 1. the seat remains tied to the same professional identity
 2. a new activation code can be issued for replacement
 3. `Device/_dcr` binds the new `client_id` and new public JWK set
-4. the previous local device profile is revoked
+4. the previous local device profile for that same installation is revoked
 5. the actor `didDocument` keeps the new device verification methods and drops
    the replaced ones
 
