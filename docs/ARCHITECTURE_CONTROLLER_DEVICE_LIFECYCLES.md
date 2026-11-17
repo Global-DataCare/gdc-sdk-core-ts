@@ -15,7 +15,7 @@ Use this document together with:
 - [101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md](./101-CONTROLLER_DEVICE_LIFECYCLE_SNIPPETS.md)
 - [101-SDK_FLOWS.md](./101-SDK_FLOWS.md)
 - [gdc-sdk-node-ts/docs/101-ORGANIZATION_CONTROLLER_LIFECYCLE.md](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-ORGANIZATION_CONTROLLER_LIFECYCLE.md)
-- [gwtemplate-node-ts/docs/API_CORE_INTEGRATION.md](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/docs/API_CORE_INTEGRATION.md)
+- [GW API Core Integration](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/docs-v1/02-API-AND-ENDPOINTS/02.D-API-CORE-INTEGRATION.md)
 
 ## Scope Rule
 
@@ -41,6 +41,166 @@ It does not redefine broader consent, communication, or tenant lifecycle flows.
   output that later requires `Order/_batch`
 
 Do not collapse those terms into one "key" concept.
+
+## Start Here: One Shared Wallet Or Two Independent Wallets?
+
+A browser is the screen; the BFF (Backend for Frontend) is the portal's server.
+In the examples below, that server holds the encrypted managed wallet. The
+PIN unlocks that existing wallet through the BFF; it does not create an identity
+or get sent to the gateway.
+
+| What the person does | What the BFF does | Gateway device registration |
+| --- | --- | --- |
+| Opens the same portal on another browser or computer, with the same server-side profile store and KMS custody | Reopens the same stored profile with its PIN and a fresh authenticated login | Reuses its existing keys, `clientId` and `clientInstanceId`; no new enrollment |
+| Opens a second portal with its own independent BFF wallet custody | Creates and registers that portal's own wallet/profile after checking existing role and licence authority | Adds another installation with different keys, `clientId` and `clientInstanceId` |
+| Replaces the keys of an existing installation | Runs the authorized replacement/recovery flow for that installation | Reuses its installation id and replaces the previous key binding |
+
+Two URLs do not necessarily mean two wallets. Two portals that deliberately
+share the same protected BFF profile may reuse it; two independent BFF stores
+must not copy each other's seed or private keys. Likewise, another browser
+only creates another installation when the product actually keeps a separate
+wallet there. These examples cover server-managed wallets, not browser-local
+wallet storage.
+
+### Same Portal, Another Browser Or Computer
+
+For example, a controller uses the health portal on a laptop, then signs into
+the same portal on another computer. Both browsers reach the same protected
+profile through that portal's BFF:
+
+1. Authenticate the person and verify the account contact.
+2. Select the existing profile owned by that authenticated account, on the server.
+3. Ask for its PIN (or use the BFF's already-authorized passkey/session path).
+4. Call `openOrganizationController(...)` to reopen the stored wallet. Keep the
+   original `profileId`, wallet derivation identity and registered public keys.
+5. Use the returned role-scoped `sdk` for the operation. The gateway still checks
+   its current permissions. Do not call `enroll(...)` on every login.
+
+This is a Node BFF call. Install/import `gdc-sdk-node-ts`; `gdc-sdk-core-ts`
+alone does not create, store or unlock a managed wallet:
+
+```ts
+import {
+  ServerProfileSessionManager,
+  type ServerOrganizationControllerOpenInput,
+  type ServerProfileSessionManagerOptions,
+} from 'gdc-sdk-node-ts';
+
+export async function reopenControllerInThisBff(
+  options: ServerProfileSessionManagerOptions,
+  input: Pick<ServerOrganizationControllerOpenInput,
+    'ownerId' | 'profileId' | 'idToken'> & { pin: string },
+) {
+  const manager = new ServerProfileSessionManager(options);
+  return manager.openOrganizationController(input);
+}
+```
+
+`options` contains this BFF's existing durable `store`, KMS-backed `sealer`,
+`gatewayBaseUrl`, trusted public `resolveRecipientJwk` and configured `appInfo`.
+`ownerId` comes from the authenticated account; `profileId` comes from that
+account's stored profiles; `idToken` is fresh, signed OpenID account proof;
+`pin` unlocks the existing profile. Do not return the protected profile or
+wallet material to the browser. For the already-authorized server-only unlock
+alternative, see [Node SDK section 6.4](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#64-create-an-employee-or-professional-under-the-organization).
+
+The historical representative created by legacy ICA `_verify` -> GW `_activate`
+is a separate bootstrap case: retain and reopen its original wallet/context.
+Do not turn that existing legacy binding into a new modern profile by calling
+`enroll(...)`. Follow [the legacy walkthrough](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#legacy-pdf-verify-activate)
+for that original integration.
+
+### Second Independent Portal: Add A Wallet, Keep The First
+
+Suppose the same controller uses a health portal and a veterinary portal with
+separate BFF custody. First determine whether both actually use the **same
+hosted organization, provider DID, jurisdiction, sector and licensed actor**.
+Only in that case is this another device under the same existing binding.
+
+If the portals use different sectors or hosted organizations, the same legal
+company identifier does not make their routes or role DIDs interchangeable.
+Resolve the second portal's actual provider DID and route, and establish its
+controller designation and active sector-specific role/licence policy first.
+The existing licence may cover several sectors only when its actual server-side
+policy says so. Changing `routeContext.sector` or reusing an old activation code
+cannot establish that authority. Once the target binding is authorized, the
+same SDK device-enrollment procedure applies to that target.
+
+1. In the second BFF, resolve the target's existing controller/role authority
+   from verified server records. A matching email alone is not that authority.
+2. Obtain exactly one supported enrollment authorization for that target:
+   an actual issued `activationCode`, or its existing `employeeAuthorizationUrn`.
+   The latter is an authorization reference checked by the gateway, not a value
+   constructed from an email. The SDK forwards either to `Token/_exchange`.
+3. Configure the second BFF's own store, KMS sealer, gateway and recipient-key
+   resolver. Obtain a fresh OpenID `idToken` trusted by that gateway.
+4. Generate a new local `profileId` and call `enroll(...)` once. Omit the old
+   `walletSeed`, `walletKeyDerivationId` and `clientInstanceId`: the SDK creates
+   fresh wallet material and derives a distinct installation id.
+5. Keep the returned protected profile. Subsequent logins to this second portal
+   follow the reopening example above. Verify that the first portal still works.
+
+The following helper includes every import. Its `authority` and `authorization`
+arguments come from steps 1 and 2, not arbitrary browser form fields:
+
+```ts
+import { randomUUID } from 'node:crypto';
+import { ActorKinds } from 'gdc-common-utils-ts/constants/actor-session';
+import {
+  ServerProfileSessionManager,
+  type ServerProfileEnrollmentInput,
+  type ServerProfileSessionManagerOptions,
+} from 'gdc-sdk-node-ts';
+
+type ExistingControllerAuthority = Pick<ServerProfileEnrollmentInput,
+  'ownerId' | 'actorDid' | 'providerDid' | 'routeContext' | 'allowedSubjectDids'
+> & {
+  professionalProof: NonNullable<ServerProfileEnrollmentInput['professionalProof']>;
+};
+type ExistingLicenceAuthorization =
+  | { activationCode: string; employeeAuthorizationUrn?: never }
+  | { employeeAuthorizationUrn: string; activationCode?: never };
+
+export async function addControllerWalletInThisBff(input: Readonly<{
+  options: ServerProfileSessionManagerOptions;
+  authority: ExistingControllerAuthority;
+  authorization: ExistingLicenceAuthorization;
+  idToken: string;
+  pin: string;
+  redirectUris: string[];
+  clientName: string;
+}>) {
+  return new ServerProfileSessionManager(input.options).enroll({
+    ...input.authority,
+    ...input.authorization,
+    profileId: randomUUID(),
+    actorKind: ActorKinds.OrganizationController,
+    actorMode: 'controller',
+    profileDid: input.authority.actorDid,
+    idToken: input.idToken,
+    pin: input.pin,
+    redirectUris: input.redirectUris,
+    clientName: input.clientName,
+  });
+}
+```
+
+The SDK owns the signed/encrypted exchange, initial access token, DCR and
+protected profile persistence. The PIN and private keys remain outside those
+HTTP requests. `professionalProof` is the verified role/contact proof source;
+the SDK signs its managed proof after DCR. For an existing modern organization
+controller, use `actorMode: 'controller'`, matching the controller-opening API.
+
+For an already-authorized employee/professional installation, the same `enroll(...)`
+call uses `actorKind: ActorKinds.OrganizationEmployee` and `actorMode: 'member'`,
+with that person's own actor DID, role proof and licence authorization. Later
+reopen it through `openProfessional(...)`, not `openOrganizationController(...)`.
+
+Check the licence's effective `maxDevices`: the gateway enforces the explicit
+value, or its default when absent. An added installation consumes device
+capacity, not another controller identity. Reusing an existing installation id
+with new keys selects replacement behavior; `rotateEmployeeProfileWithOtp(...)`
+is a replacement helper, not the way to keep two independent portals active.
 
 ## 1. Legal Organization Controller Lifecycle
 
@@ -182,8 +342,10 @@ replacement/recovery.
 ### Additional Device For The Same Controller Or Professional
 
 The same person can use independent registered wallets in different portals.
-The controller/employee role and organization stay the same; each installation
-has its own public/private keys and DCR technical client. Do not transfer a
+When both portals target the same authorized provider, route and licensed
+actor, that binding stays the same; each independent installation has its own
+public/private keys and DCR technical client. Different sectors require their
+own authorized routing and active licence policies, as explained above. Do not transfer a
 private key merely to make another portal usable.
 
 The backend resolves the existing licensed actor for the authenticated contact,
@@ -202,10 +364,31 @@ derives the installation id from the managed wallet, so do not hand-build it
 from an email, role or organization DID. Preserve and reopen the stored profile
 on subsequent logins instead of enrolling again.
 
-The ICA retains the accredited identity/designation and initial evidence.
-Adding or revoking an operational device does not automatically revoke that
-identity credential. Later operations check current host/device/ledger state;
-the initial ICA key binding is not blanket authorization for every new key.
+The additional-wallet/device mechanism is the same for an organization
+controller and a professional: a separately authorized installation supplies
+its own keys and completes exchange/DCR. Their authority remains different:
+controller designation is not an employment/professional grant, and the same
+account contact cannot replace either check.
+
+The ICA-signed credential records the controller binding used for its issuing
+verification, rather than a live list of every operational device. The
+[ICA credential builder](https://github.com/Global-DataCare/dataspace-ica-ts/blob/main/src/api/tools/vc-bundle.ts)
+places that key commitment in
+`ServiceControllerCredential.credentialSubject.owner.hasCredential.material`
+and records the verification timestamp in `validFrom`. Adding a device does
+not require rewriting that signed credential or synchronizing the ICA with
+every device change. Identity/designation renewal or revocation remains its
+own governed lifecycle.
+
+The host maintains current DCR profiles, public DID methods and active
+role/licence/device bindings. In a Fabric-backed deployment, its
+[device-registration manager](https://github.com/Global-DataCare/gwtemplate-node-ts/blob/main/src/managers/DeviceRegistrationManager.ts)
+registers the corresponding public keys and bindings in Fabric. A distinct
+installation keeps the existing installations active. When an authorized
+replacement selects the same `clientInstanceId`, the host revokes only that
+installation's previous binding and registers its replacement. Private keys
+stay in their wallets. Later access depends on current authorized state, not
+just the historic ICA key commitment.
 
 Runtime code, imports, input sources, KMS/profile storage and the numbered
 additional-portal walkthrough live in
