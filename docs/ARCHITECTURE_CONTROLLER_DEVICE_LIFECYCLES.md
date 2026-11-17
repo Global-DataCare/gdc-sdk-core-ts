@@ -36,7 +36,8 @@ It does not redefine broader consent, communication, or tenant lifecycle flows.
 - **device profile**:
   one registered OAuth/DCR technical client bound to one seat or actor
 - **activation code**:
-  single-use code that unlocks `Token/_exchange` and then `Device/_dcr`
+  licence-issued code used by `Token/_exchange` before `Device/_dcr`; a modern
+  multi-device seat may reuse that code while valid and within its device allowance
 - **commercial Offer**:
   output that later requires `Order/_batch`
 
@@ -128,10 +129,13 @@ same SDK device-enrollment procedure applies to that target.
 
 1. In the second BFF, resolve the target's existing controller/role authority
    from verified server records. A matching email alone is not that authority.
-2. Obtain exactly one supported enrollment authorization for that target:
-   an actual issued `activationCode`, or its existing `employeeAuthorizationUrn`.
-   The latter is an authorization reference checked by the gateway, not a value
-   constructed from an email. The SDK forwards either to `Token/_exchange`.
+2. Obtain the actual `activationCode` returned for that target by its original
+   completed Order or licence issuance. Use the protected code retained by the
+   issuing BFF while it remains valid; a modern active seat supports additional
+   installations within its allowance. This is not an identifier made from an
+   email. If the code is no longer available or valid, use the authorized
+   reissuance/recovery process separately; there is no SDK getter that recovers
+   it from an email alone.
 3. Configure the second BFF's own store, KMS sealer, gateway and recipient-key
    resolver. Obtain a fresh OpenID `idToken` trusted by that gateway.
 4. Generate a new local `profileId` and call `enroll(...)` once. Omit the old
@@ -140,8 +144,76 @@ same SDK device-enrollment procedure applies to that target.
 5. Keep the returned protected profile. Subsequent logins to this second portal
    follow the reopening example above. Verify that the first portal still works.
 
-The following helper includes every import. Its `authority` and `authorization`
-arguments come from steps 1 and 2, not arbitrary browser form fields:
+### Where Each Enrollment Input Comes From
+
+`enroll(...)` performs registration; it does not discover a controller or
+professional from an email address. The BFF must retain the results of the
+original authorized onboarding/invitation. This is the concrete input contract:
+
+| Input | Actual source |
+| --- | --- |
+| `activationCode` for original organization onboarding | `readActivationCode(order)` after `HostOnboardingSdk.confirmLegalOrganizationOrder(...)` confirms the original returned Offer |
+| `activationCode` for a professional invitation | `OrganizationControllerSdk.provisionOrganizationEmployee(...).activationCode`, or `readEmployeeActivationCode(reply.poll.body)` after the original `issueOrganizationEmployeeLicense(...)` |
+| `actorDid`, `profileDid`, `providerDid`, `routeContext`, `allowedSubjectDids` | The existing `ServerProfileRecord` returned by the original successful `enroll(...)`; export only the authorized public binding to the second BFF, never the whole protected record |
+| Professional role/contact proof | The original verified employment/licence grant, for example the typed `EmployeeActivationGrant` built with `createEmployeeActivationGrant(...)`; use its `employeeDid`, `employeeRoleCode`, `employeeActorIdentifier`, `providerDid` and `routeContext` |
+| Controller role/contact proof | The verified controller designation and matching licence/contact binding; `HealthcareActorRoles.Controller` from `gdc-common-utils-ts/constants/healthcare` supplies the canonical role value only after that designation is established |
+| `ownerId`, `idToken` | This BFF's authenticated account id and its fresh signed OpenID token |
+| `profileId` | A new local `randomUUID()` for the additional wallet; save and reuse the returned record later |
+| `pin`, redirects and client name | The second portal's wallet unlock and approved application configuration |
+| `options` | Existing BFF `store`, KMS `sealer`, `gatewayBaseUrl`, trusted `resolveRecipientJwk` and optional `appInfo` |
+
+The SDK's public `ServerActorMode` is a TypeScript union, not an exported enum:
+`'self' | 'controller' | 'member'`. Organization controllers use `'controller'`;
+employees/professionals use `'member'`. These API mode values do not establish
+role authority and are separate from professional occupation codes.
+
+For example, the original controller onboarding obtains its code from a real
+Order response through the exported Core readers. `organizationActivation`
+is the completed reply from `activateOrganizationInGatewayFromIcaProof(...)`
+(legacy path) or `submitLegalOrganizationVerificationTransaction(...)`:
+
+```ts
+import {
+  HostOnboardingSdk,
+  type SubmitAndPollResult,
+} from 'gdc-sdk-node-ts';
+import { readCommercialOfferId, readActivationCode } from 'gdc-sdk-core-ts';
+
+export async function acceptOriginalOrganizationOffer(
+  onboarding: HostOnboardingSdk,
+  route: Parameters<HostOnboardingSdk['confirmLegalOrganizationOrder']>[0],
+  organizationActivation: SubmitAndPollResult,
+) {
+  const offerId = readCommercialOfferId(organizationActivation);
+  if (!offerId) throw new Error('Organization reply did not return an Offer.');
+  const order = await onboarding.confirmLegalOrganizationOrder(route, { offerId });
+  const activationCode = readActivationCode(order);
+  if (!activationCode) throw new Error('Order reply did not return an activation code.');
+  return { order, activationCode };
+}
+```
+
+Run that Order only in the original onboarding that returned the Offer. Store
+its actual code under the issuing BFF's protection if its lifecycle permits
+later device additions; do not repeat the Order or issue another seat merely
+to open a second portal. An original legacy `_activate` that already bound the
+representative without an Order follows its existing legacy lifecycle instead.
+
+For current GW Core, the supported exchange input is the activation code:
+`IdentityTokenManager` requires `body.subject_token`. Although the SDK type also
+declares `employeeAuthorizationUrn`, the current gateway exchange does not
+implement that alternative. Do not substitute a URI/URN for the code here.
+Neither `StaticAuthorityResolver` nor a DID builder discovers or grants the
+missing role/licence authority: the resolver uses preloaded/configured routing.
+If the original authorized binding/grant is unavailable, the BFF must resolve it
+through its governed organization/invitation integration before enrollment;
+GDC currently has no public account-to-existing-actor discovery facade that
+returns every field in this table.
+
+The helper below consumes those explicitly retained values. `authority` is
+only the authorized public projection described above; `professionalProof`
+is supplied from the separate verified role grant, not a `ServerProfileRecord`
+field or an unverified decoding of its protected VP:
 
 ```ts
 import { randomUUID } from 'node:crypto';
@@ -157,14 +229,11 @@ type ExistingControllerAuthority = Pick<ServerProfileEnrollmentInput,
 > & {
   professionalProof: NonNullable<ServerProfileEnrollmentInput['professionalProof']>;
 };
-type ExistingLicenceAuthorization =
-  | { activationCode: string; employeeAuthorizationUrn?: never }
-  | { employeeAuthorizationUrn: string; activationCode?: never };
 
 export async function addControllerWalletInThisBff(input: Readonly<{
   options: ServerProfileSessionManagerOptions;
   authority: ExistingControllerAuthority;
-  authorization: ExistingLicenceAuthorization;
+  activationCode: string;
   idToken: string;
   pin: string;
   redirectUris: string[];
@@ -172,7 +241,7 @@ export async function addControllerWalletInThisBff(input: Readonly<{
 }>) {
   return new ServerProfileSessionManager(input.options).enroll({
     ...input.authority,
-    ...input.authorization,
+    activationCode: input.activationCode,
     profileId: randomUUID(),
     actorKind: ActorKinds.OrganizationController,
     actorMode: 'controller',
