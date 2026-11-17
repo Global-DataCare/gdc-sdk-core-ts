@@ -81,27 +81,35 @@ This is a Node BFF call. Install/import `gdc-sdk-node-ts`; `gdc-sdk-core-ts`
 alone does not create, store or unlock a managed wallet:
 
 ```ts
-import {
-  ServerProfileSessionManager,
-  type ServerOrganizationControllerOpenInput,
-  type ServerProfileSessionManagerOptions,
-} from 'gdc-sdk-node-ts';
+import { ServerProfileSessionManager } from 'gdc-sdk-node-ts';
 
-export async function reopenControllerInThisBff(
-  options: ServerProfileSessionManagerOptions,
-  input: Pick<ServerOrganizationControllerOpenInput,
-    'ownerId' | 'profileId' | 'idToken'> & { pin: string },
-) {
-  const manager = new ServerProfileSessionManager(options);
-  return manager.openOrganizationController(input);
-}
+const profileSessions = new ServerProfileSessionManager({
+  store: profileStore,
+  sealer: profileSealer,
+  gatewayBaseUrl,
+  resolveRecipientJwk,
+  appInfo,
+});
+
+const { profile, sdk: controllerSdk } = await profileSessions.openOrganizationController({
+  ownerId: authenticatedPortalAccountId,
+  profileId: storedControllerProfileId,
+  idToken: signedEmailProofIdToken,
+  pin: profilePin,
+});
+
+const employees = await controllerSdk.listOrganizationEmployeeLifecycle(profile.routeContext);
 ```
 
-`options` contains this BFF's existing durable `store`, KMS-backed `sealer`,
-`gatewayBaseUrl`, trusted public `resolveRecipientJwk` and configured `appInfo`.
-`ownerId` comes from the authenticated account; `profileId` comes from that
-account's stored profiles; `idToken` is fresh, signed OpenID account proof;
-`pin` unlocks the existing profile. Do not return the protected profile or
+`profileStore` and `profileSealer` are this BFF's existing durable store and
+KMS-backed sealer. `gatewayBaseUrl`, the trusted public `resolveRecipientJwk`
+and `appInfo` come from approved server configuration.
+`authenticatedPortalAccountId` and `signedEmailProofIdToken` come from the
+verified login; `storedControllerProfileId` is selected from that account's
+stored profiles; `profilePin` unlocks that profile. The returned `controllerSdk`
+performs an authorized employee-list read using the profile's stored route.
+`employees` is the operation result for the BFF to filter into its permitted
+browser response. Do not return the protected profile or
 wallet material to the browser. For the already-authorized server-only unlock
 alternative, see [Node SDK section 6.4](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#64-create-an-employee-or-professional-under-the-organization).
 
@@ -160,37 +168,28 @@ original authorized onboarding/invitation. This is the concrete input contract:
 | `ownerId`, `idToken` | This BFF's authenticated account id and its fresh signed OpenID token |
 | `profileId` | A new local `randomUUID()` for the additional wallet; save and reuse the returned record later |
 | `pin`, redirects and client name | The second portal's wallet unlock and approved application configuration |
-| `options` | Existing BFF `store`, KMS `sealer`, `gatewayBaseUrl`, trusted `resolveRecipientJwk` and optional `appInfo` |
+| BFF infrastructure | Existing `profileStore`, KMS-backed `profileSealer`, `gatewayBaseUrl`, trusted `resolveRecipientJwk` and optional `appInfo` |
 
 The SDK's public `ServerActorMode` is a TypeScript union, not an exported enum:
 `'self' | 'controller' | 'member'`. Organization controllers use `'controller'`;
 employees/professionals use `'member'`. These API mode values do not establish
 role authority and are separate from professional occupation codes.
 
-For example, the original controller onboarding obtains its code from a real
-Order response through the exported Core readers. `organizationActivation`
-is the completed reply from `activateOrganizationInGatewayFromIcaProof(...)`
-(legacy path) or `submitLegalOrganizationVerificationTransaction(...)`:
+During the original onboarding, `onboarding` is the already-configured
+`HostOnboardingSdk` and `route` is that onboarding's authorized host route.
+`organizationActivation` is the completed reply from `activateOrganizationInGatewayFromIcaProof(...)`
+(legacy path) or `submitLegalOrganizationVerificationTransaction(...)`.
+Read and confirm that returned Offer directly:
 
 ```ts
-import {
-  HostOnboardingSdk,
-  type SubmitAndPollResult,
-} from 'gdc-sdk-node-ts';
 import { readCommercialOfferId, readActivationCode } from 'gdc-sdk-core-ts';
 
-export async function acceptOriginalOrganizationOffer(
-  onboarding: HostOnboardingSdk,
-  route: Parameters<HostOnboardingSdk['confirmLegalOrganizationOrder']>[0],
-  organizationActivation: SubmitAndPollResult,
-) {
-  const offerId = readCommercialOfferId(organizationActivation);
-  if (!offerId) throw new Error('Organization reply did not return an Offer.');
-  const order = await onboarding.confirmLegalOrganizationOrder(route, { offerId });
-  const activationCode = readActivationCode(order);
-  if (!activationCode) throw new Error('Order reply did not return an activation code.');
-  return { order, activationCode };
-}
+const offerId = readCommercialOfferId(organizationActivation);
+if (!offerId) throw new Error('Organization reply did not return an Offer.');
+
+const order = await onboarding.confirmLegalOrganizationOrder(route, { offerId });
+const activationCode = readActivationCode(order);
+if (!activationCode) throw new Error('Order reply did not return an activation code.');
 ```
 
 Run that Order only in the original onboarding that returned the Offer. Store
@@ -210,48 +209,60 @@ through its governed organization/invitation integration before enrollment;
 GDC currently has no public account-to-existing-actor discovery facade that
 returns every field in this table.
 
-The helper below consumes those explicitly retained values. `authority` is
-only the authorized public projection described above; `professionalProof`
-is supplied from the separate verified role grant, not a `ServerProfileRecord`
-field or an unverified decoding of its protected VP:
+In the second BFF, `controllerBinding` is the authorized public projection
+of the original actor/provider/route/subject binding described above.
+`verifiedControllerProof` comes from the separately verified controller
+designation and licence/contact grant; it supplies the SDK's `professionalProof`
+input, including its canonical controller role and verified contact. It is not
+a field read from `ServerProfileRecord` or an unverified decoding of a protected VP.
+`activationCode` is the retained real code described above.
+
+Use this second portal's own storage/configuration adapters and authenticated
+account, as in the reopening example. `portalRedirectUris` and `portalClientName`
+come from its approved application configuration; `profilePin` is the chosen
+wallet unlock secret. These are integration inputs, not methods that the SDK
+can discover from an email. Register, reopen and use the new profile directly:
 
 ```ts
 import { randomUUID } from 'node:crypto';
-import { ActorKinds } from 'gdc-common-utils-ts/constants/actor-session';
-import {
-  ServerProfileSessionManager,
-  type ServerProfileEnrollmentInput,
-  type ServerProfileSessionManagerOptions,
-} from 'gdc-sdk-node-ts';
+import { ActorKinds, ServerProfileSessionManager } from 'gdc-sdk-node-ts';
 
-type ExistingControllerAuthority = Pick<ServerProfileEnrollmentInput,
-  'ownerId' | 'actorDid' | 'providerDid' | 'routeContext' | 'allowedSubjectDids'
-> & {
-  professionalProof: NonNullable<ServerProfileEnrollmentInput['professionalProof']>;
-};
+const profileSessions = new ServerProfileSessionManager({
+  store: profileStore,
+  sealer: profileSealer,
+  gatewayBaseUrl,
+  resolveRecipientJwk,
+  appInfo,
+});
 
-export async function addControllerWalletInThisBff(input: Readonly<{
-  options: ServerProfileSessionManagerOptions;
-  authority: ExistingControllerAuthority;
-  activationCode: string;
-  idToken: string;
-  pin: string;
-  redirectUris: string[];
-  clientName: string;
-}>) {
-  return new ServerProfileSessionManager(input.options).enroll({
-    ...input.authority,
-    activationCode: input.activationCode,
-    profileId: randomUUID(),
-    actorKind: ActorKinds.OrganizationController,
-    actorMode: 'controller',
-    profileDid: input.authority.actorDid,
-    idToken: input.idToken,
-    pin: input.pin,
-    redirectUris: input.redirectUris,
-    clientName: input.clientName,
-  });
-}
+const additionalControllerProfile = await profileSessions.enroll({
+  ownerId: authenticatedPortalAccountId,
+  profileId: randomUUID(),
+  actorKind: ActorKinds.OrganizationController,
+  actorMode: 'controller',
+  actorDid: controllerBinding.actorDid,
+  profileDid: controllerBinding.actorDid,
+  providerDid: controllerBinding.providerDid,
+  routeContext: controllerBinding.routeContext,
+  allowedSubjectDids: controllerBinding.allowedSubjectDids,
+  professionalProof: verifiedControllerProof,
+  activationCode,
+  idToken: signedEmailProofIdToken,
+  pin: profilePin,
+  redirectUris: portalRedirectUris,
+  clientName: portalClientName,
+});
+
+// enroll has stored this portal's protected profile through profileStore.
+// Use its id on later logins; do not enroll again.
+const { profile, sdk: controllerSdk } = await profileSessions.openOrganizationController({
+  ownerId: authenticatedPortalAccountId,
+  profileId: additionalControllerProfile.profileId,
+  idToken: signedEmailProofIdToken,
+  pin: profilePin,
+});
+
+const employees = await controllerSdk.listOrganizationEmployeeLifecycle(profile.routeContext);
 ```
 
 The SDK owns the signed/encrypted exchange, initial access token, DCR and

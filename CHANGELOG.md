@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Replace controller wallet and onboarding documentation wrappers with direct
+  SDK calls, explicit input provenance and an authorized operation result.
+- Describe the IPS result through its exported contract and distinguish
+  future profile-migration sketches from current SDK usage.
+
+
 ## [2.9.12] - 2026-09-30
 
 - Consume `gdc-common-utils-ts@2.9.26` and preserve the exact hosted tenant

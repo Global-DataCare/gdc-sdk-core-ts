@@ -110,16 +110,16 @@ Communication.payload = [
 The first payload selects the read operation. The second supplies its
 Parameters. It is not a clinical attachment for ingestion.
 
-The actor facade returns:
+The actor facade returns `ClinicalSummaryReadResult`, exported by
+`gdc-sdk-core-ts`. Use the returned fields directly; no application-defined
+result type is needed:
 
-```ts
-type ClinicalSummaryReadResult = {
-  operation: SubmitAndPollResult; // transport and polling evidence
-  bundle: Record<string, unknown>; // authoritative Bundle document
-  reader: BundleReader;            // sections, counts and references
-  document: FhirDocumentFacade;    // resources and section/type/date filters
-};
-```
+| Field | What the caller uses it for |
+| --- | --- |
+| `operation` | Inspect the submission and polling result. |
+| `bundle` | Use the authoritative Bundle document returned by the gateway. |
+| `reader` | Read document sections, counts and references through `BundleReader`. |
+| `document` | Read resources and apply section, type and date filters through `FhirDocumentFacade`. |
 
 ## Step By Step
 
