@@ -228,9 +228,15 @@ V2 split:
 - `sdk-node`
   - backend/BFF/server bootstrap implementation
 
-## First V2 Contracts To Introduce In `sdk-core`
+## Proposed Contracts For A Future Migration
 
-The next implementation slice should introduce these runtime-neutral contracts.
+The following type declarations are design sketches for a future implementation,
+not SDK usage examples or a list of current public exports. Do not copy them
+into an application to integrate today's SDK. For working profile enrollment
+and opening calls, use the
+[Node SDK walkthrough](https://github.com/Global-DataCare/gdc-sdk-node-ts/blob/main/docs/101-SDK_END_TO_END.md#same-portal-reopen-one-bff-wallet-across-browsers-and-computers).
+
+The proposed implementation slice would introduce these runtime-neutral contracts.
 
 ### 1. `ActorProfileDescriptor`
 
